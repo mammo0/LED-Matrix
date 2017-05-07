@@ -27,6 +27,7 @@ from animation.abstract_animation import AbstractAnimation
 
 # TODO: Subfolders have not been implemented yet.
 
+BACKGROUND_COLOR = (0, 0, 0) # background color of the crop
 
 class GameframeAnimation(AbstractAnimation):
     def __init__(self, width, height, frame_queue, repeat, folder):
@@ -70,7 +71,16 @@ class GameframeAnimation(AbstractAnimation):
                                 key=lambda bmpfile: int(bmpfile.stem))):
             with open(str(path), 'rb') as f:
                 image = Image.open(f)
-                self.frames.append(np.array(image))
+                if image.width == self.width and image.height == self.height:
+                    self.frames.append(np.array(image))
+                    return
+
+                # center (crop) image
+                background_img = Image.new(mode='RGB', size=(self.width, self.height), color=BACKGROUND_COLOR)
+                x = (20 - 16) / 2
+                y = (10 - 16) / 2
+                background_img.paste(image, (int(x), int(y)))
+                self.frames.append(np.array(background_img))
             image = None
         if len(self.frames) == 0:
             raise AttributeError
