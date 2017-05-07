@@ -77,8 +77,8 @@ class GameframeAnimation(AbstractAnimation):
 
                 # center (crop) image
                 background_img = Image.new(mode='RGB', size=(self.width, self.height), color=BACKGROUND_COLOR)
-                x = (20 - 16) / 2
-                y = (10 - 16) / 2
+                x = (self.width - image.width) / 2
+                y = (self.height - image.height) / 2
                 background_img.paste(image, (int(x), int(y)))
                 self.frames.append(np.array(background_img))
             image = None
