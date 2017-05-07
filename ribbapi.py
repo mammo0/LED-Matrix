@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 
 # RibbaPi - APA102 LED matrix controlled by Raspberry Pi in python
 # Copyright (C) 2016  Christoph Stahl
@@ -44,15 +44,15 @@ import threading
 
 # sort animations case insensitive
 
-DISPLAY_WIDTH = 16
-DISPLAY_HEIGTH = 16
-HARDWARE = "APA102"
-#HARDWARE = "COMPUTER"
+DISPLAY_WIDTH = 20
+DISPLAY_HEIGTH = 10
+#HARDWARE = "APA102"
+HARDWARE = "COMPUTER"
 
 
 class RibbaPi():
     def __init__(self):
-        os.chdir(os.path.dirname(__file__))
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
         if HARDWARE == 'APA102':
             from display.apa102 import Apa102
