@@ -65,7 +65,9 @@ class ClockAnimation(AbstractAnimation):
         return (x, y)
 
     def middle_point(self, minute):
-        return (8, 8)
+        x = self.width / 2
+        y = self.height / 2
+        return int(x), int(y)
 #        if minute > 0 and minute <=15:
 #            return (7,8)
 #        elif minute > 15 and minute <=30:
