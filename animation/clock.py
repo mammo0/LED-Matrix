@@ -35,9 +35,10 @@ class ClockAnimation(AbstractAnimation):
         self.background_color = background_color
         watch = Image.open("resources/clock/watch_16x16_without_arms.png")
         self.background = Image.new("RGB", (width, height), background_color)
-        x = (self.width - watch.width) / 2
-        y = (self.height - watch.height) / 2
-        self.background.paste(watch, (int(x), int(y)), mask=watch.split()[3])
+        self.x = int((self.width - watch.width) / 2)
+        self.y = int((self.height - watch.height) / 2)
+        self.background.paste(watch, (self.x, self.y), mask=watch.split()[3])
+        #self.dump_animation()
 
     def minute_point(self, middle, minute):
         minute %= 60
@@ -46,9 +47,9 @@ class ClockAnimation(AbstractAnimation):
         while True:
             x = int(middle[0] + length * math.cos(angle))
             y = int(middle[1] + length * math.sin(angle))
-            if x == 5 or x == 10:
+            if x == (5 + self.x) or x == (10 + self.x):
                 break
-            if y == 5 or y == 10:
+            if y == (5 + self.y) or y == (10 + self.y):
                 break
             length += 1
         return (x, y)
@@ -58,10 +59,10 @@ class ClockAnimation(AbstractAnimation):
         angle = 2*math.pi * hour/12 - math.pi/2
         x = int(middle[0] + LEN_HOUR * math.cos(angle))
         y = int(middle[1] + LEN_HOUR * math.sin(angle))
-        if x > 9:
-            x = 9
-        if y > 9:
-            y = 9
+        if x > (9 + self.x):
+            x = (9 + self.x)
+        if y > (10 + self.x):
+            y = (10 + self.x)
         return (x, y)
 
     def middle_point(self, minute):
@@ -92,7 +93,7 @@ class ClockAnimation(AbstractAnimation):
                 image = self.background.copy()
                 self.add_hour_minute_hands(image,
                                            local_time.tm_hour,
-                                           local_time.tm_min)
+                                           local_time.tm_min * 60)
                 self.frame_queue.put(np.array(image).copy())
                 time.sleep(1)
             else:
@@ -126,8 +127,9 @@ class ClockAnimation(AbstractAnimation):
             if minute % min_step == 0:
                 cp = self.background.copy()
                 draw = ImageDraw.Draw(cp)
+                middle = self.middle_point(minute)
                 draw.line([self.middle_point(minute),
-                           self.minute_point(minute)], fill=(0, 0, 0))
+                           self.minute_point(middle, minute)], fill=(0, 0, 0))
                 draw.line([self.middle_point(minute),
-                           self.hour_point(hour)], fill=(0, 0, 0))
+                           self.hour_point(middle, hour)], fill=(0, 0, 0))
                 cp.save("{}.bmp".format(i))
