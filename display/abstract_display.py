@@ -54,6 +54,10 @@ class AbstractDisplay(abc.ABC):
         """Display the contents of buffer on display. Gamma correction can be
         toggled."""
 
+    @abc.abstractmethod
+    def set_brightness(self, brightness):
+        """Set the brightness (float) 0.0 to 1.0 value"""
+
     def set_pixel_at_index(self, index, color):
         """Set pixel at logical position index (from top left counted row-wise)
         to color, which must be a rgb values tuple"""

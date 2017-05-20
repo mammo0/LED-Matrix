@@ -63,8 +63,9 @@ class Origin(Enum):
 #         return cls.instance
 
 
-SPI_MAX_SPEED_HZ = 16000000  # 500000 is default
-DEFAULT_BRIGHTNESS = 31  # max: 31
+SPI_MAX_SPEED_HZ = 500000  # 500000 is default
+MAX_BRIGHTNESS = 31
+DEFAULT_BRIGHTNESS = 15
 DEFAULT_GAMMA = 2.22
 
 
@@ -75,6 +76,7 @@ class Apa102(AbstractDisplay):
                  orientation=Orientation.vertically):
         super().__init__(width, height)
 
+        self.brightness = DEFAULT_BRIGHTNESS
         # init SPI interface
         self.spi = spidev.SpiDev()
         self.spi.open(0, 1)
@@ -223,8 +225,11 @@ class Apa102(AbstractDisplay):
             ret += "\n"
         return ret
 
+    def set_brightness(self, brightness):
+        self.brightness = MAX_BRIGHTNESS * brightness
+
     def get_brightness_array(self):
-        brightness = DEFAULT_BRIGHTNESS
+        brightness = self.brightness
         if brightness < 0:
             brightness = 0
         if brightness > 31:

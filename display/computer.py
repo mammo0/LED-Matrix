@@ -27,6 +27,7 @@ class Computer(AbstractDisplay):
     def __init__(self, width=16, height=16, margin=5, size=30):
         super().__init__(width, height)
 
+        self.brightness = 1.0
         self.margin = margin
         self.size = size
 
@@ -37,6 +38,9 @@ class Computer(AbstractDisplay):
         self.surface = pygame.display.set_mode(self.window_size)
         pygame.display.set_caption("RibbaPi {}x{}".format(width, height))
         self.show()
+
+    def set_brightness(self, brightness):
+        self.brightness = brightness
 
     def show(self, gamma=False):
         for event in pygame.event.get():
@@ -50,7 +54,6 @@ class Computer(AbstractDisplay):
                         self.buffer[:, :, 1],
                         self.buffer[:, :, 2]], flags=['multi_index'])
         while not it.finished:
-            color = (it[0], it[1], it[2])
             (row, column) = it.multi_index
             pygame.draw.rect(self.surface, color,
                              [(self.margin + self.size) * column + self.margin,

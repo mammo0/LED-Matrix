@@ -117,6 +117,15 @@ class RibbaPi():
 
         #self.text_queue.put("RibbaPi 👍")
 
+    # disable all the animations
+    def disable_animations(self):
+        self.gameframe_activated = False
+        self.blm_activated = False
+        self.clock_activated = False
+        self.moodlight_activated = False
+        self.play_random = False
+
+
     # New frame handling
     def process_frame_queue(self):
         # check if there is a frame that needs to be displayed
@@ -238,6 +247,7 @@ class RibbaPi():
                                             self.frame_queue)
             self.clock_last_shown = time.time()
         elif self.moodlight_activated:
+            print('moodlight active')
             next_animation = MoodlightAnimation(DISPLAY_WIDTH,
                                                DISPLAY_HEIGTH,
                                                self.frame_queue)
