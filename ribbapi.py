@@ -89,6 +89,7 @@ class RibbaPi():
         self.clock_show_every = 300
         self.clock_duration = 10
 
+        self.moodlight_mode = "wish_down_up"
         self.moodlight_activated = True
 
         # find and prepare installed animations
@@ -247,13 +248,25 @@ class RibbaPi():
                                             self.frame_queue)
             self.clock_last_shown = time.time()
         elif self.moodlight_activated:
-            print('moodlight active')
             next_animation = MoodlightAnimation(DISPLAY_WIDTH,
                                                DISPLAY_HEIGTH,
-                                               self.frame_queue)
+                                               self.frame_queue, False, self.moodlight_mode)
         else:
             next_animation = next(self.animations)
         return next_animation
+
+    def set_moodlight_mode(self, mode):
+        if isinstance(self.current_animation, MoodlightAnimation):
+            if mode == 1:
+                self.moodlight_mode = "colorwheel"
+            elif mode == 2:
+                self.moodlight_mode = "cyclecolors"
+            elif mode == 3:
+                self.moodlight_mode = "wish_down_up"
+
+            self.disable_animations()
+            self.moodlight_activated = True
+            self.stop_current_animation()
 
     def is_current_animation_running(self):
         return True if self.current_animation and \

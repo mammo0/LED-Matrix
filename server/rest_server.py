@@ -9,6 +9,7 @@ class RibbaPiRestServer:
         # setup routing
         post("/display/brightness")(self.set_brightness)
         post("/mode")(self.set_mode)
+        post("/moodlight/mode")(self.set_moodlight_mode)
         # run server
         threading.Thread(target=run, kwargs=dict(host='127.0.0.1', port=8081)).start()
 
@@ -21,9 +22,8 @@ class RibbaPiRestServer:
             value = 0.0
         self.ribbapi.display.set_brightness(value)
 
-    # POST /mode
+    # POST /mode [int: mode]
     def set_mode(self):
-        print('set the mode!')
         value = request.json
         self.ribbapi.disable_animations()
         if value == 1:
@@ -39,6 +39,16 @@ class RibbaPiRestServer:
             self.ribbapi.play_random = True
 
         self.ribbapi.stop_current_animation()
+
+    # POST /moodlight/mode [int: mode]
+    def set_moodlight_mode(self):
+        value = request.json
+        self.ribbapi.set_moodlight_mode(value)
+
+
+
+
+
 
 
 
