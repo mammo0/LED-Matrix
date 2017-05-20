@@ -26,6 +26,7 @@ from animation.clock import ClockAnimation
 from animation.moodlight import MoodlightAnimation
 from server.ribbapi_http import RibbaPiHttpServer
 from server.tpm2_net import Tpm2NetServer
+from server.rest_server import RibbaPiRestServer
 
 from pathlib import Path
 import os
@@ -84,7 +85,7 @@ class RibbaPi():
         self.blm_selected = []
 
         self.clock_activated = False
-        self.clock_last_shown = time.time()
+        self.clock_last_shown = 0
         self.clock_show_every = 300
         self.clock_duration = 10
 
@@ -97,11 +98,15 @@ class RibbaPi():
         self.animations = self.animation_generator()
 
         # start http server
-        self.http_server = RibbaPiHttpServer(self)
-        self.http_server_thread = \
-            threading.Thread(target=self.http_server.serve_forever,
-                             daemon=True)
-        self.http_server_thread.start()
+        #self.http_server = RibbaPiHttpServer(self)
+        #self.http_server_thread = \
+        #    threading.Thread(target=self.http_server.serve_forever,
+        #                     daemon=True)
+        #self.http_server_thread.start()
+
+        # start rest server
+        self.rest_server = RibbaPiRestServer(self)
+        self.rest_server.start()
 
         # start tpm2_net server
         self.tpm2_net_server = Tpm2NetServer(self)
