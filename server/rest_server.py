@@ -1,5 +1,6 @@
 from bottle import run, get, post, request
 import threading
+import zipfile
 
 class RibbaPiRestServer:
     def __init__(self, ribbapi):
@@ -10,6 +11,7 @@ class RibbaPiRestServer:
         post("/display/brightness")(self.set_brightness)
         post("/mode")(self.set_mode)
         post("/moodlight/mode")(self.set_moodlight_mode)
+        post("/gameframe/upload/<name>")(self.upload_gameframe)
         # run server
         threading.Thread(target=run, kwargs=dict(host='127.0.0.1', port=8081)).start()
 
@@ -44,6 +46,13 @@ class RibbaPiRestServer:
     def set_moodlight_mode(self):
         value = request.json
         self.ribbapi.set_moodlight_mode(value)
+
+    # POST /gameframe/upload/<name>
+    def upload_gameframe(self, name):
+        print(request.body)
+        file = request.body
+        zip = zipfile.ZipFile(file)
+        zip.extractall('resources/animations/gameframe_upload/' + name)
 
 
 
