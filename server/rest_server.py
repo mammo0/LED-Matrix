@@ -66,6 +66,7 @@ class RibbaPiRestServer:
         response.set_header('Content-type', 'application/json')
         return json.dumps(self.get_folder_names('resources/animations/gameframe_upload/'))
 
+    # GET /gameframe/<gameframe>
     def get_gameframe(self, gameframe):
         file_names = sorted(glob.glob('resources/animations/gameframe_upload/' + gameframe + '/*.bmp'), key=alphanum_key)
         print(file_names)

@@ -19,7 +19,8 @@
 """
 This module implements a display consisting of APA102 leds.
 """
-
+from ssl import match_hostname
+import math
 import spidev
 import time
 import numpy as np
@@ -226,7 +227,7 @@ class Apa102(AbstractDisplay):
         return ret
 
     def set_brightness(self, brightness):
-        self.brightness = MAX_BRIGHTNESS * brightness
+        self.brightness = math.floor(MAX_BRIGHTNESS * brightness)
 
     def get_brightness_array(self):
         brightness = self.brightness
