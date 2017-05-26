@@ -167,7 +167,7 @@ class RibbaPi():
         for p in sorted(Path("resources/animations/gameframe/").glob("*")):
             if p.is_dir():
                 self.gameframe_animations.append(str(p))
-        for p in sorted(Path("resources/animations/gameframe_forum/").glob("*")):
+        for p in sorted(Path("resources/animations/gameframe_upload/").glob("*")):
             if p.is_dir():
                 self.gameframe_animations.append(str(p))
         self.gameframe_selected = self.gameframe_animations.copy()
