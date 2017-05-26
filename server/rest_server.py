@@ -19,6 +19,7 @@ class RibbaPiRestServer:
         get("/gameframe")(self.get_gameframes)
         get("/gameframe/<gameframe>")(self.get_gameframe)
         post("/gameframe/upload/<name>")(self.upload_gameframe)
+        post("/gameframe")(self.select_gameframes)
 
         # run server
         threading.Thread(target=run, kwargs=dict(host='127.0.0.1', port=8081)).start()
@@ -60,6 +61,12 @@ class RibbaPiRestServer:
         file = request.body
         zip = zipfile.ZipFile(file)
         zip.extractall('resources/animations/gameframe_upload/' + name)
+
+    # POST /gameframe sets the playlist
+    def select_gameframes(self):
+        self.ribbapi.refresh_animations()
+        gameframes = request.json;
+        self.ribbapi.gameframe_selected = ["resources/animations/gameframe_upload/" + frame for frame in gameframes]
 
     # GET /gameframe
     def get_gameframes(self):
