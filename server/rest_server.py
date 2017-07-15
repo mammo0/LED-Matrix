@@ -6,6 +6,7 @@ import json
 import glob
 import imageio
 import re
+import shutil
 
 class RibbaPiRestServer:
     def __init__(self, ribbapi):
@@ -13,10 +14,11 @@ class RibbaPiRestServer:
 
     def start(self):
         # setup routing
-        post("/display/brightness")(self.set_brightness)
+        route("/display/brightness", method=['OPTIONS', 'POST'])(self.set_brightness)
         route("/mode", method=['OPTIONS', 'POST'])(self.set_mode)
-        post("/moodlight/mode")(self.set_moodlight_mode)
-        get("/gameframe")(self.get_gameframes)
+        route("/moodlight/mode", method=['OPTIONS', 'POST'])(self.set_moodlight_mode)
+        route("/gameframe", method=['OPTIONS', 'GET'])(self.get_gameframes)
+        route("/gameframe", method=['OPTIONS', 'DELETE'])(self.delete_gameframe)
         get("/gameframe/<gameframe>")(self.get_gameframe)
         post("/gameframe/upload/<name>")(self.upload_gameframe)
         post("/gameframe")(self.select_gameframes)
@@ -69,6 +71,12 @@ class RibbaPiRestServer:
         gameframes = request.json;
         self.ribbapi.gameframe_selected = ["resources/animations/gameframe_upload/" + frame for frame in gameframes]
 
+    # DELETE /gameframe deletes a gameframe
+    def delete_gameframe(self):
+        name = request.json
+        shutil.rmtree('resources/animations/gameframe_upload/' + name)
+        self.ribbapi.refresh_animations()
+
     # GET /gameframe
     def get_gameframes(self):
         response.set_header('Content-type', 'application/json')
@@ -103,7 +111,7 @@ class EnableCors(object):
         def _enable_cors(*args, **kwargs):
             # set CORS headers
             response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
             response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
             if request.method != 'OPTIONS':
