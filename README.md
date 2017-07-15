@@ -1,6 +1,9 @@
 # RibbaPi
 RibbaPi - APA102 based 16x16 LED-Matrix fitted inside Ribba picture frame, controlled by Raspberry Pi in Python
 
+Also created an Angular UI that is using the REST service of the RibbaPi. 
+Check it out: https://github.com/ElectiveRob/RibbaPi-ui
+
 I made a video that documents the build process and shows off some of its capabilities:
 [![IMAGE ALT TEXT](http://img.youtube.com/vi/UbVjETJd87c/0.jpg)](http://www.youtube.com/watch?v=UbVjETJd87c "RibbaPi - 16x16 APA102 LED matrix build in a Ribba frame controlled by Raspberry Pi with Python")
 
