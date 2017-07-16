@@ -114,7 +114,7 @@ class RibbaPi():
                              daemon=True)
         self.tpm2_net_server_thread.start()
 
-        self.text_queue.put("RibbaPi started!😍")
+        self.text_queue.put("RibbaPi 👍")
 
     # disable all the animations
     def disable_animations(self):

@@ -55,29 +55,21 @@ class Origin(Enum):
     bottom_right = 4
 
 
-# class Singleton(type):
-#     instance = None
-#
-#     def __call__(cls, *args, **kw):
-#         if not cls.instance:
-#             cls.instance = super(Singleton, cls).__call__(*args, **kw)
-#         return cls.instance
-
-
-SPI_MAX_SPEED_HZ = 500000  # 500000 is default
+SPI_MAX_SPEED_HZ = 16000000  # 500000 is library default as it seems
 MAX_BRIGHTNESS = 25
 DEFAULT_BRIGHTNESS = 15
 DEFAULT_GAMMA = 2.22
 
 
-# class Apa102(AbstractDisplay, metaclass=Singleton):
 class Apa102(AbstractDisplay):
     def __init__(self, width=16, height=16, color_type=ColorType.bgr,
-                 wire_mode=WireMode.zig_zag, origin=Origin.top_left,
-                 orientation=Orientation.vertically):
+                 wire_mode=WireMode.zig_zag, origin=Origin.bottom_left,
+                 orientation=Orientation.horizontally):
         super().__init__(width, height)
 
-        self.brightness = DEFAULT_BRIGHTNESS
+        # setup initial brightness level
+        self.brightness = DEFAULT_BRIGHTNESS / MAX_BRIGHTNESS
+
         # init SPI interface
         self.spi = spidev.SpiDev()
         self.spi.open(0, 1)
@@ -230,11 +222,7 @@ class Apa102(AbstractDisplay):
         self.brightness = math.floor(MAX_BRIGHTNESS * brightness)
 
     def get_brightness_array(self):
-        brightness = self.brightness
-        if brightness < 0:
-            brightness = 0
-        if brightness > 31:
-            brightness = 31
+        brightness = int(MAX_BRIGHTNESS * self.brightness)
         led_frame_first_byte = \
             (brightness & ~self.__led_frame_start) | self.__led_frame_start
         ret = np.array([led_frame_first_byte] * self.num_pixels,
