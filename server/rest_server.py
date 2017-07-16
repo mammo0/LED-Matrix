@@ -17,8 +17,12 @@ class RibbaPiRestServer:
         route("/display/brightness", method=['OPTIONS', 'POST'])(self.set_brightness)
         route("/mode", method=['OPTIONS', 'POST'])(self.set_mode)
         route("/moodlight/mode", method=['OPTIONS', 'POST'])(self.set_moodlight_mode)
+
         route("/gameframe", method=['OPTIONS', 'GET'])(self.get_gameframes)
         route("/gameframe", method=['OPTIONS', 'DELETE'])(self.delete_gameframe)
+        route("/gameframe/next", method=['OPTIONS', 'POST'])(self.next_gameframe)
+        route("/gameframe/current", method=['OPTIONS', 'POST'])(self.set_next_gameframe)
+
         get("/gameframe/<gameframe>")(self.get_gameframe)
         post("/gameframe/upload/<name>")(self.upload_gameframe)
         post("/gameframe")(self.select_gameframes)
@@ -64,6 +68,16 @@ class RibbaPiRestServer:
         file = request.body
         zip = zipfile.ZipFile(file)
         zip.extractall('resources/animations/gameframe_upload/' + name)
+
+    # POST /gameframe/next
+    def next_gameframe(self):
+        self.ribbapi.stop_current_animation()
+
+    # POST /gameframe/current
+    def set_next_gameframe(self):
+        path = "resources/animations/gameframe_upload/" + request.json
+        self.ribbapi.set_next_animation(path)
+        self.ribbapi.stop_current_animation()
 
     # POST /gameframe sets the playlist
     def select_gameframes(self):

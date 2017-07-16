@@ -218,9 +218,6 @@ class Apa102(AbstractDisplay):
             ret += "\n"
         return ret
 
-    def set_brightness(self, brightness):
-        self.brightness = math.floor(MAX_BRIGHTNESS * brightness)
-
     def get_brightness_array(self):
         brightness = int(MAX_BRIGHTNESS * self.brightness)
         led_frame_first_byte = \

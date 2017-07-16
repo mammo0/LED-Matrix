@@ -39,9 +39,6 @@ class Computer(AbstractDisplay):
         pygame.display.set_caption("RibbaPi {}x{}".format(width, height))
         self.show()
 
-    def set_brightness(self, brightness):
-        self.brightness = brightness
-
     def show(self, gamma=False):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

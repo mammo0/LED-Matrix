@@ -89,11 +89,12 @@ class RibbaPi():
         self.clock_duration = 10
 
         self.moodlight_activated = False
+        self.moodlight_mode = "colorwheel"
 
         # find and prepare installed animations
         self.refresh_animations()
 
-        self.play_random = True
+        self.play_random = False
         self.animations = self.animation_generator()
 
         # start http server
@@ -114,7 +115,7 @@ class RibbaPi():
                              daemon=True)
         self.tpm2_net_server_thread.start()
 
-        self.text_queue.put("RibbaPi 👍")
+        #self.text_queue.put("RibbaPi 👍")
 
     # disable all the animations
     def disable_animations(self):
