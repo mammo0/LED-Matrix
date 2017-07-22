@@ -29,10 +29,10 @@ from animation.abstract_animation import AbstractAnimation
 
 class TextAnimation(AbstractAnimation):
     def __init__(self,  width, height, frame_queue, repeat, text,
-                 steps_per_second=15, pixels_per_step=1, text_size=16,
+                 steps_per_second=15, pixels_per_step=1, text_size=13,
                  emoji_size=20,
                  text_font="resources/fonts/SFCompactDisplay-Regular.otf",
-                 emoji_font="resources/fonts/Apple Color Emoji.ttc"):
+                 emoji_font="resources/fonts/Apple Color Emoji.ttf"):
         super().__init__(width, height, frame_queue, repeat)
 
         self.name = "text"
@@ -84,7 +84,7 @@ class TextAnimation(AbstractAnimation):
                 previous = 0
                 width = self.text_size
                 rows = self.text_size
-                top = self.text_size - 3
+                top = self.text_size - 3 
                 left = 0
                 pen_x += kerning
                 x0 = pen_x + left
@@ -153,13 +153,15 @@ class TextAnimation(AbstractAnimation):
         return np.array(data).reshape(bitmap.rows, bitmap.width)
 
     def get_color_char(self, char):
-        self.emoji_face.load_char(char, freetype.FT_LOAD_COLOR)
+        self.emoji_face.load_char(char,0x100000)# freetype.FT_LOAD_COLOR)
         bitmap = self.emoji_face.glyph.bitmap
         bitmap = np.array(bitmap.buffer, dtype=np.uint8).reshape((bitmap.rows,
                                                                   bitmap.width,
                                                                   4))
         rgb = self.convert_bgra_to_rgb(bitmap)
         im = Image.fromarray(rgb)
+        # image offset
+        im = im.crop((0,4,im.width, im.height))
         im = im.resize((self.text_size, self.text_size))
         return np.array(im)
 
