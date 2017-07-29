@@ -18,6 +18,8 @@ class RibbaPiRestServer:
         route("/mode", method=['OPTIONS', 'POST'])(self.set_mode)
         route("/moodlight/mode", method=['OPTIONS', 'POST'])(self.set_moodlight_mode)
 
+        route("/text", method=['OPTIONS', 'POST'])(self.set_text)
+
         route("/gameframe", method=['OPTIONS', 'GET'])(self.get_gameframes)
         route("/gameframe", method=['OPTIONS', 'DELETE'])(self.delete_gameframe)
         route("/gameframe/next", method=['OPTIONS', 'POST'])(self.next_gameframe)
@@ -82,7 +84,7 @@ class RibbaPiRestServer:
     # POST /gameframe sets the playlist
     def select_gameframes(self):
         self.ribbapi.refresh_animations()
-        gameframes = request.json;
+        gameframes = request.json
         self.ribbapi.gameframe_selected = ["resources/animations/gameframe_upload/" + frame for frame in gameframes]
 
     # DELETE /gameframe deletes a gameframe
@@ -103,6 +105,11 @@ class RibbaPiRestServer:
         images = [imageio.imread(filename) for filename in file_names]
         imageio.mimwrite('resources/animations/gameframe_temp.gif', images)
         return static_file('resources/animations/gameframe_temp.gif',  root=".", mimetype='image/gif')
+
+    # POST /text
+    def set_text(self):
+        text = request.json[:100]
+        self.ribbapi.text_queue.put(text)
 
     def get_folder_names(self, dir):
         return [name for name in os.listdir(dir)]
