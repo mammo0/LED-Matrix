@@ -71,10 +71,6 @@ class GameframeAnimation(AbstractAnimation):
                                 key=lambda bmpfile: int(bmpfile.stem))):
             with open(str(path), 'rb') as f:
                 image = Image.open(f)
-                if image.width == self.width and image.height == self.height:
-                    self.frames.append(np.array(image))
-                    return
-
                 # center (crop) image
                 background_img = Image.new(mode='RGB', size=(self.width, self.height), color=BACKGROUND_COLOR)
                 x = (self.width - image.width) / 2
