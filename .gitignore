@@ -1,8 +1,11 @@
-.DS_Store
-
 # resources
 resources/animations
 resources/fonts
+
+# eclipse files
+/.project
+/.pydevproject
+/.settings
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
