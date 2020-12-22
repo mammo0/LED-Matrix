@@ -7,9 +7,9 @@ name = "pypi"
 spidev = "*"
 numpy = "*"
 pillow = "*"
-freetype-py = "*"
 bottle = "*"
 imageio = "*"
+freetype-py = {editable = false, git = "https://github.com/mammo0/freetype-py.git"}
 
 [dev-packages]
 pygame = "*"

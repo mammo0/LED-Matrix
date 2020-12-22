@@ -1,0 +1,2 @@
+develop:
+	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync -d
