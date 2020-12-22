@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import numpy as np
-import pygame
 import sys
 
+import pygame
+
 from display.abstract_display import AbstractDisplay
+import numpy as np
 
 
 class Computer(AbstractDisplay):
@@ -45,7 +46,7 @@ class Computer(AbstractDisplay):
             it.iternext()
 
         pygame.display.update()
-        #pygame.event.clear()
+        # pygame.event.clear()
 
 
 if __name__ == "__main__":

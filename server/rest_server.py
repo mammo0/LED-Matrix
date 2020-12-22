@@ -1,12 +1,14 @@
-from bottle import run, get, post, request, response, static_file, hook, install, route
-import threading
-import zipfile
-import os
-import json
 import glob
-import imageio
+import json
+import os
 import re
 import shutil
+import threading
+import zipfile
+
+from bottle import run, get, post, request, response, static_file, install, route
+import imageio
+
 
 class RibbaPiRestServer:
     def __init__(self, ribbapi):
@@ -67,9 +69,9 @@ class RibbaPiRestServer:
 
     # POST /gameframe/upload/<name>
     def upload_gameframe(self, name):
-        file = request.body
-        zip = zipfile.ZipFile(file)
-        zip.extractall('resources/animations/gameframe_upload/' + name)
+        zip_file = request.body
+        zip_archive = zipfile.ZipFile(zip_file)
+        zip_archive.extractall('resources/animations/gameframe_upload/' + name)
 
     # POST /gameframe/next
     def next_gameframe(self):
@@ -100,7 +102,8 @@ class RibbaPiRestServer:
 
     # GET /gameframe/<gameframe>
     def get_gameframe(self, gameframe):
-        file_names = sorted(glob.glob('resources/animations/gameframe_upload/' + gameframe + '/*.bmp'), key=alphanum_key)
+        file_names = sorted(glob.glob('resources/animations/gameframe_upload/' + gameframe + '/*.bmp'),
+                            key=alphanum_key)
         print(file_names)
         images = [imageio.imread(filename) for filename in file_names]
         imageio.mimwrite('resources/animations/gameframe_temp.gif', images)
@@ -111,14 +114,16 @@ class RibbaPiRestServer:
         text = request.json[:100]
         self.ribbapi.text_queue.put(text)
 
-    def get_folder_names(self, dir):
-        return [name for name in os.listdir(dir)]
+    def get_folder_names(self, directory):
+        return [name for name in os.listdir(directory)]
+
 
 def tryint(s):
     try:
         return int(s)
     except ValueError:
         return s
+
 
 def alphanum_key(s):
     return [tryint(c) for c in re.split('([0-9]+)', s)]
@@ -133,15 +138,11 @@ class EnableCors(object):
             # set CORS headers
             response.headers['Access-Control-Allow-Origin'] = '*'
             response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+            response.headers['Access-Control-Allow-Headers'] = ('Origin, Accept, Content-Type, X-Requested-With, '
+                                                                'X-CSRF-Token')
 
             if request.method != 'OPTIONS':
                 # actual request; reply with the actual response
                 return fn(*args, **kwargs)
 
         return _enable_cors
-
-
-
-
-

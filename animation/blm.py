@@ -1,8 +1,10 @@
-import time
-import numpy as np
+import errno
+import os
 from pathlib import Path
+import time
 
 from animation.abstract_animation import AbstractAnimation
+import numpy as np
 
 
 class BlmAnimation(AbstractAnimation):
@@ -14,7 +16,7 @@ class BlmAnimation(AbstractAnimation):
 
         self.path = Path(path)
         if not self.path.is_file():
-            raise FileNotFoundError
+            raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
         self.name = "blm.{}".format(self.path.stem)
 
         self.load_frames()
@@ -76,7 +78,6 @@ class BlmAnimation(AbstractAnimation):
             elif self.repeat == 0:
                 self._running = False
 
-
     def rendered_frames(self):
         """
         Generator function to iterate through all frames of animation.
@@ -85,7 +86,7 @@ class BlmAnimation(AbstractAnimation):
         for frame in self.frames:
             try:
                 array = np.array(frame["frame"], dtype=np.uint8)
-            except:
+            except Exception:
                 continue
             array = np.dstack((array, array, array))
 
@@ -97,7 +98,7 @@ class BlmAnimation(AbstractAnimation):
             np.putmask(array, ones, self.foregound_color)
             np.putmask(array, zeros, self.background_color)
 
-            (h, w, b) = array.shape
+            (h, w, _b) = array.shape
 
             diff_h = h - self.height
 

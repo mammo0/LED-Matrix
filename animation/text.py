@@ -1,13 +1,11 @@
-import freetype
-# to install on mac: brew install freetype
-#                    pip3 install freetype-py
-#                    freetype-py > 1.0.2 needed for emoji to work. see github.
-import numpy as np
-from PIL import Image
-import time
 import sys
+import time
+
+from PIL import Image
+import freetype
 
 from animation.abstract_animation import AbstractAnimation
+import numpy as np
 
 
 class TextAnimation(AbstractAnimation):
@@ -61,13 +59,17 @@ class TextAnimation(AbstractAnimation):
                 ymin, ymax = min(ymin, y0), max(ymax, y1)
                 pen_x += (self.text_face.glyph.advance.x >> 6)
                 pen_y += (self.text_face.glyph.advance.y >> 6)
-                # print("char: {} width: {} rows: {} top: {} left: {} kernx: {} xmin: {} xmax: {} ymin: {} ymax: {} pen_x: {} pen_y {}".format(c, width, rows, top, left, (kerning.x >> 6), xmin, xmax, ymin, ymax, pen_x, pen_y))
+                # print(("char: {} width: {} rows: {} top: {} left: {} "
+                #        "kernx: {} xmin: {} xmax: {} ymin: {} ymax: {} "
+                #        "pen_x: {} pen_y {}").format(c, width, rows, top, left,
+                #                                     (kerning.x >> 6), xmin, xmax, ymin, ymax,
+                #                                     pen_x, pen_y))
             elif self.emoji_face.get_char_index(c):
                 kerning = 0
                 previous = 0
                 width = self.text_size
                 rows = self.text_size
-                top = self.text_size - 3 
+                top = self.text_size - 3
                 left = 0
                 pen_x += kerning
                 x0 = pen_x + left
@@ -136,7 +138,7 @@ class TextAnimation(AbstractAnimation):
         return np.array(data).reshape(bitmap.rows, bitmap.width)
 
     def get_color_char(self, char):
-        self.emoji_face.load_char(char,0x100000)# freetype.FT_LOAD_COLOR)
+        self.emoji_face.load_char(char, 0x100000)  # freetype.FT_LOAD_COLOR)
         bitmap = self.emoji_face.glyph.bitmap
         bitmap = np.array(bitmap.buffer, dtype=np.uint8).reshape((bitmap.rows,
                                                                   bitmap.width,
@@ -144,7 +146,7 @@ class TextAnimation(AbstractAnimation):
         rgb = self.convert_bgra_to_rgb(bitmap)
         im = Image.fromarray(rgb)
         # image offset
-        im = im.crop((0,4,im.width, im.height))
+        im = im.crop((0, 4, im.width, im.height))
         im = im.resize((self.text_size, self.text_size))
         return np.array(im)
 
@@ -159,7 +161,7 @@ class TextAnimation(AbstractAnimation):
             if self.steps_per_second <= 0 or self.pixels_per_step < 1:
                 return
             buf = self.render(self.text)
-            height, width, nbytes = buf.shape
+            height, _width, _nbytes = buf.shape
             h_pad_0 = self.height
             h_pad_1 = self.width + self.pixels_per_step
             v_pad_0 = 0

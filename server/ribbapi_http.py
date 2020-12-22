@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+import html
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib
-import html
 
 
 class RibbaPiHttpServer(HTTPServer):
@@ -36,18 +36,32 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
             <fieldset>
             <legend>Configuration of RibbaPi</legend>""".encode("utf-8"))
 
-            self.wfile.write("<input name=\"brightness\" type=\"range\" min=\"0.0\" max=\"1.0\" step=\"0.02\" value=\"{}\"/> Brightness level<br>".format(self.server.ribbapi.display.brightness).encode("utf-8"))
+            self.wfile.write(('<input name="brightness" type="range" min="0.0" max="1.0" step="0.02" value="{}"/>'
+                              'Brightness level<br>').format(self.server.ribbapi.display.brightness).encode("utf-8"))
 
-            checkbox = "<input type=\"checkbox\" name=\"gameframe_activated\" value=\"1\" checked>Gameframe Animations<br>" if self.server.ribbapi.gameframe_activated else "<input type=\"checkbox\" name=\"gameframe_activated\" value=\"0\">Gameframe Animations<br>"
+            if self.server.ribbapi.gameframe_activated:
+                checkbox = ('<input type="checkbox" name="gameframe_activated" value="1" checked>'
+                            'Gameframe Animations<br>')
+            else:
+                checkbox = '<input type="checkbox" name="gameframe_activated" value="0">Gameframe Animations<br>'
             self.wfile.write(checkbox.encode("utf-8"))
 
-            checkbox = "<input type=\"checkbox\" name=\"blm_activated\" value=\"1\" checked>Blinkenlights Animations<br>" if self.server.ribbapi.blm_activated else "<input type=\"checkbox\" name=\"blm_activated\" value=\"0\">Blinkenlights Animations<br>"
+            if self.server.ribbapi.blm_activated:
+                checkbox = '<input type="checkbox" name="blm_activated" value="1" checked>Blinkenlights Animations<br>'
+            else:
+                checkbox = '<input type="checkbox" name="blm_activated" value="0">Blinkenlights Animations<br>'
             self.wfile.write(checkbox.encode("utf-8"))
 
-            checkbox = "<input type=\"checkbox\" name=\"clock_activated\" value=\"1\" checked>Clock Animation<br>" if self.server.ribbapi.clock_activated else "<input type=\"checkbox\" name=\"clock_activated\" value=\"0\">Clock Animations<br>"
+            if self.server.ribbapi.clock_activated:
+                checkbox = '<input type="checkbox" name="clock_activated" value="1" checked>Clock Animation<br>'
+            else:
+                checkbox = '<input type="checkbox" name="clock_activated" value="0">Clock Animations<br>'
             self.wfile.write(checkbox.encode("utf-8"))
 
-            checkbox = "<input type=\"checkbox\" name=\"moodlight_activated\" value=\"1\" checked>Moodlight<br>" if self.server.ribbapi.moodlight_activated else "<input type=\"checkbox\" name=\"moodlight_activated\" value=\"0\">Moodlight<br>"
+            if self.server.ribbapi.moodlight_activated:
+                checkbox = '<input type="checkbox" name="moodlight_activated" value="1" checked>Moodlight<br>'
+            else:
+                checkbox = '<input type="checkbox" name="moodlight_activated" value="0">Moodlight<br>'
             self.wfile.write(checkbox.encode("utf-8"))
 
             self.wfile.write("""
@@ -83,7 +97,6 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
             self.send_response(303)
             self.send_header('Location', '/')
             self.end_headers()
-
 
     def do_POST(self):
         if self.path.startswith("/api/v1/next_animation"):

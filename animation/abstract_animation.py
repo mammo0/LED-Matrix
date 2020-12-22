@@ -19,8 +19,8 @@ class AbstractAnimation(abc.ABC, threading.Thread):
 
     def run(self):
         """This is the run method from threading.Thread"""
-        #TODO threading.Barrier to sync with ribbapi
-        #print("Starting")
+        # TODO threading.Barrier to sync with ribbapi
+        # print("Starting")
 
         self.started = time.time()
         self._running = True

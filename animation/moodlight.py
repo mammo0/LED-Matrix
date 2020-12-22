@@ -1,10 +1,8 @@
-import time
-import numpy as np
-import random
-
 import colorsys
+import time
 
 from animation.abstract_animation import AbstractAnimation
+import numpy as np
 
 
 class MoodlightAnimation(AbstractAnimation):

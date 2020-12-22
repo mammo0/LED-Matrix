@@ -1,22 +1,25 @@
+import configparser
+import errno
+import os
+from pathlib import Path
 import time
-import numpy as np
+
 from PIL import Image
 
-import configparser
-from pathlib import Path
-
 from animation.abstract_animation import AbstractAnimation
+import numpy as np
+
 
 # TODO: Subfolders have not been implemented yet.
+BACKGROUND_COLOR = (0, 0, 0)  # background color of the crop
 
-BACKGROUND_COLOR = (0, 0, 0) # background color of the crop
 
 class GameframeAnimation(AbstractAnimation):
     def __init__(self, width, height, frame_queue, repeat, folder):
         super().__init__(width, height, frame_queue, repeat)
         self.folder = Path(folder)
         if not self.folder.is_dir():
-            raise NotADirectoryError
+            raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), folder)
         self.name = "gameframe.{}".format(self.folder.name)
 
         self.load_frames()
@@ -102,16 +105,16 @@ class GameframeAnimation(AbstractAnimation):
                 frame = self.frames[i]
                 if self.panoff:
                     if self.moveX != 0:
-                        (h, w, b) = frame.shape
+                        (h, w, _b) = frame.shape
                         frame = np.pad(frame,
                                        ((0, 0), (w, w), (0, 0)),
                                        'constant', constant_values=0)
                     if self.moveY != 0:
-                        (h, w, b) = frame.shape
+                        (h, w, _b) = frame.shape
                         frame = np.pad(frame,
                                        ((h, h), (0, 0), (0, 0)),
                                        'constant', constant_values=0)
-                (h, w, b) = frame.shape
+                (h, w, _b) = frame.shape
                 if self.moveX >= 0:
                     cur_x = w - DX - x
                 else:

@@ -3,14 +3,13 @@
 """
 This module implements a display consisting of APA102 leds.
 """
-from ssl import match_hostname
-import math
-import spidev
-import time
-import numpy as np
 from enum import Enum
+import time
+
+import spidev
 
 from display.abstract_display import AbstractDisplay
+import numpy as np
 
 
 class ColorType(Enum):

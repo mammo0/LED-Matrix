@@ -1,9 +1,11 @@
 import math
 import time
-import numpy as np
+
 from PIL import Image, ImageDraw
 
 from animation.abstract_animation import AbstractAnimation
+import numpy as np
+
 
 LEN_HOUR = 2
 
@@ -20,7 +22,7 @@ class ClockAnimation(AbstractAnimation):
         self.x = int((self.width - watch.width) / 2)
         self.y = int((self.height - watch.height) / 2)
         self.background.paste(watch, (self.x, self.y), mask=watch.split()[3])
-        #self.dump_animation()
+        # self.dump_animation()
 
     def minute_point(self, middle, minute):
         minute %= 60
@@ -97,7 +99,6 @@ class ClockAnimation(AbstractAnimation):
         return {"width": self.width, "height": self.height,
                 "frame_queue": self.frame_queue, "repeat": self.repeat,
                 "mode": self.mode, "background_color": self.background_color}
-
 
     def dump_animation(self, min_step=5):
         hour = 0

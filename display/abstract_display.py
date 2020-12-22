@@ -1,10 +1,10 @@
 """
 This module is the abstract representation of a pixel matrix display.
 """
-
 import abc
-import numpy as np
 import time
+
+import numpy as np
 
 
 class AbstractDisplay(abc.ABC):
@@ -25,11 +25,11 @@ class AbstractDisplay(abc.ABC):
     def buffer(self, value):
         if isinstance(value, np.ndarray):
             if self._buffer.shape == value.shape:
-                #del self._buffer
+                # del self._buffer
                 self._buffer = value
 
     def clear_buffer(self):
-        #del self._buffer
+        # del self._buffer
         self._buffer = np.zeros_like(self._buffer)
 
     @abc.abstractmethod
@@ -66,18 +66,18 @@ class AbstractDisplay(abc.ABC):
             rgb_values = np.array(rgb_values, dtype=np.uint8)
             rgb_values.resize((self.num_pixels * 3,))
             rgb_values = rgb_values.reshape(self.height, self.width, 3)
-        except:
+        except Exception:
             return
-        #del self._buffer
+        # del self._buffer
         self._buffer = rgb_values
 
     def create_test_pattern(self):
         # written for 16x16 displays
         self.clear_buffer()
         values = np.arange(0, 256, int(256/(self.width-1)), dtype=np.uint8)
-        #self._buffer[0:self.width/4*1, :, 0:3] = \
-        #    self._buffer[0:4, :, 0:3] + \
-        #    np.resize(values, (3, self.width)).transpose()
+        # self._buffer[0:self.width/4*1, :, 0:3] = \
+        #     self._buffer[0:4, :, 0:3] + \
+        #     np.resize(values, (3, self.width)).transpose()
         self._buffer[0:self.width/4*1, :, 0:3] += \
             np.resize(values, (3, self.width)).transpose()
         self._buffer[self.width/4*1:self.width/4*2, :, 0] += values

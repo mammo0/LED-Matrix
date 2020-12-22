@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-from PIL import Image
 import time
-import apa102_matrix
+
+from PIL import Image
+
+from display.apa102 import Apa102
+
 
 class PictureViewer:
     def __init__(self):
-        self.matrix = apa102_matrix.Apa102Matrix()
+        self.matrix = Apa102()
 
     def convert_rgba_to_rgb(self, image, color=(0, 0, 0)):
         background = Image.new('RGB', image.size, color)
@@ -15,10 +18,10 @@ class PictureViewer:
 
     def convert_any_to_rgb(self, image):
         bands = image.getbands()
-        if bands == ('R','G','B','A'):
+        if bands == ('R', 'G', 'B', 'A'):
             image = self.convert_rgba_to_rgb(image)
-        elif bands != ('R','G','B'):
-            image = im.convert('RGB')
+        elif bands != ('R', 'G', 'B'):
+            image = image.convert('RGB')
         return image
 
     def resize_image(self, image, size):
@@ -54,7 +57,7 @@ class PictureViewer:
             print("filename has no duration in info.")
         except (TypeError, ValueError):
             print("cannot convert info[duration]: {} to int.".format(im.info[duration]))
-        except:
+        except Exception:
             print("Unkown error")
             return
 
@@ -77,7 +80,7 @@ class PictureViewer:
             images_rgb_data.append(frame_data)
             if len(images_rgb_data) > FRAME_LIMIT:
                 break
-        for i in range(repetitions):
+        for _i in range(repetitions):
             for frame_data in images_rgb_data:
                 self.matrix.set_rgb_buffer_with_flat_values(frame_data)
                 self.matrix.show(gamma=True)
@@ -91,18 +94,19 @@ class PictureViewer:
             return
         im = self.convert_any_to_rgb(im)
         images_rgb_data = []
-        for i in range(count):
+        for _i in range(count):
             sprite = im.crop((x, y, x+dx, y+dy))
             sprite.load()
             sprite = self.resize_image(sprite, (self.matrix.num_cols, self.matrix.num_rows))
             frame_data = sprite.getdata()
             images_rgb_data.append(frame_data)
             x += dx
-        for i in range(repetitions):
+        for _i in range(repetitions):
             for frame_data in images_rgb_data:
                 self.matrix.set_rgb_buffer_with_flat_values(frame_data)
                 self.matrix.show(gamma=True)
                 time.sleep(duration/1000)
+
 
 if __name__ == "__main__":
     pv = PictureViewer()
@@ -114,5 +118,3 @@ if __name__ == "__main__":
     pv.show_sprite_sheet("resources/mario_sprite_sheet.png", 96+64, 32, 16, 16, 1, 800, 1)
     pv.matrix.clear_rgb_buffer()
     pv.matrix.show()
-
-

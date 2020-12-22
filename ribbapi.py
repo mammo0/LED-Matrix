@@ -1,33 +1,30 @@
 ﻿#!/usr/bin/env python3
 
-from animation.gameframe import GameframeAnimation
-from animation.blm import BlmAnimation
-from animation.text import TextAnimation
-from animation.clock import ClockAnimation
-from animation.moodlight import MoodlightAnimation
-from server.ribbapi_http import RibbaPiHttpServer
-from server.tpm2_net import Tpm2NetServer
-from server.rest_server import RibbaPiRestServer
-
-from pathlib import Path
 import os
+from pathlib import Path
 import queue
 import random
-import time
 import threading
+import time
 
-#TODO/Ideas
-## add timer that displays a textmessage from predined list of messages
+from animation.blm import BlmAnimation
+from animation.clock import ClockAnimation
+from animation.gameframe import GameframeAnimation
+from animation.moodlight import MoodlightAnimation
+from animation.text import TextAnimation
+from server.rest_server import RibbaPiRestServer
+from server.ribbapi_http import RibbaPiHttpServer
+from server.tpm2_net import Tpm2NetServer
+
+
+# TODO:
+# add timer that displays a textmessage from predefined list of messages
 # restructure other animations
-
 # make mood light animation
-
 # add config file and argparsing of it
-
-
 DISPLAY_WIDTH = 20
 DISPLAY_HEIGTH = 10
-#HARDWARE = "APA102"
+# HARDWARE = "APA102"
 HARDWARE = "COMPUTER"
 
 
@@ -79,11 +76,11 @@ class RibbaPi():
         self.animations = self.animation_generator()
 
         # start http server
-        #self.http_server = RibbaPiHttpServer(self)
-        #self.http_server_thread = \
-        #    threading.Thread(target=self.http_server.serve_forever,
-        #                     daemon=True)
-        #self.http_server_thread.start()
+        # self.http_server = RibbaPiHttpServer(self)
+        # self.http_server_thread = \
+        #     threading.Thread(target=self.http_server.serve_forever,
+        #                      daemon=True)
+        # self.http_server_thread.start()
 
         # start rest server
         self.rest_server = RibbaPiRestServer(self)
@@ -96,7 +93,7 @@ class RibbaPi():
                              daemon=True)
         self.tpm2_net_server_thread.start()
 
-        #self.text_queue.put("RibbaPi 👍")
+        # self.text_queue.put("RibbaPi 👍")
 
     # disable all the animations
     def disable_animations(self):
@@ -105,7 +102,6 @@ class RibbaPi():
         self.clock_activated = False
         self.moodlight_activated = False
         self.play_random = False
-
 
     # New frame handling
     def process_frame_queue(self):
@@ -118,7 +114,7 @@ class RibbaPi():
 
     # Text handling
     def process_text_queue(self):
-        #TODO move those two if checks down inside bigger if startement
+        # TODO: move those two if checks down inside bigger if statement
         # check if external data (e.g. tpm2_net) is received
         if self.receiving_data.is_set():
             return
@@ -252,8 +248,8 @@ class RibbaPi():
             self.clock_last_shown = time.time()
         elif self.moodlight_activated:
             next_animation = MoodlightAnimation(DISPLAY_WIDTH,
-                                               DISPLAY_HEIGTH,
-                                               self.frame_queue, False, self.moodlight_mode)
+                                                DISPLAY_HEIGTH,
+                                                self.frame_queue, False, self.moodlight_mode)
         else:
             next_animation = next(self.animations)
         return next_animation
@@ -300,9 +296,8 @@ class RibbaPi():
                 if self.current_animation.started + duration < time.time():
                     self.stop_current_animation()
 
-
     def mainloop(self):
-        # TODO start auto renewing timer for clock and predined texts
+        # TODO: start auto renewing timer for clock and predefined texts
 
         try:
             while True:
