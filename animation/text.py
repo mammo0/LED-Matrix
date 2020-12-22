@@ -23,6 +23,7 @@ import freetype
 import numpy as np
 from PIL import Image
 import time
+import sys
 
 from animation.abstract_animation import AbstractAnimation
 
@@ -30,9 +31,9 @@ from animation.abstract_animation import AbstractAnimation
 class TextAnimation(AbstractAnimation):
     def __init__(self,  width, height, frame_queue, repeat, text,
                  steps_per_second=15, pixels_per_step=1, text_size=13,
-                 emoji_size=20,
-                 text_font="resources/fonts/SFCompactDisplay-Regular.otf",
-                 emoji_font="resources/fonts/Apple Color Emoji.ttf"):
+                 emoji_size=109,
+                 text_font="resources/fonts/SF-Compact-Display-Regular.otf",
+                 emoji_font="resources/fonts/AppleColorEmoji.ttf"):
         super().__init__(width, height, frame_queue, repeat)
 
         self.name = "text"
@@ -47,7 +48,7 @@ class TextAnimation(AbstractAnimation):
 
         self.text_face.set_char_size(self.text_size * 64)
         self.emoji_face.set_char_size(self.emoji_size * 64)
-        np.set_printoptions(threshold=np.nan, linewidth=300)
+        np.set_printoptions(threshold=sys.maxsize, linewidth=300)
 
     def __del__(self):
         del self.text_face

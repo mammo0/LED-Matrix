@@ -93,7 +93,7 @@ class ClockAnimation(AbstractAnimation):
                 image = self.background.copy()
                 self.add_hour_minute_hands(image,
                                            local_time.tm_hour,
-                                           local_time.tm_min * 60)
+                                           local_time.tm_min)
                 self.frame_queue.put(np.array(image).copy())
                 time.sleep(1)
             else:
