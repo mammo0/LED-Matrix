@@ -13,7 +13,7 @@ class TextAnimation(AbstractAnimation):
                  steps_per_second=15, pixels_per_step=1, text_size=13,
                  emoji_size=109,
                  text_font="resources/fonts/SF-Compact-Display-Regular.otf",
-                 emoji_font="resources/fonts/AppleColorEmoji.ttf"):
+                 emoji_font="resources/fonts/joypixels-android.ttf"):
         super().__init__(width, height, frame_queue, repeat)
 
         self.name = "text"
@@ -138,7 +138,7 @@ class TextAnimation(AbstractAnimation):
         return np.array(data).reshape(bitmap.rows, bitmap.width)
 
     def get_color_char(self, char):
-        self.emoji_face.load_char(char, 0x100000)  # freetype.FT_LOAD_COLOR)
+        self.emoji_face.load_char(char, freetype.FT_LOAD_COLOR)
         bitmap = self.emoji_face.glyph.bitmap
         bitmap = np.array(bitmap.buffer, dtype=np.uint8).reshape((bitmap.rows,
                                                                   bitmap.width,
