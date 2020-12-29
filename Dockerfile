@@ -57,5 +57,5 @@ RUN PIPENV_VENV_IN_PROJECT=1 PIPENV_SITE_PACKAGES=1 pipenv lock -r > "$VENV_REQ_
 
 
 VOLUME ["$OUT_DIR"]
-COPY docker/create_package.sh /bin/
-ENTRYPOINT ["create_package.sh"]
+COPY scripts/create_virtualenv_archive.sh /bin/
+ENTRYPOINT ["create_virtualenv_archive.sh"]
