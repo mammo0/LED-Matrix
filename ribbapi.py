@@ -8,12 +8,15 @@ import random
 import threading
 import time
 
+from simple_plugin_loader import Loader
+
 from animation.blm import BlmAnimation
 from animation.clock import ClockAnimation
 from animation.gameframe import GameframeAnimation
 from animation.moodlight import MoodlightAnimation
 from animation.text import TextAnimation
 from common.config import Configuration
+from display.abstract_display import AbstractDisplay
 from server.rest_server import RibbaPiRestServer
 from server.ribbapi_http import RibbaPiHttpServer
 from server.tpm2_net import Tpm2NetServer
@@ -23,7 +26,6 @@ from server.tpm2_net import Tpm2NetServer
 # add timer that displays a textmessage from predefined list of messages
 # restructure other animations
 # make mood light animation
-
 BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 CONFIG_FILE = BASE_DIR / "config.ini"
 
@@ -46,15 +48,16 @@ class RibbaPi():
         except (NoSectionError, NoOptionError):
             raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
 
-        if hardware == 'APA102':
-            from display.apa102 import Apa102
-            self.display = Apa102(self.display_width, self.display_height, config=self.config.get_section(hardware))
-        elif hardware == 'COMPUTER':
-            from display.computer import Computer
-            self.display = Computer(self.display_width, self.display_height, config=self.config.get_section(hardware))
-        else:
-            raise RuntimeError(
-                "Display hardware '{}' not known.".format(hardware))
+        # load display plugins
+        display_loader = Loader()
+        display_loader.load_plugins((BASE_DIR / "display").resolve(), plugin_base_class=AbstractDisplay)
+
+        try:
+            self.display = display_loader.plugins[hardware.casefold()](self.display_width,
+                                                                       self.display_height,
+                                                                       config=self.config.get_section(hardware))
+        except KeyError:
+            raise RuntimeError("Display hardware '{}' not known.".format(hardware))
 
         self.current_animation = None
 
