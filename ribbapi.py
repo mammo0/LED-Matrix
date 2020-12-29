@@ -144,8 +144,8 @@ class RibbaPi():
                 return
             # get text and create text animation
             text = self.text_queue.get()
-            self.current_animation = TextAnimation(DISPLAY_WIDTH,
-                                                   DISPLAY_HEIGTH,
+            self.current_animation = TextAnimation(self.display_width,
+                                                   self.display_height,
                                                    self.frame_queue,
                                                    False,
                                                    text)
@@ -194,8 +194,8 @@ class RibbaPi():
                 else:
                     i += 1
                     i %= len(self.gameframe_selected)
-                yield GameframeAnimation(DISPLAY_WIDTH,
-                                         DISPLAY_HEIGTH,
+                yield GameframeAnimation(self.display_width,
+                                         self.display_height,
                                          self.frame_queue,
                                          self.gameframe_repeat,
                                          self.gameframe_selected[i])
@@ -211,8 +211,8 @@ class RibbaPi():
                 else:
                     i += 1
                     i %= len(self.blm_selected)
-                yield BlmAnimation(DISPLAY_WIDTH,
-                                   DISPLAY_HEIGTH,
+                yield BlmAnimation(self.display_width,
+                                   self.display_height,
                                    self.frame_queue,
                                    self.blm_repeat,
                                    self.blm_selected[i])
@@ -223,8 +223,8 @@ class RibbaPi():
         animation = None
         if str(path).startswith("resources/animations/gameframe"):
             if Path(path).is_dir():
-                animation = GameframeAnimation(DISPLAY_WIDTH,
-                                               DISPLAY_HEIGTH,
+                animation = GameframeAnimation(self.display_width,
+                                               self.display_height,
                                                self.frame_queue,
                                                self.gameframe_repeat,
                                                path)
@@ -232,8 +232,8 @@ class RibbaPi():
         elif str(path).startswith("resources/animations/162-blms") and \
                 str(path).endswith("blm"):
             if Path(path).is_file():
-                animation = BlmAnimation(DISPLAY_WIDTH,
-                                         DISPLAY_HEIGTH,
+                animation = BlmAnimation(self.display_width,
+                                         self.display_height,
                                          self.frame_queue,
                                          self.blm_repeat,
                                          path)
@@ -256,13 +256,13 @@ class RibbaPi():
         elif self.clock_activated and \
                 (self.clock_last_shown + self.clock_show_every < time.time()):
             # it is time to show time again:
-            next_animation = ClockAnimation(DISPLAY_WIDTH,
-                                            DISPLAY_HEIGTH,
+            next_animation = ClockAnimation(self.display_width,
+                                            self.display_height,
                                             self.frame_queue)
             self.clock_last_shown = time.time()
         elif self.moodlight_activated:
-            next_animation = MoodlightAnimation(DISPLAY_WIDTH,
-                                                DISPLAY_HEIGTH,
+            next_animation = MoodlightAnimation(self.display_width,
+                                                self.display_height,
                                                 self.frame_queue, False, self.moodlight_mode)
         else:
             next_animation = next(self.animations)
