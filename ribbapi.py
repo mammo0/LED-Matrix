@@ -1,5 +1,6 @@
 ﻿#!/usr/bin/env python3
 
+from configparser import NoSectionError, NoOptionError
 import os
 from pathlib import Path
 import queue
@@ -12,6 +13,7 @@ from animation.clock import ClockAnimation
 from animation.gameframe import GameframeAnimation
 from animation.moodlight import MoodlightAnimation
 from animation.text import TextAnimation
+from common.config import Configuration
 from server.rest_server import RibbaPiRestServer
 from server.ribbapi_http import RibbaPiHttpServer
 from server.tpm2_net import Tpm2NetServer
@@ -21,26 +23,38 @@ from server.tpm2_net import Tpm2NetServer
 # add timer that displays a textmessage from predefined list of messages
 # restructure other animations
 # make mood light animation
-# add config file and argparsing of it
-DISPLAY_WIDTH = 20
-DISPLAY_HEIGTH = 10
-# HARDWARE = "APA102"
-HARDWARE = "COMPUTER"
+
+BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
+CONFIG_FILE = BASE_DIR / "config.ini"
 
 
 class RibbaPi():
     def __init__(self):
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        # TODO: remove this later; use absolute paths for loading resources below
+        os.chdir(BASE_DIR)
 
-        if HARDWARE == 'APA102':
+        # load config
+        self.config = Configuration()
+        with open(CONFIG_FILE, "r") as f:
+            self.config.read_file(f)
+
+        # get [MAIN] options
+        try:
+            hardware = self.config.get("MAIN", option="Hardware")
+            self.display_width = self.config.getint("MAIN", option="DisplayWidth")
+            self.display_height = self.config.getint("MAIN", option="DisplayHeight")
+        except (NoSectionError, NoOptionError):
+            raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
+
+        if hardware == 'APA102':
             from display.apa102 import Apa102
-            self.display = Apa102(DISPLAY_WIDTH, DISPLAY_HEIGTH)
-        elif HARDWARE == 'COMPUTER':
+            self.display = Apa102(self.display_width, self.display_height, config=self.config.get_section(hardware))
+        elif hardware == 'COMPUTER':
             from display.computer import Computer
-            self.display = Computer(DISPLAY_WIDTH, DISPLAY_HEIGTH)
+            self.display = Computer(self.display_width, self.display_height, config=self.config.get_section(hardware))
         else:
             raise RuntimeError(
-                "Display hardware \"{}\" not known.".format(HARDWARE))
+                "Display hardware '{}' not known.".format(hardware))
 
         self.current_animation = None
 

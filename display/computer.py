@@ -9,15 +9,14 @@ import numpy as np
 
 
 class Computer(AbstractDisplay):
-    def __init__(self, width=16, height=16, margin=5, size=30):
-        super().__init__(width, height)
+    def __init__(self, width, height, config):
+        super().__init__(width, height, config)
 
-        self.brightness = 1.0
-        self.margin = margin
-        self.size = size
+        self.margin = self.config.getint(None, option="Margin")
+        self.size = self.config.getint(None, option="LEDSize")
 
-        self.window_size = (width * size + (width + 1) * margin,
-                            height * size + (height + 1) * margin)
+        self.window_size = (width * self.size + (width + 1) * self.margin,
+                            height * self.size + (height + 1) * self.margin)
 
         pygame.init()
         self.surface = pygame.display.set_mode(self.window_size)

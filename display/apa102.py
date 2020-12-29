@@ -45,10 +45,8 @@ DEFAULT_GAMMA = 2.22
 
 
 class Apa102(AbstractDisplay):
-    def __init__(self, width=16, height=16, color_type=ColorType.bgr,
-                 wire_mode=WireMode.zig_zag, origin=Origin.bottom_left,
-                 orientation=Orientation.horizontally):
-        super().__init__(width, height)
+    def __init__(self, width, height, config):
+        super().__init__(width, height, config)
 
         # setup initial brightness level
         self.brightness = DEFAULT_BRIGHTNESS / MAX_BRIGHTNESS
@@ -59,10 +57,10 @@ class Apa102(AbstractDisplay):
         self.spi.max_speed_hz = SPI_MAX_SPEED_HZ
 
         # setup hardware and wiring related parameters
-        self.color_type = color_type
-        self.wire_mode = wire_mode
-        self.origin = origin
-        self.orientation = orientation
+        self.color_type = ColorType(self.config.getint(None, option="ColorType"))
+        self.wire_mode = WireMode(self.config.getint(None, option="WireMode"))
+        self.origin = Origin(self.config.getint(None, option="Origin"))
+        self.orientation = Orientation(self.config.getint(None, option="Orientation"))
 
         # setup apa102 protocol stuff
         self.__start_frame = [0] * 4
