@@ -33,3 +33,12 @@ develop: $(CONFIG_FILE)
 
 production: $(CONFIG_FILE)
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync
+
+run:
+ifeq ("$(wildcard $(BASE_DIR)/.venv)","")
+	$(eval VENV_DIR:=$(shell pipenv --venv))
+else
+	$(eval VENV_DIR:=$(BASE_DIR)/.venv)
+endif
+	$(eval PYTHON=$(VENV_DIR)/bin/python)
+	$(PYTHON) ribbapi.py
