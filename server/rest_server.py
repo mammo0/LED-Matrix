@@ -6,7 +6,7 @@ import shutil
 import threading
 import zipfile
 
-from bottle import run, get, post, request, response, static_file, install, route,\
+from bottle import run, get, post, request, response, static_file, install, route, \
     WSGIRefServer
 import imageio
 

@@ -92,25 +92,44 @@ class Main():
         self.play_random = False
         self.animations = self.animation_generator()
 
-        # start http server
-        # self.http_server = HttpServer(self)
-        # self.http_server_thread = \
-        #     threading.Thread(target=self.http_server.serve_forever,
-        #                      daemon=True)
-        # self.http_server_thread.start()
-
-        # start rest server
-        self.rest_server = RestServer(self)
-        self.rest_server.start()
-
-        # start tpm2_net server
-        self.tpm2_net_server = Tpm2NetServer(self)
-        self.tpm2_net_server_thread = \
-            threading.Thread(target=self.tpm2_net_server.serve_forever,
-                             daemon=True)
-        self.tpm2_net_server_thread.start()
+        # server interfaces
+        self.http_server = None
+        self.rest_server = None
+        self.tpm2_net_server = None
 
         # self.text_queue.put("RibbaPi 👍")
+
+    def __start_servers(self):
+        # HTTP server
+        if self.config.getboolean("MAIN", "HttpServer"):
+            self.http_server = HttpServer(self)
+            threading.Thread(target=self.http_server.serve_forever, daemon=True).start()
+
+        # REST server
+        if self.config.getboolean("MAIN", "RestServer"):
+            self.rest_server = RestServer(self)
+            self.rest_server.start()
+
+        # TPM2Net server
+        if self.config.getboolean("MAIN", "TPM2NetServer"):
+            self.tpm2_net_server = Tpm2NetServer(self)
+            threading.Thread(target=self.tpm2_net_server.serve_forever, daemon=True).start()
+
+    def __stop_servers(self):
+        # stop only the servers that are started
+        # HTTP server
+        if self.http_server:
+            self.http_server.shutdown()
+            self.http_server.server_close()
+
+        # REST server
+        if self.rest_server:
+            self.rest_server.stop()
+
+        # TPM2Net server
+        if self.tpm2_net_server:
+            self.tpm2_net_server.shutdown()
+            self.tpm2_net_server.server_close()
 
     # disable all the animations
     def disable_animations(self):
@@ -316,6 +335,9 @@ class Main():
     def mainloop(self):
         # TODO: start auto renewing timer for clock and predefined texts
 
+        # start the server interfaces
+        self.__start_servers()
+
         try:
             while True:
                 self.process_frame_queue()
@@ -342,8 +364,8 @@ class Main():
         self.display.clear_buffer()
         self.display.show()
 
-        self.http_server.shutdown()
-        self.http_server.server_close()
+        # stop the server interfaces
+        self.__stop_servers()
 
 
 if __name__ == "__main__":

@@ -14,6 +14,15 @@ Hardware = APA102
 DisplayWidth = 15
 DisplayHeight = 12
 
+# (De-)Activate the server interfaces that control the matrix.
+# Available servers:
+#     - HttpServer [Default: true]: TCP 8080
+#     - RestServer [Default: true]: TCP 8081
+#     - TPM2NetServer [Default: false]: UDP 65506
+HttpServer = true
+RestServer = true
+TPM2NetServer = false
+
 
 [APA102]
 # This section contains variables that describe how the LED matrix is built up.
