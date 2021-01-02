@@ -6,7 +6,8 @@ import shutil
 import threading
 import zipfile
 
-from bottle import run, get, post, request, response, static_file, install, route
+from bottle import run, get, post, request, response, static_file, install, route,\
+    WSGIRefServer
 import imageio
 
 
@@ -33,7 +34,16 @@ class RestServer:
 
         # run server
         install(EnableCors())
-        threading.Thread(target=run, kwargs=dict(host='127.0.0.1', port=8081)).start()
+        threading.Thread(target=run, kwargs=dict(host='127.0.0.1',
+                                                 port=8081,
+                                                 server=CustomWSGIRefServer,
+                                                 quiet=True)).start()
+
+    def stop(self):
+        # stop all instances
+        while len(CustomWSGIRefServer.instances) > 0:
+            CustomWSGIRefServer.instances[0].stop()
+            CustomWSGIRefServer.instances.pop(0)
 
     # POST /display/brightness [float: value]
     def set_brightness(self):
@@ -146,3 +156,40 @@ class EnableCors(object):
                 return fn(*args, **kwargs)
 
         return _enable_cors
+
+
+class CustomWSGIRefServer(WSGIRefServer):
+    instances = []
+
+    def __init__(self, host='127.0.0.1', port=8080, **options):
+        WSGIRefServer.__init__(self, host=host, port=port, **options)
+        self.srv = None
+        CustomWSGIRefServer.instances.append(self)
+
+    def run(self, app):  # pragma: no cover
+        from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
+        from wsgiref.simple_server import make_server
+        import socket
+
+        class FixedHandler(WSGIRequestHandler):
+            def address_string(self):  # Prevent reverse DNS lookups please.
+                return self.client_address[0]
+
+            def log_request(self, *args, **kw):
+                if not self.quiet:
+                    return WSGIRequestHandler.log_request(self, *args, **kw)
+
+        handler_cls = self.options.get('handler_class', FixedHandler)
+        server_cls = self.options.get('server_class', WSGIServer)
+
+        if ':' in self.host:  # Fix wsgiref for IPv6 addresses.
+            if getattr(server_cls, 'address_family') == socket.AF_INET:
+                class server_cls(server_cls):
+                    address_family = socket.AF_INET6
+
+        self.srv = make_server(self.host, self.port, app, server_cls, handler_cls)
+        self.srv.serve_forever()
+
+    def stop(self):
+        self.srv.shutdown()
+        self.srv.server_close()
