@@ -8,11 +8,11 @@ import numpy as np
 
 
 class Tpm2NetServer(socketserver.UDPServer):
-    def __init__(self, ribbapi):
+    def __init__(self, main_app):
         super().__init__(('', 65506), Tpm2NetHandler, bind_and_activate=True)
-        self.ribbapi = ribbapi
-        self.tmp_buffer = np.zeros((self.ribbapi.display.height,
-                                    self.ribbapi.display.width,
+        self.main_app = main_app
+        self.tmp_buffer = np.zeros((self.main_app.display.height,
+                                    self.main_app.display.width,
                                     3), dtype=np.uint8)
         self.tmp_buffer_index = 0
         self.timeout = 3  # seconds
@@ -35,7 +35,7 @@ class Tpm2NetServer(socketserver.UDPServer):
     def check_for_timeout(self):
         if self.last_time_received:
             if self.last_time_received + self.timeout < time.time():
-                self.ribbapi.receiving_data.clear()
+                self.main_app.receiving_data.clear()
                 self.last_time_received = None
                 self.timeout_timer = None
                 self.misbehaving = False
@@ -63,8 +63,8 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
         number_of_packets = data[5]
 
         if packet_type == 0xDA:  # data frame
-            # tell ribbapi that tpm2_net data is received
-            self.server.ribbapi.receiving_data.set()
+            # tell main_app that tpm2_net data is received
+            self.server.main_app.receiving_data.set()
             self.server.update_time()
 
             if packet_number == 0:
@@ -79,8 +79,8 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
             np.put(self.server.tmp_buffer, arange, list(data[6:-1]))
             self.server.tmp_buffer_index = self.server.tmp_buffer_index + frame_size
             if packet_number == (number_of_packets if not self.server.misbehaving else number_of_packets - 1):
-                if not self.server.ribbapi.current_animation:
-                    self.server.ribbapi.frame_queue.put(self.server.tmp_buffer.copy())
+                if not self.server.main_app.current_animation:
+                    self.server.main_app.frame_queue.put(self.server.tmp_buffer.copy())
         elif data[1] == 0xC0:  # command
             # NOT IMPLEMENTED
             return

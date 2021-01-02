@@ -41,4 +41,4 @@ else
 	$(eval VENV_DIR:=$(BASE_DIR)/.venv)
 endif
 	$(eval PYTHON=$(VENV_DIR)/bin/python)
-	$(PYTHON) ribbapi.py
+	$(PYTHON) main.py

@@ -17,8 +17,8 @@ from animation.moodlight import MoodlightAnimation
 from animation.text import TextAnimation
 from common.config import Configuration
 from display.abstract_display import AbstractDisplay
-from server.rest_server import RibbaPiRestServer
-from server.ribbapi_http import RibbaPiHttpServer
+from server.rest_server import RestServer
+from server.http_server import HttpServer
 from server.tpm2_net import Tpm2NetServer
 
 
@@ -30,7 +30,7 @@ BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 CONFIG_FILE = BASE_DIR / "config.ini"
 
 
-class RibbaPi():
+class Main():
     def __init__(self):
         # TODO: remove this later; use absolute paths for loading resources below
         os.chdir(BASE_DIR)
@@ -93,14 +93,14 @@ class RibbaPi():
         self.animations = self.animation_generator()
 
         # start http server
-        # self.http_server = RibbaPiHttpServer(self)
+        # self.http_server = HttpServer(self)
         # self.http_server_thread = \
         #     threading.Thread(target=self.http_server.serve_forever,
         #                      daemon=True)
         # self.http_server_thread.start()
 
         # start rest server
-        self.rest_server = RibbaPiRestServer(self)
+        self.rest_server = RestServer(self)
         self.rest_server.start()
 
         # start tpm2_net server
@@ -347,7 +347,7 @@ class RibbaPi():
 
 
 if __name__ == "__main__":
-    ribbapi = RibbaPi()
-    ribbapi.display.show()
+    app = Main()
+    app.display.show()
 
-    ribbapi.mainloop()
+    app.mainloop()

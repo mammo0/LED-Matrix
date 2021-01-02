@@ -10,9 +10,9 @@ from bottle import run, get, post, request, response, static_file, install, rout
 import imageio
 
 
-class RibbaPiRestServer:
-    def __init__(self, ribbapi):
-        self.ribbapi = ribbapi
+class RestServer:
+    def __init__(self, main_app):
+        self.main_app = main_app
 
     def start(self):
         # setup routing
@@ -42,30 +42,30 @@ class RibbaPiRestServer:
             value = 1.0
         elif value < 0.0:
             value = 0.0
-        self.ribbapi.display.set_brightness(value)
+        self.main_app.display.set_brightness(value)
 
     # POST /mode [int: mode]
     def set_mode(self):
         value = request.json
-        self.ribbapi.disable_animations()
+        self.main_app.disable_animations()
         if value == 1:
-            self.ribbapi.moodlight_activated = True
+            self.main_app.moodlight_activated = True
         elif value == 2:
-            self.ribbapi.gameframe_activated = True
+            self.main_app.gameframe_activated = True
         elif value == 3:
-            self.ribbapi.blm_activated = True
+            self.main_app.blm_activated = True
         elif value == 4:
-            self.ribbapi.clock_activated = True
-            self.ribbapi.clock_last_shown = 0
+            self.main_app.clock_activated = True
+            self.main_app.clock_last_shown = 0
         elif value == 5:
-            self.ribbapi.play_random = True
+            self.main_app.play_random = True
 
-        self.ribbapi.stop_current_animation()
+        self.main_app.stop_current_animation()
 
     # POST /moodlight/mode [int: mode]
     def set_moodlight_mode(self):
         value = request.json
-        self.ribbapi.set_moodlight_mode(value)
+        self.main_app.set_moodlight_mode(value)
 
     # POST /gameframe/upload/<name>
     def upload_gameframe(self, name):
@@ -75,25 +75,25 @@ class RibbaPiRestServer:
 
     # POST /gameframe/next
     def next_gameframe(self):
-        self.ribbapi.stop_current_animation()
+        self.main_app.stop_current_animation()
 
     # POST /gameframe/current
     def set_next_gameframe(self):
         path = "resources/animations/gameframe_upload/" + request.json
-        self.ribbapi.set_next_animation(path)
-        self.ribbapi.stop_current_animation()
+        self.main_app.set_next_animation(path)
+        self.main_app.stop_current_animation()
 
     # POST /gameframe sets the playlist
     def select_gameframes(self):
-        self.ribbapi.refresh_animations()
+        self.main_app.refresh_animations()
         gameframes = request.json
-        self.ribbapi.gameframe_selected = ["resources/animations/gameframe_upload/" + frame for frame in gameframes]
+        self.main_app.gameframe_selected = ["resources/animations/gameframe_upload/" + frame for frame in gameframes]
 
     # DELETE /gameframe deletes a gameframe
     def delete_gameframe(self):
         name = request.json
         shutil.rmtree('resources/animations/gameframe_upload/' + name)
-        self.ribbapi.refresh_animations()
+        self.main_app.refresh_animations()
 
     # GET /gameframe
     def get_gameframes(self):
@@ -112,7 +112,7 @@ class RibbaPiRestServer:
     # POST /text
     def set_text(self):
         text = request.json[:100]
-        self.ribbapi.text_queue.put(text)
+        self.main_app.text_queue.put(text)
 
     def get_folder_names(self, directory):
         return [name for name in os.listdir(directory)]

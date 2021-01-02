@@ -5,13 +5,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib
 
 
-class RibbaPiHttpServer(HTTPServer):
-    def __init__(self, ribbapi):
-        super().__init__(('', 8080), RibbaPiHttpHandler)
-        self.ribbapi = ribbapi
+class HttpServer(HTTPServer):
+    def __init__(self, main_app):
+        super().__init__(('', 8080), HttpHandler)
+        self.main_app = main_app
 
 
-class RibbaPiHttpHandler(BaseHTTPRequestHandler):
+class HttpHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
             self.send_response(200)
@@ -37,28 +37,28 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
             <legend>Configuration of RibbaPi</legend>""".encode("utf-8"))
 
             self.wfile.write(('<input name="brightness" type="range" min="0.0" max="1.0" step="0.02" value="{}"/>'
-                              'Brightness level<br>').format(self.server.ribbapi.display.brightness).encode("utf-8"))
+                              'Brightness level<br>').format(self.server.main_app.display.brightness).encode("utf-8"))
 
-            if self.server.ribbapi.gameframe_activated:
+            if self.server.main_app.gameframe_activated:
                 checkbox = ('<input type="checkbox" name="gameframe_activated" value="1" checked>'
                             'Gameframe Animations<br>')
             else:
                 checkbox = '<input type="checkbox" name="gameframe_activated" value="0">Gameframe Animations<br>'
             self.wfile.write(checkbox.encode("utf-8"))
 
-            if self.server.ribbapi.blm_activated:
+            if self.server.main_app.blm_activated:
                 checkbox = '<input type="checkbox" name="blm_activated" value="1" checked>Blinkenlights Animations<br>'
             else:
                 checkbox = '<input type="checkbox" name="blm_activated" value="0">Blinkenlights Animations<br>'
             self.wfile.write(checkbox.encode("utf-8"))
 
-            if self.server.ribbapi.clock_activated:
+            if self.server.main_app.clock_activated:
                 checkbox = '<input type="checkbox" name="clock_activated" value="1" checked>Clock Animation<br>'
             else:
                 checkbox = '<input type="checkbox" name="clock_activated" value="0">Clock Animations<br>'
             self.wfile.write(checkbox.encode("utf-8"))
 
-            if self.server.ribbapi.moodlight_activated:
+            if self.server.main_app.moodlight_activated:
                 checkbox = '<input type="checkbox" name="moodlight_activated" value="1" checked>Moodlight<br>'
             else:
                 checkbox = '<input type="checkbox" name="moodlight_activated" value="0">Moodlight<br>'
@@ -78,12 +78,12 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
             <form action="api/v1/setgameframe" method="post">
             <fieldset>
             <legend>Choose gameframe animations to display</legend>""".encode("utf-8"))
-            for animation in self.server.ribbapi.gameframe_animations:
+            for animation in self.server.main_app.gameframe_animations:
                 self.wfile.write("""<input type="checkbox"
                                             name="animations"
                                             value="{}" {}> <a href="{}">{}</a><br>""".format(
                                             animation,
-                                            "checked" if animation in self.server.ribbapi.gameframe_selected else "",
+                                            "checked" if animation in self.server.main_app.gameframe_selected else "",
                                             "playnext/" + animation,
                                             animation).encode("utf-8"))
             self.wfile.write("""<input type="submit" value="Submit">
@@ -92,15 +92,15 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
             self.wfile.write("</body></html>".encode("utf-8"))
         print(self.path)
         if self.path.startswith("/playnext"):
-            self.server.ribbapi.set_next_animation(self.path[len("/playnext/"):])
-            self.server.ribbapi.stop_current_animation()
+            self.server.main_app.set_next_animation(self.path[len("/playnext/"):])
+            self.server.main_app.stop_current_animation()
             self.send_response(303)
             self.send_header('Location', '/')
             self.end_headers()
 
     def do_POST(self):
         if self.path.startswith("/api/v1/next_animation"):
-            self.server.ribbapi.stop_current_animation()
+            self.server.main_app.stop_current_animation()
             self.send_response(303)
             self.send_header('Location', '/')
             self.end_headers()
@@ -112,7 +112,7 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
                 post_data_dict = urllib.parse.parse_qs(post_data)
                 post_data_dict = html.unescape(post_data_dict)
                 message = post_data_dict["message"][0]
-                self.server.ribbapi.text_queue.put(message)
+                self.server.main_app.text_queue.put(message)
                 self.send_response(303)
                 self.send_header('Location', '/')
                 self.end_headers()
@@ -135,7 +135,7 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
                 if "animations" in post_data_dict:
                     selected_animations = post_data_dict["animations"]
                     selected_animations = html.unescape(selected_animations)
-                    self.server.ribbapi.gameframe_selected = selected_animations
+                    self.server.main_app.gameframe_selected = selected_animations
                     self.send_response(200)
                     self.send_header('Content-type', 'text/html')
                     self.end_headers()
@@ -147,7 +147,7 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
                     </body>
                     </html>""".encode("utf-8"))
                 else:
-                    self.server.ribbapi.gameframe_selected = []
+                    self.server.main_app.gameframe_selected = []
                     self.send_response(200)
                     self.send_header('Content-type', 'text/html')
                     self.end_headers()
@@ -165,11 +165,11 @@ class RibbaPiHttpHandler(BaseHTTPRequestHandler):
                 post_data = str(post_data, 'utf-8')
                 post_data_dict = urllib.parse.parse_qs(post_data)
                 if "brightness" in post_data_dict:
-                    self.server.ribbapi.display.brightness = float(post_data_dict["brightness"][0])
-                self.server.ribbapi.gameframe_activated = True if "gameframe_activated" in post_data_dict else False
-                self.server.ribbapi.blm_activated = True if "blm_activated" in post_data_dict else False
-                self.server.ribbapi.clock_activated = True if "clock_activated" in post_data_dict else False
-                self.server.ribbapi.moodlight_activated = True if "moodlight_activated" in post_data_dict else False
+                    self.server.main_app.display.brightness = float(post_data_dict["brightness"][0])
+                self.server.main_app.gameframe_activated = True if "gameframe_activated" in post_data_dict else False
+                self.server.main_app.blm_activated = True if "blm_activated" in post_data_dict else False
+                self.server.main_app.clock_activated = True if "clock_activated" in post_data_dict else False
+                self.server.main_app.moodlight_activated = True if "moodlight_activated" in post_data_dict else False
 
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
