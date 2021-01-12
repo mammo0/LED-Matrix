@@ -24,7 +24,6 @@ class ClockAnimation(AbstractAnimation):
         self.x = int((self.width - watch.width) / 2)
         self.y = int((self.height - watch.height) / 2)
         self.background.paste(watch, (self.x, self.y), mask=watch.split()[3])
-        # self.dump_animation()
 
     def minute_point(self, middle, minute):
         minute %= 60
@@ -91,20 +90,3 @@ class ClockAnimation(AbstractAnimation):
         return {"width": self.width, "height": self.height,
                 "frame_queue": self.frame_queue, "repeat": self.repeat,
                 "variant": self.variant, "background_color": self.background_color}
-
-    def dump_animation(self, min_step=5):
-        hour = 0
-        for i in range(1, 12*60+1):
-            if i % 60 == 0:
-                hour += 1
-                hour %= 12
-            minute = i % 60
-            if minute % min_step == 0:
-                cp = self.background.copy()
-                draw = ImageDraw.Draw(cp)
-                middle = self.middle_point(minute)
-                draw.line([self.middle_point(minute),
-                           self.minute_point(middle, minute)], fill=(0, 0, 0))
-                draw.line([self.middle_point(minute),
-                           self.hour_point(middle, hour)], fill=(0, 0, 0))
-                cp.save("{}.bmp".format(i))
