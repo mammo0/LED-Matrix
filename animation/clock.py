@@ -29,10 +29,17 @@ class ClockAnimation(AbstractAnimation):
 
         self.background = Image.new("RGB", (width, height), background_color)
 
-        self.analog_middle_x = int(width / 2)
-        self.analog_middle_y = int(height / 2)
-        self.analog_max_hand_length = min([self.analog_middle_x, round(width / 2),
-                                           self.analog_middle_y, round(height / 2)])
+        self.analog_middle_x = self.middle_calculation(width)
+        self.analog_middle_y = self.middle_calculation(height)
+        self.analog_max_hand_length = min([self.analog_middle_x + 1,
+                                           self.analog_middle_y + 1])
+
+    def middle_calculation(self, value):
+        value /= 2
+        if value == int(value):
+            return int(value) - 1
+        else:
+            return math.floor(value)
 
     def analog_minute_point(self, minute):
         minute %= 60
@@ -46,7 +53,7 @@ class ClockAnimation(AbstractAnimation):
     def analog_hour_point(self, hour):
         hour %= 12
         angle = 2*math.pi * hour/12 - math.pi/2
-        length = int(self.analog_max_hand_length / 2)
+        length = math.ceil(self.analog_max_hand_length / 2)
 
         x = int(self.analog_middle_x + length * math.cos(angle))
         y = int(self.analog_middle_y + length * math.sin(angle))
