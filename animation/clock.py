@@ -1,3 +1,4 @@
+from enum import Enum
 import math
 import time
 
@@ -7,9 +8,14 @@ from animation.abstract_animation import AbstractAnimation
 import numpy as np
 
 
+class ClockVariant(Enum):
+    analog = 1
+    digital = 2
+
+
 class ClockAnimation(AbstractAnimation):
     def __init__(self, width, height, frame_queue, repeat=False,
-                 variant="analog",
+                 variant=ClockVariant.analog,
                  background_color=(0, 0, 0), divider_color=(255, 255, 255),
                  hour_color=(255, 0, 0), minute_color=(255, 255, 255)):
         super().__init__(width, height, frame_queue, repeat)
@@ -62,13 +68,13 @@ class ClockAnimation(AbstractAnimation):
 
     def animate(self):
         while self._running:
-            if self.variant == "analog":
+            if self.variant == ClockVariant.analog:
                 local_time = time.localtime()
                 image = self.analog_create_clock_image(local_time.tm_hour,
                                                        local_time.tm_min)
                 self.frame_queue.put(np.array(image).copy())
                 time.sleep(1)
-            else:
+            elif self.variant == ClockVariant.digital:
                 # TODO: add digital clock
                 pass
 
