@@ -11,10 +11,6 @@ ifeq ("$(wildcard $(ALPINE_VENV_ARCHIVE))","")
 	$(error "File $(ALPINE_VENV_ARCHIVE) not found!")
 endif
 
-$(CONFIG_FILE):
-	@# create the config file if necessary
-	$(BASE_DIR)/scripts/create_config.sh $(CONFIG_FILE)
-
 
 build-alpine-venv:
 	docker build --build-arg BUILD_UID=`id -u` \
@@ -26,12 +22,14 @@ install-alpine-venv: $(ALPINE_VENV_ARCHIVE)
 	tar -zxvf $(ALPINE_VENV_ARCHIVE)
 
 # target alias for creating the cofig file
-config: $(CONFIG_FILE);
+config:
+	@# create or update the config file if necessary
+	$(BASE_DIR)/scripts/create_config.py $(CONFIG_FILE)
 
-develop: $(CONFIG_FILE)
+develop: config
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync -d
 
-production: $(CONFIG_FILE)
+production: config
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync
 
 run:
