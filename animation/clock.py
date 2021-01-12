@@ -168,7 +168,7 @@ class ClockAnimation(AbstractAnimation):
                                                         local_time.tm_min,
                                                         local_time.tm_sec)
                 self.frame_queue.put(np.array(image).copy())
-                time.sleep(1/30)
+                time.sleep(1/10)
 
     @property
     def kwargs(self):
