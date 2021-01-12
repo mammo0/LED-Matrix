@@ -12,10 +12,12 @@ LEN_HOUR = 2
 
 class ClockAnimation(AbstractAnimation):
     def __init__(self, width, height, frame_queue, repeat=False,
-                 mode='current', background_color=(50, 70, 230)):
+                 variant="analog",
+                 background_color=(50, 70, 230), devider_color=(255, 255, 255),
+                 hour_color=(255, 255, 255), minute_color=(255, 255, 255)):
         super().__init__(width, height, frame_queue, repeat)
         self.name = "clock"
-        self.mode = mode
+        self.variant = variant
         self.background_color = background_color
         watch = Image.open("resources/clock/watch_16x16_without_arms.png")
         self.background = Image.new("RGB", (width, height), background_color)
@@ -72,7 +74,7 @@ class ClockAnimation(AbstractAnimation):
 
     def animate(self):
         while self._running:
-            if self.mode == 'current':
+            if self.variant == "analog":
                 local_time = time.localtime()
                 image = self.background.copy()
                 self.add_hour_minute_hands(image,
@@ -81,24 +83,14 @@ class ClockAnimation(AbstractAnimation):
                 self.frame_queue.put(np.array(image).copy())
                 time.sleep(1)
             else:
-                hour = 0
-                for i in range(12*60):
-                    if not self._running:
-                        break
-                    if i % 60 == 0:
-                        hour += 1
-                        hour %= 12
-                    minute = i % 60
-                    image = self.background.copy()
-                    self.add_hour_minute_hands(image, hour, minute)
-                    self.frame_queue.put(np.array(image).copy())
-                    time.sleep(0.1)
+                # TODO: add digital clock
+                pass
 
     @property
     def kwargs(self):
         return {"width": self.width, "height": self.height,
                 "frame_queue": self.frame_queue, "repeat": self.repeat,
-                "mode": self.mode, "background_color": self.background_color}
+                "variant": self.variant, "background_color": self.background_color}
 
     def dump_animation(self, min_step=5):
         hour = 0
