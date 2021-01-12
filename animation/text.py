@@ -12,8 +12,8 @@ class TextAnimation(AbstractAnimation):
     def __init__(self,  width, height, frame_queue, repeat, text,
                  steps_per_second=15, pixels_per_step=1, text_size=13,
                  emoji_size=109,
-                 text_font="resources/fonts/SF-Compact-Display-Regular.otf",
-                 emoji_font="resources/fonts/joypixels-android.ttf"):
+                 text_font="resources/fonts/LiberationSans-Regular_2.1.2.ttf",
+                 emoji_font="resources/fonts/joypixels-android_6.0.0.ttf"):
         super().__init__(width, height, frame_queue, repeat)
 
         self.name = "text"
