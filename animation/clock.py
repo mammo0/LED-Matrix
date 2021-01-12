@@ -63,7 +63,9 @@ class ClockAnimation(AbstractAnimation):
     def analog_create_clock_image(self, hour, minute):
         middle_point = (self.analog_middle_x, self.analog_middle_y)
 
-        draw = ImageDraw.Draw(self.background)
+        image = self.background.copy()
+
+        draw = ImageDraw.Draw(image)
         draw.line([middle_point, self.analog_minute_point(minute)],
                   fill=self.minute_color)
         draw.line([middle_point, self.analog_hour_point(hour)],
@@ -71,7 +73,7 @@ class ClockAnimation(AbstractAnimation):
         draw.point(middle_point,
                    fill=self.divider_color)
 
-        return self.background
+        return image
 
     def animate(self):
         while self._running:
