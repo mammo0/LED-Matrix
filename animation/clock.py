@@ -19,11 +19,9 @@ class ClockAnimation(AbstractAnimation):
         self.name = "clock"
         self.variant = variant
         self.background_color = background_color
-        watch = Image.open("resources/clock/watch_16x16_without_arms.png")
         self.background = Image.new("RGB", (width, height), background_color)
         self.x = int((self.width - watch.width) / 2)
         self.y = int((self.height - watch.height) / 2)
-        self.background.paste(watch, (self.x, self.y), mask=watch.split()[3])
 
     def minute_point(self, middle, minute):
         minute %= 60
