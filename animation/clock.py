@@ -7,67 +7,54 @@ from animation.abstract_animation import AbstractAnimation
 import numpy as np
 
 
-LEN_HOUR = 2
-
-
 class ClockAnimation(AbstractAnimation):
     def __init__(self, width, height, frame_queue, repeat=False,
                  variant="analog",
-                 background_color=(50, 70, 230), devider_color=(255, 255, 255),
-                 hour_color=(255, 255, 255), minute_color=(255, 255, 255)):
+                 background_color=(0, 0, 0), divider_color=(255, 255, 255),
+                 hour_color=(255, 0, 0), minute_color=(255, 255, 255)):
         super().__init__(width, height, frame_queue, repeat)
         self.name = "clock"
         self.variant = variant
-        self.background_color = background_color
-        self.background = Image.new("RGB", (width, height), background_color)
-        self.x = int((self.width - watch.width) / 2)
-        self.y = int((self.height - watch.height) / 2)
 
-    def minute_point(self, middle, minute):
+        self.background_color = background_color
+        self.divider_color = divider_color
+        self.hour_color = hour_color
+        self.minute_color = minute_color
+
+        self.background = Image.new("RGB", (width, height), background_color)
+
+        self.middle_x = int(width / 2)
+        self.middle_y = int(height / 2)
+        self.max_hand_length = min([self.middle_x, round(width / 2),
+                                    self.middle_y, round(height / 2)])
+
+    def minute_point(self, minute):
         minute %= 60
         angle = 2*math.pi * minute/60 - math.pi/2
-        length = 2
-        while True:
-            x = int(middle[0] + length * math.cos(angle))
-            y = int(middle[1] + length * math.sin(angle))
-            if x == (5 + self.x) or x == (10 + self.x):
-                break
-            if y == (5 + self.y) or y == (10 + self.y):
-                break
-            length += 1
+
+        x = int(self.middle_x + self.max_hand_length * math.cos(angle))
+        y = int(self.middle_y + self.max_hand_length * math.sin(angle))
+
         return (x, y)
 
-    def hour_point(self, middle, hour):
+    def hour_point(self, hour):
         hour %= 12
         angle = 2*math.pi * hour/12 - math.pi/2
-        x = int(middle[0] + LEN_HOUR * math.cos(angle))
-        y = int(middle[1] + LEN_HOUR * math.sin(angle))
-        if x > (9 + self.x):
-            x = (9 + self.x)
-        if y > (10 + self.x):
-            y = (10 + self.x)
+        length = int(self.max_hand_length / 2)
+
+        x = int(self.middle_x + length * math.cos(angle))
+        y = int(self.middle_y + length * math.sin(angle))
+
         return (x, y)
 
-    def middle_point(self, minute):
-        x = self.width / 2
-        y = self.height / 2
-        return int(x), int(y)
-#        if minute > 0 and minute <=15:
-#            return (7,8)
-#        elif minute > 15 and minute <=30:
-#            return (7,7)
-#        elif minute > 30 and minute <=45:
-#            return (8,7)
-#        else:
-#            return (8,8)
-
     def add_hour_minute_hands(self, image, hour, minute):
-        middle = self.middle_point(minute)
+        middle_point = (self.middle_x, self.middle_y)
         draw = ImageDraw.Draw(image)
-        draw.line([self.middle_point(minute),
-                   self.minute_point(middle, minute)], fill=(0, 0, 0))
-        draw.line([self.middle_point(minute),
-                   self.hour_point(middle, hour)], fill=(0, 0, 0))
+        draw.line([middle_point,
+                   self.minute_point(minute)], fill=self.minute_color)
+        draw.line([middle_point,
+                   self.hour_point(hour)], fill=self.hour_color)
+        draw.point(middle_point, fill=self.divider_color)
 
     def animate(self):
         while self._running:
@@ -87,4 +74,6 @@ class ClockAnimation(AbstractAnimation):
     def kwargs(self):
         return {"width": self.width, "height": self.height,
                 "frame_queue": self.frame_queue, "repeat": self.repeat,
-                "variant": self.variant, "background_color": self.background_color}
+                "variant": self.variant, "background_color": self.background_color,
+                "divider_color": self.divider_color, "hour_color": self.hour_color,
+                "minute_color": self.minute_color}
