@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
 from configparser import NoSectionError, NoOptionError
 import os
@@ -36,7 +36,7 @@ class Main():
         os.chdir(BASE_DIR)
 
         # load config
-        self.config = Configuration()
+        self.config = Configuration(allow_no_value=True)
         with open(CONFIG_FILE, "r") as f:
             self.config.read_file(f)
 
