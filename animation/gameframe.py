@@ -2,7 +2,6 @@ import configparser
 import errno
 import os
 from pathlib import Path
-import time
 
 from PIL import Image
 
@@ -158,19 +157,19 @@ class GameframeAnimation(AbstractAnimation):
                         break
 
     def animate(self):
-        while self._running:
+        while not self._stop_event.is_set():
             for frame in self.rendered_frames():
-                if self._running:
+                if not self._stop_event.is_set():
                     self.frame_queue.put(frame.copy())
                 else:
                     break
-                time.sleep(self.hold/1000)
+                self._stop_event.wait(timeout=self.hold/1000)
                 # if (time.time() - self.started) > self.duration:
                 #     break
             if self.repeat > 0:
                 self.repeat -= 1
             elif self.repeat == 0:
-                self._running = False
+                break
 
     @property
     def kwargs(self):

@@ -1,5 +1,4 @@
 import sys
-import time
 
 from PIL import Image
 import freetype
@@ -157,7 +156,7 @@ class TextAnimation(AbstractAnimation):
         return np.dstack((red, green, blue))
 
     def animate(self):
-        if self._running:
+        if not self._stop_event.is_set():
             if self.steps_per_second <= 0 or self.pixels_per_step < 1:
                 return
             buf = self.render(self.text)
@@ -175,11 +174,11 @@ class TextAnimation(AbstractAnimation):
             wait = 1.0 / self.steps_per_second
 
             for i in range(0, buf.shape[1] - self.width, self.pixels_per_step):
-                if not self._running:
+                if self._stop_event.is_set():
                     break
                 cut = buf[0:self.height, i:i+self.width, :]
                 self.frame_queue.put(cut.copy())
-                time.sleep(wait)
+                self._stop_event.wait(timeout=wait)
 
     @property
     def kwargs(self):

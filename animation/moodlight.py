@@ -1,5 +1,4 @@
 import colorsys
-import time
 
 from animation.abstract import AbstractAnimation
 import numpy as np
@@ -92,7 +91,7 @@ class MoodlightAnimation(AbstractAnimation):
                 yield frame
 
     def animate(self):
-        while self._running:
+        while not self._stop_event.is_set():
             if self.mode == "colorwheel":
                 generator = self.frame_generator("colorwheel", "fill")
 
@@ -103,15 +102,15 @@ class MoodlightAnimation(AbstractAnimation):
                 generator = self.frame_generator("colorwheel", "wish_down_up")
 
             for frame in generator:
-                if self._running:
+                if not self._stop_event.is_set():
                     self.frame_queue.put(frame.copy())
                 else:
                     break
-                time.sleep(1/self.frequency)
+                self._stop_event.wait(timeout=1/self.frequency)
             # if self.repeat > 0:
             #     self.repeat -= 1
             # elif self.repeat == 0:
-            #     self._running = False
+            #     break
 
     @property
     def kwargs(self):

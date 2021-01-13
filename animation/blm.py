@@ -1,7 +1,6 @@
 import errno
 import os
 from pathlib import Path
-import time
 
 from animation.abstract import AbstractAnimation
 import numpy as np
@@ -66,17 +65,17 @@ class BlmAnimation(AbstractAnimation):
             raise AttributeError
 
     def animate(self):
-        while self._running:
+        while not self._stop_event.is_set():
             for frame in self.rendered_frames():
-                if self._running:
+                if not self._stop_event.is_set():
                     self.frame_queue.put(frame["frame"].copy())
                 else:
                     break
-                time.sleep(frame["hold"]/1000)
+                self._stop_event.wait(timeout=frame["hold"]/1000)
             if self.repeat > 0:
                 self.repeat -= 1
             elif self.repeat == 0:
-                self._running = False
+                break
 
     def rendered_frames(self):
         """

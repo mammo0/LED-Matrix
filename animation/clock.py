@@ -154,21 +154,21 @@ class ClockAnimation(AbstractAnimation):
         return image
 
     def animate(self):
-        while self._running:
+        while not self._stop_event.is_set():
             local_time = time.localtime()
 
             if self.variant == ClockVariant.analog:
                 image = self.analog_create_clock_image(local_time.tm_hour,
                                                        local_time.tm_min)
                 self.frame_queue.put(np.array(image).copy())
-                time.sleep(1)
+                self._stop_event.wait(timeout=1)
             elif self.variant == ClockVariant.digital:
                 # TODO: add digital clock
                 image = self.digital_create_clock_image(local_time.tm_hour,
                                                         local_time.tm_min,
                                                         local_time.tm_sec)
                 self.frame_queue.put(np.array(image).copy())
-                time.sleep(1/10)
+                self._stop_event.wait(timeout=1/10)
 
     @property
     def kwargs(self):

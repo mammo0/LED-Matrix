@@ -3,7 +3,7 @@ This is the sceleton code for all animations.
 """
 
 from abc import abstractmethod, ABC
-from threading import Thread
+from threading import Thread, Event
 import time
 
 
@@ -15,7 +15,7 @@ class AbstractAnimation(ABC, Thread):
         self.frame_queue = frame_queue  # queue to put frames onto
         self.repeat = repeat  # 0: no repeat, -1: forever, > 0: x-times
 
-        self._running = False  # query this often! exit self.animate quickly
+        self._stop_event = Event()  # query this often! exit self.animate quickly
 
     def run(self):
         """This is the run method from threading.Thread"""
@@ -23,14 +23,14 @@ class AbstractAnimation(ABC, Thread):
         # print("Starting")
 
         self.started = time.time()
-        self._running = True
         self.animate()
 
     # def start(self):
     """We do not overwrite this. It is from threading.Thread"""
 
-    def stop(self):
-        self._running = False
+    def stop_and_wait(self):
+        self._stop_event.set()
+        self.join(timeout=5)
 
     @abstractmethod
     def animate(self):

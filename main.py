@@ -311,7 +311,7 @@ class Main():
         if self.is_current_animation_running():
             if resume:
                 self.store_animation_for_resume(self.current_animation)
-            self.current_animation.stop()
+            self.current_animation.stop_and_wait()
 
     def check_current_animation_runtime(self):
         if self.is_current_animation_running():
