@@ -2,12 +2,12 @@
 This is the sceleton code for all animations.
 """
 
-import abc
-import threading
+from abc import abstractmethod, ABC
+from threading import Thread
 import time
 
 
-class AbstractAnimation(abc.ABC, threading.Thread):
+class AbstractAnimation(ABC, Thread):
     def __init__(self, width, height, frame_queue, repeat):
         super().__init__(daemon=True)
         self.width = width  # width of frames to produce
@@ -32,18 +32,18 @@ class AbstractAnimation(abc.ABC, threading.Thread):
     def stop(self):
         self._running = False
 
-    @abc.abstractmethod
+    @abstractmethod
     def animate(self):
         """This is where frames are put to the frame_queue in correct time"""
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def kwargs(self):
         """This method must return all init args to be able to create identical
         animation. Repeat should reflect current repeats left."""
 
     # @property
-    # @abc.abstractmethod
+    # @abstractmethod
     # def intrinsic_duration(self):
     #     """This method should return the duration for one run of the animation,
     #     based on frame count and duration of each frame. In milliseconds.
