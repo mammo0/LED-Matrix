@@ -51,3 +51,33 @@ class AbstractAnimation(ABC, Thread):
     #     basic idea is to let animations run for only a default amount of time.
     #     Longer animations should be supported by asking for their intrinsic
     #     duration. Of course repeats must be set to 0 then."""
+
+
+class AbstractAnimationController(ABC):
+    def __init__(self, width, height, frame_queue):
+        self.width = width  # width of frames to produce
+        self.height = height  # height of frames to produce
+        self.frame_queue = frame_queue  # queue to put frames onto
+
+    @property
+    @abstractmethod
+    def animation_variants(self):
+        """
+        @return: An enum object that holds the variants of the underlying animation. Or None if there are no variants.
+        """
+
+    @abstractmethod
+    def start_animation(self, variant, parameter=None, repeat=0):
+        """
+        Start a specific variant (see 'anmimation_variants' property above) of an animation with
+        an optional parameter.
+        @param repeat:   0: no repeat
+                        -1: forever
+                       > 0: x-times
+        """
+
+    @abstractmethod
+    def stop_antimation(self):
+        """
+        Stop the animation if it's currently running.
+        """
