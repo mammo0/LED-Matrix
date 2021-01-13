@@ -28,6 +28,33 @@ RestServer = true
 TPM2NetServer = false
 
 
+[DEFAULTANIMATION]
+# Default animation that is displayed on start/idle
+# The value is equal to the name of the Python module in the 'animation' directory.
+# Default start animation is 'clock'.
+Animation = clock
+
+# The possible variants can be checked in the Python module of the corresponding animation.
+# Default for animation 'clock' is variant 'digital'.
+Variant = digital
+
+# Sometimes a variant needs a parameter.
+# If multiple parameters are needed, a JSON-like dictionary can be entered after the equal sign.
+# Multiline is supported but every line must have an indention.
+Parameter = {
+    "background_color": [0, 0, 0],
+    "divider_color": [255, 255, 255],
+    "hour_color": [255, 0, 0],
+    "minute_color": [255, 255, 255]
+    }
+
+# This integer defines, how many times an animation gets repeated.
+#     0: no repeat [Default]
+#    -1: forever
+# x > 0: x-times
+Repeat = 0
+
+
 [APA102]
 # This section contains variables that describe how the LED matrix is built up.
 
