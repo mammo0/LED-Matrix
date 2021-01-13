@@ -8,7 +8,7 @@ import time
 
 import spidev
 
-from display.abstract_display import AbstractDisplay
+from display.abstract import AbstractDisplay
 import numpy as np
 
 

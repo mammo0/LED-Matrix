@@ -16,7 +16,7 @@ from animation.gameframe import GameframeAnimation
 from animation.moodlight import MoodlightAnimation
 from animation.text import TextAnimation
 from common.config import Configuration
-from display.abstract_display import AbstractDisplay
+from display.abstract import AbstractDisplay
 from server.rest_server import RestServer
 from server.http_server import HttpServer
 from server.tpm2_net import Tpm2NetServer

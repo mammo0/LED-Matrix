@@ -4,7 +4,7 @@ import sys
 
 import pygame
 
-from display.abstract_display import AbstractDisplay
+from display.abstract import AbstractDisplay
 import numpy as np
 
 
