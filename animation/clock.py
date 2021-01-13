@@ -4,7 +4,7 @@ import time
 
 from PIL import Image, ImageDraw
 
-from animation.abstract_animation import AbstractAnimation
+from animation.abstract import AbstractAnimation
 import numpy as np
 
 

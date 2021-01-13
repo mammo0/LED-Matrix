@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import time
 
-from animation.abstract_animation import AbstractAnimation
+from animation.abstract import AbstractAnimation
 import numpy as np
 
 
