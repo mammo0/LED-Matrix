@@ -171,7 +171,6 @@ class ClockAnimation(AbstractAnimation):
                 self.frame_queue.put(np.array(image).copy())
                 self._stop_event.wait(timeout=1)
             elif self.variant == ClockVariant.digital:
-                # TODO: add digital clock
                 image = self.digital_create_clock_image(local_time.tm_hour,
                                                         local_time.tm_min,
                                                         local_time.tm_sec)
