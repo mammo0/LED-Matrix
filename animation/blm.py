@@ -154,14 +154,6 @@ class BlmAnimation(AbstractAnimation):
 
             yield {"hold": frame["hold"], "frame": array}
 
-    @property
-    def kwargs(self):
-        return {"width": self.width, "height": self.height,
-                "frame_queue": self.frame_queue, "repeat": self.repeat,
-                "path": self.path, "foregound_color": self.foregound_color,
-                "background_color": self.background_color,
-                "padding_color": self.padding_color}
-
 
 class BlmController(AbstractAnimationController):
     def __init__(self, width, height, frame_queue, resources_path):

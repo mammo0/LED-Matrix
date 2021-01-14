@@ -184,12 +184,6 @@ class GameframeAnimation(AbstractAnimation):
             elif self.repeat == 0:
                 break
 
-    @property
-    def kwargs(self):
-        return {"width": self.width, "height": self.height,
-                "frame_queue": self.frame_queue, "repeat": self.repeat,
-                "folder": self.folder}
-
 
 class GameframeController(AbstractAnimationController):
     def __init__(self, width, height, frame_queue, resources_path):

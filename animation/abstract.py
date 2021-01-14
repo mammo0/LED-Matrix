@@ -117,12 +117,6 @@ class AbstractAnimation(ABC, Thread):
     def animate(self):
         """This is where frames are put to the frame_queue in correct time"""
 
-    @property
-    @abstractmethod
-    def kwargs(self):
-        """This method must return all init args to be able to create identical
-        animation. Repeat should reflect current repeats left."""
-
     # @property
     # @abstractmethod
     # def intrinsic_duration(self):

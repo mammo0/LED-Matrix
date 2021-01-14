@@ -187,15 +187,6 @@ class TextAnimation(AbstractAnimation):
                 self.frame_queue.put(cut.copy())
                 self._stop_event.wait(timeout=wait)
 
-    @property
-    def kwargs(self):
-        return {"width": self.width, "height": self.height,
-                "frame_queue": self.frame_queue, "repeat": self.repeat,
-                "text": self.text, "steps_per_second": self.steps_per_second,
-                "pixels_per_step": self.pixels_per_step,
-                "text_size": self.text_size, "emoji_size": self.emoji_size,
-                "text_font": self.text_font, "emoji_font": self.emoji_font}
-
 
 class TextController(AbstractAnimationController):
     @property

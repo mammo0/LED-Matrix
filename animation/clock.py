@@ -178,14 +178,6 @@ class ClockAnimation(AbstractAnimation):
                 self.frame_queue.put(np.array(image).copy())
                 self._stop_event.wait(timeout=1/10)
 
-    @property
-    def kwargs(self):
-        return {"width": self.width, "height": self.height,
-                "frame_queue": self.frame_queue, "repeat": self.repeat,
-                "variant": self.variant, "background_color": self.background_color,
-                "divider_color": self.divider_color, "hour_color": self.hour_color,
-                "minute_color": self.minute_color}
-
 
 class ClockController(AbstractAnimationController):
     @property
