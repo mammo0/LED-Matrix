@@ -44,6 +44,15 @@ class Main():
         except (NoSectionError, NoOptionError):
             raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
 
+        # get [DEFAULTANIMATION] options
+        try:
+            self.default_animation = self.config.get("DEFAULTANIMATION", option="Animation")
+        except (NoSectionError, NoOptionError):
+            raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
+        self.default_animation_variant = self.config.get("DEFAULTANIMATION", option="Variant", fallback=None)
+        self.default_animation_parameter = self.config.get("DEFAULTANIMATION", option="Parameter", fallback=None)
+        self.default_animation_repeat = self.config.getint("DEFAULTANIMATION", option="Repeat", fallback=0)
+
         # load display plugins
         display_loader = Loader()
         display_loader.load_plugins((BASE_DIR / "display").resolve(), plugin_base_class=AbstractDisplay)
@@ -57,6 +66,10 @@ class Main():
 
         # get all available animations
         self.animations = self.__load_animations()
+
+        # the current running animation
+        self.current_animation = None
+        self.animation_lock = threading.RLock()
 
         # this is the queue that holds the frames to display
         self.frame_queue = queue.Queue(maxsize=1)
@@ -113,12 +126,18 @@ class Main():
 
         return animations
 
+    def __show_default_animation(self):
+        # TODO: make this method thread-safe (animation_lock)
+        pass
+
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         # TODO: this is for the servers
+        # TODO: make this method thread-safe (animation_lock)
         pass
 
     def stop_animation(self):
         # TODO: this is for the servers
+        # TODO: make this method thread-safe (animation_lock)
         pass
 
     def mainloop(self):
