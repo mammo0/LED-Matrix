@@ -147,6 +147,13 @@ class AbstractAnimationController(ABC):
                        > 0: x-times
         """
 
+    @abstractmethod
+    def _validate_parameter(self, parameter):
+        """
+        This method should validate the parameter(s) that are passed to the 'start_animation' method.
+        @return: The (cleaned) parameter(s) that can be used in the 'start_animation' method.
+        """
+
     def stop_antimation(self):
         # stop the animation if it's currently running.
         if (self.animation and
