@@ -132,10 +132,11 @@ class AbstractAnimation(ABC, Thread):
 
 
 class AbstractAnimationController(ABC):
-    def __init__(self, width, height, frame_queue):
+    def __init__(self, width, height, frame_queue, resources_path):
         self.width = width  # width of frames to produce
         self.height = height  # height of frames to produce
         self.frame_queue = frame_queue  # queue to put frames onto
+        self.resources_path = resources_path  # path to the 'resources' directory
 
         self.animation_thread = None  # this variable contains the animation thread
 

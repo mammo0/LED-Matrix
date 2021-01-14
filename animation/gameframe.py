@@ -1,18 +1,17 @@
 import configparser
+from enum import Enum
 import errno
 import os
 from pathlib import Path
 
 from PIL import Image
 
-from animation.abstract import AbstractAnimation, AnimationParameter,\
+from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController
 import numpy as np
 
 
 # TODO: Subfolders have not been implemented yet.
-
-
 class GameframeParameter(AnimationParameter):
     folder = ""
     background_color = (0, 0, 0)
@@ -25,7 +24,10 @@ class GameframeAnimation(AbstractAnimation):
 
         params = GameframeParameter(**kwargs)
 
-        self.folder = Path(params.folder)
+        if "variant" in kwargs:
+            self.folder = Path(kwargs["variant"].value)
+        else:
+            self.folder = Path(params.folder)
         if not self.folder.is_dir():
             raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), self.folder)
         self.name = "gameframe.{}".format(self.folder.name)
@@ -190,13 +192,27 @@ class GameframeAnimation(AbstractAnimation):
 
 
 class GameframeController(AbstractAnimationController):
+    def __init__(self, width, height, frame_queue, resources_path):
+        super(GameframeController, self).__init__(width, height, frame_queue, resources_path)
+
+        self.resources_path = self.resources_path / "animations" / "gameframe"
+
     @property
     def animation_class(self):
         return GameframeAnimation
 
     @property
     def animation_variants(self):
-        return None
+        gameframe_animations = {}
+        for animation_dir in sorted(self.resources_path.glob("*"), key=lambda s: s.name.lower()):
+            if animation_dir.is_dir():
+                gameframe_animations[animation_dir.name] = animation_dir.resolve()
+
+        # if no blm animations where found
+        if not gameframe_animations:
+            return None
+
+        return Enum("GameframeVariant", gameframe_animations)
 
     @property
     def animation_parameters(self):
