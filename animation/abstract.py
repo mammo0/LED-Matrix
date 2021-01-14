@@ -161,7 +161,7 @@ class AbstractAnimationController(ABC):
                  Or None if there are no parameters.
         """
 
-    def start_animation(self, variant, parameter=None, repeat=0):
+    def start_animation(self, variant=None, parameter=None, repeat=0):
         """
         Start a specific variant (see 'anmimation_variants' property above) of an animation with
         an optional parameter.
@@ -169,11 +169,14 @@ class AbstractAnimationController(ABC):
                         -1: forever
                        > 0: x-times
         """
-        # we're expecting a JSON string as parameter that contains the colors
+        # parse the parameters
         options = self._validate_parameter(parameter)
+
+        if variant:
+            options["variant"] = variant
+
         self.animation_thread = self.animation_class(width=self.width, height=self.height,
-                                                     frame_queue=self.frame_queue,
-                                                     repeat=repeat, variant=variant,
+                                                     frame_queue=self.frame_queue, repeat=repeat,
                                                      **options)
 
         # start the animation thread
