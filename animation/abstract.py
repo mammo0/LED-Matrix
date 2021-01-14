@@ -137,6 +137,14 @@ class AbstractAnimationController(ABC):
         @return: An enum object that holds the variants of the underlying animation. Or None if there are no variants.
         """
 
+    @property
+    @abstractmethod
+    def animation_parameters(self):
+        """
+        @return: A subclass of AnimationParameter that holds the parameters of the underlying animation.
+                 Or None if there are no parameters.
+        """
+
     @abstractmethod
     def start_animation(self, variant, parameter=None, repeat=0):
         """
