@@ -68,7 +68,10 @@ class AnimationParameter(metaclass=AnimationParameterMeta):
         # overwrite values in the instance
         for k, v in params.items():
             if k in self._params_map_:
-                self._params_map_[k] = v
+                # try to cast values to the default type
+                # because not all types are supported by JSON
+                default_type = type(self._params_map_[k])
+                self._params_map_[k] = default_type(v)
 
     def __dir__(self):
         return (['__class__', '__doc__', '__module__'] +
