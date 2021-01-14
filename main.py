@@ -4,21 +4,16 @@ from configparser import NoSectionError, NoOptionError
 import os
 from pathlib import Path
 import queue
-import random
 import threading
 import time
 
 from simple_plugin_loader import Loader
 
-from animation.blm import BlmAnimation
-from animation.clock import ClockAnimation
-from animation.gameframe import GameframeAnimation
-from animation.moodlight import MoodlightAnimation
-from animation.text import TextAnimation
+from animation.abstract import AbstractAnimationController
 from common.config import Configuration
 from display.abstract import AbstractDisplay
-from server.rest_server import RestServer
 from server.http_server import HttpServer
+from server.rest_server import RestServer
 from server.tpm2_net import Tpm2NetServer
 
 
@@ -28,6 +23,7 @@ from server.tpm2_net import Tpm2NetServer
 # make mood light animation
 BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 CONFIG_FILE = BASE_DIR / "config.ini"
+RESOURCES_DIR = BASE_DIR / "resources"
 
 
 class Main():
@@ -59,45 +55,16 @@ class Main():
         except KeyError:
             raise RuntimeError("Display hardware '{}' not known.".format(hardware))
 
-        self.current_animation = None
+        # get all available animations
+        self.animations = self.__load_animations()
 
-        self.interrupted_animation_class = None
-        self.interrupted_animation_kwargs = None
-
+        # this is the queue that holds the frames to display
         self.frame_queue = queue.Queue(maxsize=1)
-        self.text_queue = queue.Queue()
-        self.receiving_data = threading.Event()
-
-        self.gameframe_activated = True
-        self.gameframe_repeat = -1
-        self.gameframe_duration = 60
-        self.gameframe_selected = []
-
-        self.blm_activated = False
-        self.blm_repeat = -1
-        self.blm_duration = 60
-        self.blm_selected = []
-
-        self.clock_activated = True
-        self.clock_last_shown = time.time()
-        self.clock_show_every = 600
-        self.clock_duration = 10
-
-        self.moodlight_activated = False
-        self.moodlight_mode = "colorwheel"
-
-        # find and prepare installed animations
-        self.refresh_animations()
-
-        self.play_random = False
-        self.animations = self.animation_generator()
 
         # server interfaces
         self.http_server = None
         self.rest_server = None
         self.tpm2_net_server = None
-
-        # self.text_queue.put("RibbaPi 👍")
 
     def __start_servers(self):
         # HTTP server
@@ -131,236 +98,47 @@ class Main():
             self.tpm2_net_server.shutdown()
             self.tpm2_net_server.server_close()
 
-    # disable all the animations
-    def disable_animations(self):
-        self.gameframe_activated = False
-        self.blm_activated = False
-        self.clock_activated = False
-        self.moodlight_activated = False
-        self.play_random = False
+    def __load_animations(self):
+        animation_loader = Loader()
+        animation_loader.load_plugins((BASE_DIR / "animation").resolve(), AbstractAnimationController)
 
-    # New frame handling
-    def process_frame_queue(self):
-        # check if there is a frame that needs to be displayed
-        if not self.frame_queue.empty():
-            # get frame and display it
-            self.display.buffer = self.frame_queue.get()
-            self.frame_queue.task_done()
-            self.display.show(gamma=True)
+        animations = {}
 
-    # Text handling
-    def process_text_queue(self):
-        # TODO: move those two if checks down inside bigger if statement
-        # check if external data (e.g. tpm2_net) is received
-        if self.receiving_data.is_set():
-            return
-        # Prevent potential new text to interrupt current text animation
-        if isinstance(self.current_animation, TextAnimation):
-            return
-        # check if there is a string waiting to be displayed
-        if not self.text_queue.empty():
-            # interrupt current_animation
-            self.stop_current_animation(resume=True)
-            # return to come back and go on when current_animation is finished
-            if self.is_current_animation_running():
-                return
-            # get text and create text animation
-            text = self.text_queue.get()
-            self.current_animation = TextAnimation(self.display_width,
-                                                   self.display_height,
-                                                   self.frame_queue,
-                                                   False,
-                                                   text)
-            self.current_animation.start()
+        # use module names to identify the animations not the class names
+        for _name, cls in animation_loader.plugins.items():
+            name = cls.__module__.rpartition(".")[-1]
+            animations[name] = cls(width=self.display_width, height=self.display_height,
+                                   frame_queue=self.frame_queue,
+                                   resources_path=RESOURCES_DIR)
 
-    # Animation handling
-    def refresh_animations(self):
-        # gameframe
-        self.gameframe_animations = []
-        for p in sorted(Path("resources/animations/gameframe/").glob("*"), key=lambda s: s.name.lower()):
-            if p.is_dir():
-                self.gameframe_animations.append(str(p))
-        for p in sorted(Path("resources/animations/gameframe_upload/").glob("*"), key=lambda s: s.name.lower()):
-            if p.is_dir():
-                self.gameframe_animations.append(str(p))
-        self.gameframe_selected = self.gameframe_animations.copy()
+        return animations
 
-        # blm
-        self.blm_animations = []
-        for p in sorted(Path("resources/animations/162-blms/").glob("*.blm"), key=lambda s: s.name.lower()):
-            if p.is_file():
-                self.blm_animations.append(str(p))
-        self.blm_selected = self.blm_animations.copy()
+    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
+        # TODO: this is for the servers
+        pass
 
-    def clean_finished_animation(self):
-        if self.current_animation and not self.current_animation.is_alive():
-            self.current_animation = None
-
-    def animation_generator(self):
-        gameframes = self.gameframe_generator()
-        blms = self.blm_generator()
-        while True:
-            if self.gameframe_activated:
-                yield next(gameframes)
-            if self.blm_activated:
-                yield next(blms)
-            if not (self.gameframe_activated or self.blm_activated):
-                yield None
-
-    def gameframe_generator(self):
-        i = -1
-        while True:
-            if len(self.gameframe_selected) > 0:
-                if self.play_random:
-                    i = random.randint(0, len(self.gameframe_selected) - 1)
-                else:
-                    i += 1
-                    i %= len(self.gameframe_selected)
-                yield GameframeAnimation(self.display_width,
-                                         self.display_height,
-                                         self.frame_queue,
-                                         self.gameframe_repeat,
-                                         self.gameframe_selected[i])
-            else:
-                yield None
-
-    def blm_generator(self):
-        i = -1
-        while True:
-            if len(self.blm_selected) > 0:
-                if self.play_random:
-                    i = random.randint(0, len(self.blm_selected) - 1)
-                else:
-                    i += 1
-                    i %= len(self.blm_selected)
-                yield BlmAnimation(self.display_width,
-                                   self.display_height,
-                                   self.frame_queue,
-                                   self.blm_repeat,
-                                   self.blm_selected[i])
-            else:
-                yield None
-
-    def set_next_animation(self, path):
-        animation = None
-        if str(path).startswith("resources/animations/gameframe"):
-            if Path(path).is_dir():
-                animation = GameframeAnimation(self.display_width,
-                                               self.display_height,
-                                               self.frame_queue,
-                                               self.gameframe_repeat,
-                                               path)
-
-        elif str(path).startswith("resources/animations/162-blms") and \
-                str(path).endswith("blm"):
-            if Path(path).is_file():
-                animation = BlmAnimation(self.display_width,
-                                         self.display_height,
-                                         self.frame_queue,
-                                         self.blm_repeat,
-                                         path)
-
-        if animation:
-            self.store_animation_for_resume(animation)
-
-    def store_animation_for_resume(self, animation):
-        self.interrupted_animation_class = type(animation)
-        self.interrupted_animation_kwargs = animation.kwargs
-
-    def get_next_animation(self):
-        next_animation = None
-        # check if there is an animation to resume
-        if self.interrupted_animation_class:
-            next_animation = self.interrupted_animation_class(
-                **self.interrupted_animation_kwargs)
-            self.interrupted_animation_class = None
-            self.interrupted_animation_kwargs = None
-        elif self.clock_activated and \
-                (self.clock_last_shown + self.clock_show_every < time.time()):
-            # it is time to show time again:
-            next_animation = ClockAnimation(self.display_width,
-                                            self.display_height,
-                                            self.frame_queue)
-            self.clock_last_shown = time.time()
-        elif self.moodlight_activated:
-            next_animation = MoodlightAnimation(self.display_width,
-                                                self.display_height,
-                                                self.frame_queue, False, self.moodlight_mode)
-        else:
-            next_animation = next(self.animations)
-        return next_animation
-
-    def set_moodlight_mode(self, mode):
-        if isinstance(self.current_animation, MoodlightAnimation):
-            if mode == 1:
-                self.moodlight_mode = "colorwheel"
-            elif mode == 2:
-                self.moodlight_mode = "cyclecolors"
-            elif mode == 3:
-                self.moodlight_mode = "wish_down_up"
-
-            self.disable_animations()
-            self.moodlight_activated = True
-            self.stop_current_animation()
-
-    def is_current_animation_running(self):
-        return True if self.current_animation and \
-            self.current_animation.is_alive() else False
-
-    def stop_current_animation(self, resume=False):
-        if self.is_current_animation_running():
-            if resume:
-                self.store_animation_for_resume(self.current_animation)
-            self.current_animation.stop_and_wait()
-
-    def check_current_animation_runtime(self):
-        if self.is_current_animation_running():
-            if self.receiving_data.is_set():
-                self.stop_current_animation()
-            if isinstance(self.current_animation, ClockAnimation):
-                duration = self.clock_duration
-                if self.current_animation.started + duration < time.time():
-                    self.stop_current_animation()
-            if isinstance(self.current_animation, GameframeAnimation):
-                duration = max(self.gameframe_duration,
-                               self.current_animation.intrinsic_duration())
-                if self.current_animation.started + duration < time.time():
-                    self.stop_current_animation()
-            if isinstance(self.current_animation, BlmAnimation):
-                duration = max(self.blm_duration,
-                               self.current_animation.intrinsic_duration())
-                if self.current_animation.started + duration < time.time():
-                    self.stop_current_animation()
+    def stop_animation(self):
+        # TODO: this is for the servers
+        pass
 
     def mainloop(self):
-        # TODO: start auto renewing timer for clock and predefined texts
-
         # start the server interfaces
         self.__start_servers()
 
         try:
             while True:
-                self.process_frame_queue()
-                # if the current_animation is finished then cleanup
-                self.clean_finished_animation()
-                # check if there is text to display
-                self.process_text_queue()
-                # if there is currently no animation, start a new one
-                # check if external data (e.g. tpm2_net) is received
-                if not self.current_animation and not self.receiving_data.is_set():
-                    self.current_animation = self.get_next_animation()
-
-                    if self.current_animation:
-                        self.current_animation.start()
-                # Check if current_animation has played long enough
-                self.check_current_animation_runtime()
+                # check if there is a frame that needs to be displayed
+                if not self.frame_queue.empty():
+                    # get frame and display it
+                    self.display.buffer = self.frame_queue.get()
+                    self.frame_queue.task_done()
+                    self.display.show(gamma=True)
 
                 # to limit CPU usage do not go faster than 60 "fps"
                 time.sleep(1/60)
         except KeyboardInterrupt:
             pass
 
-        self.stop_current_animation()
         self.display.clear_buffer()
         self.display.show()
 
