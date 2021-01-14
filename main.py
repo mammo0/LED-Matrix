@@ -10,6 +10,7 @@ import time
 from simple_plugin_loader import Loader
 
 from animation.abstract import AbstractAnimationController
+from common import eprint
 from common.config import Configuration
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
@@ -127,13 +128,28 @@ class Main():
         return animations
 
     def __show_default_animation(self):
-        # TODO: make this method thread-safe (animation_lock)
-        pass
+        self.animation_lock.acquire()
+
+        if self.current_animation is None:
+            self.start_animation(self.default_animation,
+                                 variant=self.default_animation_variant,
+                                 parameter=self.default_animation_parameter,
+                                 repeat=self.default_animation_repeat)
+
+        self.animation_lock.release()
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
-        # TODO: this is for the servers
-        # TODO: make this method thread-safe (animation_lock)
-        pass
+        self.animation_lock.acquire()
+
+        try:
+            animation = self.animations[animation_name]
+        except KeyError:
+            eprint("The animation '%s' could not be found!" % animation_name)
+        else:
+            animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
+            self.current_animation = animation
+
+        self.animation_lock.release()
 
     def stop_animation(self):
         # TODO: this is for the servers
@@ -143,6 +159,9 @@ class Main():
     def mainloop(self):
         # start the server interfaces
         self.__start_servers()
+
+        # show the default animation
+        self.__show_default_animation()
 
         try:
             while True:
