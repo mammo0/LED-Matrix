@@ -128,6 +128,8 @@ class AbstractAnimationController(ABC):
         self.height = height  # height of frames to produce
         self.frame_queue = frame_queue  # queue to put frames onto
 
+        self.animation = None  # this variable should contain the animation thread
+
     @property
     @abstractmethod
     def animation_variants(self):
@@ -145,8 +147,9 @@ class AbstractAnimationController(ABC):
                        > 0: x-times
         """
 
-    @abstractmethod
     def stop_antimation(self):
-        """
-        Stop the animation if it's currently running.
-        """
+        # stop the animation if it's currently running.
+        if (self.animation and
+                isinstance(self.animation, AbstractAnimation) and
+                self.animation.is_alive()):
+            self.animation.stop_and_wait()
