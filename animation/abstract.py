@@ -3,8 +3,11 @@ This is the sceleton code for all animations.
 """
 
 from abc import abstractmethod, ABC
+import json
 from threading import Thread, Event
 import time
+
+from common import eprint
 
 
 class AnimationParameterMeta(type):
@@ -128,7 +131,14 @@ class AbstractAnimationController(ABC):
         self.height = height  # height of frames to produce
         self.frame_queue = frame_queue  # queue to put frames onto
 
-        self.animation = None  # this variable should contain the animation thread
+        self.animation_thread = None  # this variable contains the animation thread
+
+    @property
+    @abstractmethod
+    def animation_class(self):
+        """
+        @return: The animation class.
+        """
 
     @property
     @abstractmethod
@@ -145,7 +155,6 @@ class AbstractAnimationController(ABC):
                  Or None if there are no parameters.
         """
 
-    @abstractmethod
     def start_animation(self, variant, parameter=None, repeat=0):
         """
         Start a specific variant (see 'anmimation_variants' property above) of an animation with
@@ -154,17 +163,38 @@ class AbstractAnimationController(ABC):
                         -1: forever
                        > 0: x-times
         """
+        # we're expecting a JSON string as parameter that contains the colors
+        options = self._validate_parameter(parameter)
+        self.animation_thread = self.animation_class(width=self.width, height=self.height,
+                                                     frame_queue=self.frame_queue,
+                                                     repeat=repeat, variant=variant,
+                                                     **options)
 
-    @abstractmethod
+        # start the animation thread
+        self.animation_thread.start()
+
     def _validate_parameter(self, parameter):
-        """
-        This method should validate the parameter(s) that are passed to the 'start_animation' method.
-        @return: The (cleaned) parameter(s) that can be used in the 'start_animation' method.
-        """
+        # if no parameter is specified
+        if (not parameter or
+                self.animation_parameters is None):
+            return {}
+
+        if len(self.animation_parameters.names) == 1:
+            # this is the only possible parameter, so pass it as it is
+            return {self.animation_parameters.names[0]: parameter}
+
+        # otherwise there are multiple parameters coded in a JSON string
+        try:
+            parsed_p = json.loads(parameter)
+        except ValueError:
+            eprint("[Clock] Parameter could not be parsed! Is it valid JSON?")
+            return {}
+
+        return parsed_p
 
     def stop_antimation(self):
         # stop the animation if it's currently running.
-        if (self.animation and
-                isinstance(self.animation, AbstractAnimation) and
-                self.animation.is_alive()):
-            self.animation.stop_and_wait()
+        if (self.animation_thread and
+                isinstance(self.animation_thread, AbstractAnimation) and
+                self.animation_thread.is_alive()):
+            self.animation_thread.stop_and_wait()
