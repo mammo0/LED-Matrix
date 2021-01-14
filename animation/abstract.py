@@ -177,7 +177,14 @@ class AbstractAnimationController(ABC):
         options = self._validate_parameter(parameter)
 
         if variant:
-            options["variant"] = variant
+            if isinstance(variant, self.animation_variants):
+                options["variant"] = variant
+            else:
+                try:
+                    options["variant"] = self.animation_variants[variant]
+                except KeyError:
+                    eprint("The variant '%s' does not exist!" % variant)
+                    eprint("Available variants: %s" % ", ".join(self.animation_variants._member_names_))
 
         self.animation_thread = self.animation_class(width=self.width, height=self.height,
                                                      frame_queue=self.frame_queue, repeat=repeat,
