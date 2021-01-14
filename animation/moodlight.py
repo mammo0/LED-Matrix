@@ -1,14 +1,32 @@
 import colorsys
+from enum import Enum
 
-from animation.abstract import AbstractAnimation
+from animation.abstract import AbstractAnimation, AbstractAnimationController
 import numpy as np
 
 
+class MoodlightVariant(Enum):
+    colorwheel = 1
+    cyclecolors = 2
+    wish_down_up = 3
+
+
+class _ColorMode(Enum):
+    colorwheel = 1
+    cyclecolors = 2
+
+
+class _Style(Enum):
+    fill = 1
+    random_dot = 2
+    wish_down_up = 3
+
+
 class MoodlightAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat=False,
-                 mode="wish_down_up"):
+    def __init__(self, width, height, frame_queue, repeat,
+                 variant=MoodlightVariant.wish_down_up):
         super().__init__(width, height, frame_queue, repeat)
-        self.mode = mode
+        self.variant = variant
         self.colors = [(255, 0, 0), (255, 255, 0), (0, 255, 255), (0, 0, 255)]  # if empty choose random colors
         self.random = False  # how to step through colors
         self.hold = 10  # seconds to hold colors
@@ -70,21 +88,21 @@ class MoodlightAnimation(AbstractAnimation):
     def frame_generator(self, color_mode, style):
         frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
 
-        if color_mode == "colorwheel":
+        if color_mode == _ColorMode.colorwheel:
             colors = self.color_wheel_generator(500)
-        elif color_mode == "cyclecolors":
+        elif color_mode == _ColorMode.cyclecolors:
             colors = self.cycle_selected_colors_generator(5, 100)
 
         while True:
-            if style == "fill":
+            if style == _Style.fill:
                 frame[:, :] = next(colors)
                 yield frame
-            elif style == "random_dot":
+            elif style == _Style.random_dot:
                 y = np.random.randint(0, self.height)
                 x = np.random.randint(0, self.width)
                 frame[y, x] = next(colors)
                 yield frame
-            elif style == "wish_down_up":
+            elif style == _Style.wish_down_up:
                 color = next(colors)
                 frame = np.concatenate((frame[1:16, :],
                                         np.array(color * self.width).reshape(1, self.width, 3)), axis=0)
@@ -92,14 +110,14 @@ class MoodlightAnimation(AbstractAnimation):
 
     def animate(self):
         while not self._stop_event.is_set():
-            if self.mode == "colorwheel":
-                generator = self.frame_generator("colorwheel", "fill")
+            if self.variant == MoodlightVariant.colorwheel:
+                generator = self.frame_generator(_ColorMode.colorwheel, _Style.fill)
 
-            elif self.mode == "cyclecolors":
-                generator = self.frame_generator("cyclecolors", "random_dot")
+            elif self.variant == MoodlightVariant.cyclecolors:
+                generator = self.frame_generator(_ColorMode.cyclecolors, _Style.random_dot)
 
-            elif self.mode == "wish_down_up":
-                generator = self.frame_generator("colorwheel", "wish_down_up")
+            elif self.variant == MoodlightVariant.wish_down_up:
+                generator = self.frame_generator(_ColorMode.colorwheel, _Style.wish_down_up)
 
             for frame in generator:
                 if not self._stop_event.is_set():
@@ -116,3 +134,17 @@ class MoodlightAnimation(AbstractAnimation):
     def kwargs(self):
         return {"width": self.width, "height": self.height,
                 "frame_queue": self.frame_queue, "repeat": self.repeat}
+
+
+class MoodlightController(AbstractAnimationController):
+    @property
+    def animation_class(self):
+        return MoodlightAnimation
+
+    @property
+    def animation_variants(self):
+        return MoodlightVariant
+
+    @property
+    def animation_parameters(self):
+        return None

@@ -5,21 +5,32 @@ from pathlib import Path
 
 from PIL import Image
 
-from animation.abstract import AbstractAnimation
+from animation.abstract import AbstractAnimation, AnimationParameter,\
+    AbstractAnimationController
 import numpy as np
 
 
 # TODO: Subfolders have not been implemented yet.
-BACKGROUND_COLOR = (0, 0, 0)  # background color of the crop
+
+
+class GameframeParameter(AnimationParameter):
+    folder = ""
+    background_color = (0, 0, 0)
 
 
 class GameframeAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat, folder):
+    def __init__(self, width, height, frame_queue, repeat,
+                 **kwargs):
         super().__init__(width, height, frame_queue, repeat)
-        self.folder = Path(folder)
+
+        params = GameframeParameter(**kwargs)
+
+        self.folder = Path(params.folder)
         if not self.folder.is_dir():
-            raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), folder)
+            raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), self.folder)
         self.name = "gameframe.{}".format(self.folder.name)
+
+        self.background_color = params.background_color
 
         self.load_frames()
         self.read_config()
@@ -56,7 +67,7 @@ class GameframeAnimation(AbstractAnimation):
             with open(str(path), 'rb') as f:
                 image = Image.open(f)
                 # center (crop) image
-                background_img = Image.new(mode='RGB', size=(self.width, self.height), color=BACKGROUND_COLOR)
+                background_img = Image.new(mode='RGB', size=(self.width, self.height), color=self.background_color)
                 x = (self.width - image.width) / 2
                 y = (self.height - image.height) / 2
                 background_img.paste(image, (int(x), int(y)))
@@ -176,3 +187,17 @@ class GameframeAnimation(AbstractAnimation):
         return {"width": self.width, "height": self.height,
                 "frame_queue": self.frame_queue, "repeat": self.repeat,
                 "folder": self.folder}
+
+
+class GameframeController(AbstractAnimationController):
+    @property
+    def animation_class(self):
+        return GameframeAnimation
+
+    @property
+    def animation_variants(self):
+        return None
+
+    @property
+    def animation_parameters(self):
+        return GameframeParameter

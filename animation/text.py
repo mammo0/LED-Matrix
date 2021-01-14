@@ -3,27 +3,34 @@ import sys
 from PIL import Image
 import freetype
 
-from animation.abstract import AbstractAnimation
+from animation.abstract import AbstractAnimation, AnimationParameter,\
+    AbstractAnimationController
 import numpy as np
 
 
+class TextParameter(AnimationParameter):
+    text = ""
+    text_size = 13
+    steps_per_second = 15
+    pixels_per_step = 1
+
+
 class TextAnimation(AbstractAnimation):
-    def __init__(self,  width, height, frame_queue, repeat, text,
-                 steps_per_second=15, pixels_per_step=1, text_size=13,
-                 emoji_size=109,
-                 text_font="resources/fonts/LiberationSans-Regular_2.1.2.ttf",
-                 emoji_font="resources/fonts/joypixels-android_6.0.0.ttf"):
+    def __init__(self,  width, height, frame_queue, repeat,
+                 **kwargs):
         super().__init__(width, height, frame_queue, repeat)
 
-        self.name = "text"
-        self.text = text
-        self.text_size = text_size
-        self.emoji_size = emoji_size
-        self.steps_per_second = steps_per_second
-        self.pixels_per_step = pixels_per_step
+        params = TextParameter(**kwargs)
 
-        self.text_face = freetype.Face(text_font)
-        self.emoji_face = freetype.Face(emoji_font)
+        self.name = "text"
+        self.text = params.text
+        self.text_size = params.text_size
+        self.emoji_size = 109
+        self.steps_per_second = params.steps_per_second
+        self.pixels_per_step = params.pixels_per_step
+
+        self.text_face = freetype.Face("resources/fonts/LiberationSans-Regular_2.1.2.ttf")
+        self.emoji_face = freetype.Face("resources/fonts/joypixels-android_6.0.0.ttf")
 
         self.text_face.set_char_size(self.text_size * 64)
         self.emoji_face.set_char_size(self.emoji_size * 64)
@@ -188,3 +195,17 @@ class TextAnimation(AbstractAnimation):
                 "pixels_per_step": self.pixels_per_step,
                 "text_size": self.text_size, "emoji_size": self.emoji_size,
                 "text_font": self.text_font, "emoji_font": self.emoji_font}
+
+
+class TextController(AbstractAnimationController):
+    @property
+    def animation_class(self):
+        return TextAnimation
+
+    @property
+    def animation_variants(self):
+        return None
+
+    @property
+    def animation_parameters(self):
+        return TextParameter

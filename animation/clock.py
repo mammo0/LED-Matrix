@@ -4,7 +4,8 @@ import time
 
 from PIL import Image, ImageDraw
 
-from animation.abstract import AbstractAnimation, AnimationParameter
+from animation.abstract import AbstractAnimation, AnimationParameter, \
+    AbstractAnimationController
 import numpy as np
 
 
@@ -184,3 +185,17 @@ class ClockAnimation(AbstractAnimation):
                 "variant": self.variant, "background_color": self.background_color,
                 "divider_color": self.divider_color, "hour_color": self.hour_color,
                 "minute_color": self.minute_color}
+
+
+class ClockController(AbstractAnimationController):
+    @property
+    def animation_class(self):
+        return ClockAnimation
+
+    @property
+    def animation_variants(self):
+        return ClockVariant
+
+    @property
+    def animation_parameters(self):
+        return ClockParameter

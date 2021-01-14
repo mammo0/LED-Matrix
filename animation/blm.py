@@ -2,27 +2,35 @@ import errno
 import os
 from pathlib import Path
 
-from animation.abstract import AbstractAnimation
+from animation.abstract import AbstractAnimation, AnimationParameter,\
+    AbstractAnimationController
 import numpy as np
 
 
+class BlmParameter(AnimationParameter):
+    path = ""
+    foregound_color = (255, 255, 255),
+    background_color = (10, 10, 10),
+    padding_color = (60, 60, 60)
+
+
 class BlmAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat, path,
-                 foregound_color=(255, 255, 255),
-                 background_color=(10, 10, 10),
-                 padding_color=(60, 60, 60)):
+    def __init__(self, width, height, frame_queue, repeat,
+                 **kwargs):
         super().__init__(width, height, frame_queue, repeat)
 
-        self.path = Path(path)
+        params = BlmParameter(**kwargs)
+
+        self.path = Path(params.path)
         if not self.path.is_file():
-            raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
+            raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.path)
         self.name = "blm.{}".format(self.path.stem)
 
         self.load_frames()
 
-        self.foregound_color = foregound_color
-        self.background_color = background_color
-        self.padding_color = padding_color
+        self.foregound_color = params.foregound_color
+        self.background_color = params.background_color
+        self.padding_color = params.padding_color
 
         print(self)
 
@@ -149,3 +157,17 @@ class BlmAnimation(AbstractAnimation):
                 "path": self.path, "foregound_color": self.foregound_color,
                 "background_color": self.background_color,
                 "padding_color": self.padding_color}
+
+
+class BlmController(AbstractAnimationController):
+    @property
+    def animation_class(self):
+        return BlmAnimation
+
+    @property
+    def animation_variants(self):
+        return None
+
+    @property
+    def animation_parameters(self):
+        return BlmParameter
