@@ -64,9 +64,6 @@ class Main():
         except KeyError:
             raise RuntimeError("Display hardware '{}' not known.".format(hardware))
 
-        # get all available animations
-        self.animations = self.__load_animations()
-
         # the current running animation
         self.current_animation = None
         self.animation_lock = threading.RLock()
@@ -78,6 +75,9 @@ class Main():
         self.http_server = None
         self.rest_server = None
         self.tpm2_net_server = None
+
+        # get all available animations
+        self.animations = self.__load_animations()
 
     def __start_servers(self):
         # HTTP server
