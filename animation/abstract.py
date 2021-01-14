@@ -7,6 +7,75 @@ from threading import Thread, Event
 import time
 
 
+class AnimationParameterMeta(type):
+    def __new__(metacls, cls, bases, classdict):
+        # do not do this when initializing the main class
+        if cls != "AnimationParameter":
+            # get all static defined variables
+            params = {k: v for k, v in classdict.items() if not (k.startswith("_") or callable(v))}
+
+            # and remove them from the normal class dictionary
+            for key in params.keys():
+                classdict.pop(key)
+        else:
+            params = {}
+
+        # add new attributes
+        parameter_cls = super().__new__(metacls, cls, bases, classdict)
+        parameter_cls._params_map_ = params
+        parameter_cls._params_names_ = list(params)
+
+        return parameter_cls
+
+    def __dir__(cls):
+        return (['__class__', '__doc__', '__members__', '__module__'] +
+                cls._params_map_)
+
+    def __getattr__(cls, name):
+        try:
+            return cls._params_map_[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+    def __setattr__(cls, name, value):
+        params_map = cls.__dict__.get('_params_map_', {})
+        if name in params_map:
+            raise AttributeError('Cannot reassign members.')
+        super().__setattr__(name, value)
+
+    def __delattr__(cls, attr):
+        if attr in cls._member_map_:
+            raise AttributeError(
+                    "%s: cannot delete Enum member." % cls.__name__)
+        super().__delattr__(attr)
+
+    @property
+    def names(cls):
+        return cls._params_names_
+
+
+class AnimationParameter(metaclass=AnimationParameterMeta):
+    def __init__(self, **params):
+        # preserve the class map
+        self._params_map_ = self._params_map_.copy()
+
+        # overwrite values in the instance
+        for k, v in params.items():
+            if k in self._params_map_:
+                self._params_map_[k] = v
+
+    def __dir__(self):
+        return (['__class__', '__doc__', '__module__'] +
+                self._params_map_)
+
+    def __getattr__(self, name):
+        # this method is needed to access the variables of the instance (not the class!)
+        try:
+            return self._params_map_[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+
 class AbstractAnimation(ABC, Thread):
     def __init__(self, width, height, frame_queue, repeat):
         super().__init__(daemon=True)
