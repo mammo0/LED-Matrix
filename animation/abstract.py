@@ -31,7 +31,7 @@ class AnimationParameterMeta(type):
         return parameter_cls
 
     def __dir__(cls):
-        return (['__class__', '__doc__', '__members__', '__module__'] +
+        return (['__class__', '__doc__', '__module__'] +
                 cls._params_map_)
 
     def __getattr__(cls, name):
@@ -51,6 +51,9 @@ class AnimationParameterMeta(type):
             raise AttributeError(
                     "%s: cannot delete Enum member." % cls.__name__)
         super().__delattr__(attr)
+
+    def __iter__(cls):
+        return cls._params_map_.iteritems()
 
     @property
     def names(cls):
@@ -77,6 +80,9 @@ class AnimationParameter(metaclass=AnimationParameterMeta):
             return self._params_map_[name]
         except KeyError:
             raise AttributeError(name) from None
+
+    def __iter__(self):
+        return self._params_map_.iteritems()
 
 
 class AbstractAnimation(ABC, Thread):
@@ -178,6 +184,11 @@ class AbstractAnimationController(ABC):
         if (not parameter or
                 self.animation_parameters is None):
             return {}
+
+        # an instance of AnimationParameter could also be supplied
+        if isinstance(parameter, AnimationParameter):
+            # convert it to a dictionary
+            return dict(parameter)
 
         if len(self.animation_parameters.names) == 1:
             # this is the only possible parameter, so pass it as it is
