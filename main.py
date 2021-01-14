@@ -29,9 +29,6 @@ RESOURCES_DIR = BASE_DIR / "resources"
 
 class Main():
     def __init__(self):
-        # TODO: remove this later; use absolute paths for loading resources below
-        os.chdir(BASE_DIR)
-
         # load config
         self.config = Configuration(allow_no_value=True)
         with open(CONFIG_FILE, "r") as f:
