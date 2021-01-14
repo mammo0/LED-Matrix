@@ -4,7 +4,7 @@ import time
 
 from PIL import Image, ImageDraw
 
-from animation.abstract import AbstractAnimation
+from animation.abstract import AbstractAnimation, AnimationParameter
 import numpy as np
 
 
@@ -13,21 +13,29 @@ class ClockVariant(Enum):
     digital = 2
 
 
+class ClockParameter(AnimationParameter):
+    # default values
+    background_color = (0, 0, 0)
+    divider_color = (255, 255, 255)
+    hour_color = (255, 0, 0)
+    minute_color = (255, 255, 255)
+
+
 class ClockAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat=False,
+    def __init__(self, width, height, frame_queue, repeat,
                  variant=ClockVariant.analog,
-                 background_color=(0, 0, 0), divider_color=(255, 255, 255),
-                 hour_color=(255, 0, 0), minute_color=(255, 255, 255)):
+                 **kwargs):
         super().__init__(width, height, frame_queue, repeat)
         self.name = "clock"
         self.variant = variant
 
-        self.background_color = background_color
-        self.divider_color = divider_color
-        self.hour_color = hour_color
-        self.minute_color = minute_color
+        params = ClockParameter(**kwargs)
+        self.background_color = params.background_color
+        self.divider_color = params.divider_color
+        self.hour_color = params.hour_color
+        self.minute_color = params.minute_color
 
-        self.background = Image.new("RGB", (width, height), background_color)
+        self.background = Image.new("RGB", (width, height), self.background_color)
 
         self.analog_middle_x = self.middle_calculation(width)
         self.analog_middle_y = self.middle_calculation(height)
