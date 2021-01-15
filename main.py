@@ -125,56 +125,47 @@ class Main():
         return animations
 
     def __show_default_animation(self):
-        self.animation_lock.acquire()
-
-        if self.current_animation is None:
-            self.start_animation(self.default_animation,
-                                 variant=self.default_animation_variant,
-                                 parameter=self.default_animation_parameter,
-                                 repeat=self.default_animation_repeat)
-
-        self.animation_lock.release()
+        with self.animation_lock:
+            if self.current_animation is None:
+                self.start_animation(self.default_animation,
+                                     variant=self.default_animation_variant,
+                                     parameter=self.default_animation_parameter,
+                                     repeat=self.default_animation_repeat)
 
     def __clear_display(self):
         self.display.clear_buffer()
         self.display.show()
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
-        self.animation_lock.acquire()
+        with self.animation_lock:
+            # stop any currently running animation
+            self.stop_animation()
 
-        # stop any currently running animation
-        self.stop_animation()
-
-        try:
-            # get the new animation
-            animation = self.animations[animation_name]
-        except KeyError:
-            eprint("The animation '%s' could not be found!" % animation_name)
-        else:
-            # start it
-            animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
-            self.current_animation = animation
-
-        self.animation_lock.release()
+            try:
+                # get the new animation
+                animation = self.animations[animation_name]
+            except KeyError:
+                eprint("The animation '%s' could not be found!" % animation_name)
+            else:
+                # start it
+                animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
+                self.current_animation = animation
 
     def stop_animation(self):
-        self.animation_lock.acquire()
+        with self.animation_lock:
+            # if there's already a running animation, stop it
+            if self.current_animation is not None:
+                self.current_animation.stop_animation()
+                self.current_animation = None
 
-        # if there's already a running animation, stop it
-        if self.current_animation is not None:
-            self.current_animation.stop_animation()
-            self.current_animation = None
-
-        # check if this method was called from start_animation above
-        if (sys._getframe().f_back.f_code !=  # code object of the calling method
-                self.start_animation.__code__):  # the code object of the above start_animation method
-            # if it's NOT called from above, show the default animation
-            # because then no other animation will be started afterwards
-            self.__show_default_animation()
-        else:
-            self.__clear_display()
-
-        self.animation_lock.release()
+            # check if this method was called from start_animation above
+            if (sys._getframe().f_back.f_code !=  # code object of the calling method
+                    self.start_animation.__code__):  # the code object of the above start_animation method
+                # if it's NOT called from above, show the default animation
+                # because then no other animation will be started afterwards
+                self.__show_default_animation()
+            else:
+                self.__clear_display()
 
     def get_current_animation_name(self):
         with self.animation_lock:
