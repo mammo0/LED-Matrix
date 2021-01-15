@@ -2,10 +2,12 @@
 This is the sceleton code for all animations.
 """
 
-from abc import abstractmethod, ABC
+from abc import abstractmethod, ABC, ABCMeta
 import json
 from threading import Thread, Event
 import time
+
+from simple_classproperty import ClasspropertyMeta, classproperty
 
 from common import eprint
 
@@ -128,7 +130,13 @@ class AbstractAnimation(ABC, Thread):
     #     duration. Of course repeats must be set to 0 then."""
 
 
-class AbstractAnimationController(ABC):
+class AbstractAnimationControllerMeta(ABCMeta, ClasspropertyMeta):
+    """
+    Dummy class for chaining meta classes
+    """
+
+
+class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     def __init__(self, width, height, frame_queue, resources_path):
         self.width = width  # width of frames to produce
         self.height = height  # height of frames to produce
@@ -136,6 +144,10 @@ class AbstractAnimationController(ABC):
         self.resources_path = resources_path  # path to the 'resources' directory
 
         self.animation_thread = None  # this variable contains the animation thread
+
+    @classproperty
+    def animation_name(cls):
+        return cls.__module__.rpartition(".")[-1]
 
     @property
     @abstractmethod

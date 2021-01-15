@@ -118,10 +118,9 @@ class Main():
 
         # use module names to identify the animations not the class names
         for _name, cls in animation_loader.plugins.items():
-            name = cls.__module__.rpartition(".")[-1]
-            animations[name] = cls(width=self.display_width, height=self.display_height,
-                                   frame_queue=self.frame_queue,
-                                   resources_path=RESOURCES_DIR)
+            animations[cls.animation_name] = cls(width=self.display_width, height=self.display_height,
+                                                 frame_queue=self.frame_queue,
+                                                 resources_path=RESOURCES_DIR)
 
         return animations
 
@@ -176,6 +175,13 @@ class Main():
             self.__clear_display()
 
         self.animation_lock.release()
+
+    def get_current_animation_name(self):
+        with self.animation_lock:
+            if self.current_animation is None:
+                return None
+
+            return self.current_animation.animation_name
 
     def mainloop(self):
         # start the server interfaces
