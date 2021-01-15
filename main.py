@@ -136,6 +136,10 @@ class Main():
 
         self.animation_lock.release()
 
+    def __clear_display(self):
+        self.display.clear_buffer()
+        self.display.show()
+
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         self.animation_lock.acquire()
 
@@ -168,6 +172,8 @@ class Main():
             # if it's NOT called from above, show the default animation
             # because then no other animation will be started afterwards
             self.__show_default_animation()
+        else:
+            self.__clear_display()
 
         self.animation_lock.release()
 
@@ -192,8 +198,7 @@ class Main():
         except KeyboardInterrupt:
             pass
 
-        self.display.clear_buffer()
-        self.display.show()
+        self.__clear_display()
 
         # stop the server interfaces
         self.__stop_servers()
