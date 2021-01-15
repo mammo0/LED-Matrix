@@ -3,8 +3,10 @@ This is the sceleton code for all animations.
 """
 
 from abc import abstractmethod, ABC, ABCMeta
+import ctypes
 import json
 from threading import Thread, Event
+import threading
 import time
 
 from simple_classproperty import ClasspropertyMeta, classproperty
@@ -119,6 +121,18 @@ class AbstractAnimation(ABC, Thread):
     def animate(self):
         """This is where frames are put to the frame_queue in correct time"""
 
+    @property
+    def thread_id(self):
+        # returns id of the respective thread
+        if hasattr(self, '_thread_id'):
+            return self._thread_id
+        for t_id, thread in threading._active.items():
+            if thread is self:
+                return t_id
+
+        # no id found
+        return -1
+
     # @property
     # @abstractmethod
     # def intrinsic_duration(self):
@@ -226,6 +240,16 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     def stop_antimation(self):
         # stop the animation if it's currently running.
         if (self.animation_thread and
-                isinstance(self.animation_thread, AbstractAnimation) and
                 self.animation_thread.is_alive()):
             self.animation_thread.stop_and_wait()
+
+            # if the thread is still alive, try to kill it
+            if self.animation_thread.is_alive():
+                thread_id = self.animation_thread.thread_id
+                if thread_id != -1:
+                    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
+                                                                     ctypes.py_object(SystemExit))
+                    if res > 1:
+                        ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
+                        eprint("Exception during killing of animation '%s'!" % self.animation_name)
+                        eprint("It may be saver to restart the program.")
