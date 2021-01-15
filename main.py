@@ -4,6 +4,7 @@ from configparser import NoSectionError, NoOptionError
 import os
 from pathlib import Path
 import queue
+import sys
 import threading
 import time
 
@@ -138,20 +139,37 @@ class Main():
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         self.animation_lock.acquire()
 
+        # stop any currently running animation
+        self.stop_animation()
+
         try:
+            # get the new animation
             animation = self.animations[animation_name]
         except KeyError:
             eprint("The animation '%s' could not be found!" % animation_name)
         else:
+            # start it
             animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
             self.current_animation = animation
 
         self.animation_lock.release()
 
     def stop_animation(self):
-        # TODO: this is for the servers
-        # TODO: make this method thread-safe (animation_lock)
-        pass
+        self.animation_lock.acquire()
+
+        # if there's already a running animation, stop it
+        if self.current_animation is not None:
+            self.current_animation.stop_animation()
+            self.current_animation = None
+
+        # check if this method was called from start_animation above
+        if (sys._getframe().f_back.f_code !=  # code object of the calling method
+                self.start_animation.__code__):  # the code object of the above start_animation method
+            # if it's NOT called from above, show the default animation
+            # because then no other animation will be started afterwards
+            self.__show_default_animation()
+
+        self.animation_lock.release()
 
     def mainloop(self):
         # start the server interfaces
