@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from configparser import NoSectionError, NoOptionError
+from enum import Enum
 import os
 from pathlib import Path
 import queue
@@ -63,20 +64,16 @@ class Main():
         except KeyError:
             raise RuntimeError("Display hardware '{}' not known.".format(hardware))
 
-        # the current running animation
-        self.current_animation = None
-        self.animation_lock = threading.RLock()
-
         # this is the queue that holds the frames to display
         self.frame_queue = queue.Queue(maxsize=1)
+
+        # animation controller
+        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue)
 
         # server interfaces
         self.http_server = None
         self.rest_server = None
         self.tpm2_net_server = None
-
-        # get all available animations
-        self.animations = self.__load_animations()
 
     def __start_servers(self):
         # HTTP server
@@ -110,71 +107,35 @@ class Main():
             self.tpm2_net_server.shutdown()
             self.tpm2_net_server.server_close()
 
-    def __load_animations(self):
-        animation_loader = Loader()
-        animation_loader.load_plugins((BASE_DIR / "animation").resolve(), AbstractAnimationController)
-
-        animations = {}
-
-        # use module names to identify the animations not the class names
-        for _name, cls in animation_loader.plugins.items():
-            animations[cls.animation_name] = cls(width=self.display_width, height=self.display_height,
-                                                 frame_queue=self.frame_queue,
-                                                 resources_path=RESOURCES_DIR)
-
-        return animations
-
     def __show_default_animation(self):
-        with self.animation_lock:
-            if self.current_animation is None:
-                self.start_animation(self.default_animation,
-                                     variant=self.default_animation_variant,
-                                     parameter=self.default_animation_parameter,
-                                     repeat=self.default_animation_repeat)
+        self.animation_controller.start_animation(self.default_animation,
+                                                  variant=self.default_animation_variant,
+                                                  parameter=self.default_animation_parameter,
+                                                  repeat=self.default_animation_repeat)
 
     def __clear_display(self):
         self.display.clear_buffer()
         self.display.show()
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
-        with self.animation_lock:
-            # stop any currently running animation
-            self.stop_animation()
+        self.animation_controller.start_animation(animation_name, variant=variant, parameter=parameter, repeat=repeat)
 
-            try:
-                # get the new animation
-                animation = self.animations[animation_name]
-            except KeyError:
-                eprint("The animation '%s' could not be found!" % animation_name)
-            else:
-                # start it
-                animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
-                self.current_animation = animation
+    def stop_animation(self, animation_name=None):
+        self.animation_controller.stop_animation(animation_name)
 
-    def stop_animation(self):
-        with self.animation_lock:
-            # if there's already a running animation, stop it
-            if self.current_animation is not None:
-                self.current_animation.stop_animation()
-                self.current_animation = None
-
-            # check if this method was called from start_animation above
-            if (sys._getframe().f_back.f_code !=  # code object of the calling method
-                    self.start_animation.__code__):  # the code object of the above start_animation method
-                # if it's NOT called from above, show the default animation
-                # because then no other animation will be started afterwards
-                self.__show_default_animation()
-            else:
-                self.__clear_display()
-
-    def get_current_animation_name(self):
-        with self.animation_lock:
-            if self.current_animation is None:
-                return None
-
-            return self.current_animation.animation_name
+        # check if this method was called from start_animation above
+        if (sys._getframe().f_back.f_code !=  # code object of the calling method
+                self.start_animation.__code__):  # the code object of the above start_animation method
+            # if it's NOT called from above, show the default animation
+            # because then no other animation will be started afterwards
+            self.__show_default_animation()
+        else:
+            self.__clear_display()
 
     def mainloop(self):
+        # start the animation controller
+        self.animation_controller.start()
+
         # start the server interfaces
         self.__start_servers()
 
@@ -199,6 +160,111 @@ class Main():
 
         # stop the server interfaces
         self.__stop_servers()
+
+
+class AnimationController(threading.Thread):
+    class _Event():
+        def __init__(self, event_type, parameter):
+            self.event_type = event_type
+            self.event_parameter = parameter
+
+    class _EventType(Enum):
+        start = 1
+        stop = 2
+
+    def __init__(self, display_width, display_height, display_frame_queue):
+        super().__init__(daemon=True)
+
+        self.display_width = display_width
+        self.display_height = display_height
+        self.display_frame_queue = display_frame_queue
+
+        self.stop_event = threading.Event()
+        self.controll_queue = queue.Queue()
+
+        # the current running animation
+        self.current_animation = None
+        self.animation_lock = threading.RLock()
+
+        # get all available animations
+        self.animations = self.__load_animations()
+
+    def __load_animations(self):
+        animation_loader = Loader()
+        animation_loader.load_plugins((BASE_DIR / "animation").resolve(), AbstractAnimationController)
+
+        animations = {}
+
+        # use module names to identify the animations not the class names
+        for _name, cls in animation_loader.plugins.items():
+            animations[cls.animation_name] = cls(width=self.display_width, height=self.display_height,
+                                                 frame_queue=self.display_frame_queue,
+                                                 resources_path=RESOURCES_DIR)
+
+        return animations
+
+    def __start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
+        with self.animation_lock:
+            # stop any currently running animation
+            self.__stop_animation()
+
+            try:
+                # get the new animation
+                animation = self.animations[animation_name]
+            except KeyError:
+                eprint("The animation '%s' could not be found!" % animation_name)
+            else:
+                # start it
+                animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
+                self.current_animation = animation
+
+    def __stop_animation(self, animation_name=None):
+        with self.animation_lock:
+            # if there's already a running animation, stop it
+            if self.current_animation is not None:
+                # but only if not a specific animation should be stopped
+                if (animation_name is not None and
+                        self.current_animation.animation_name != animation_name):
+                    return
+                self.current_animation.stop_animation()
+                self.current_animation = None
+
+    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
+        start_event = AnimationController._Event(AnimationController._EventType.start, {
+            "animation_name": animation_name,
+            "variant": variant,
+            "parameter": parameter,
+            "repeat": repeat
+        })
+        self.controll_queue.put(start_event)
+
+    def stop_animation(self, animation_name=None):
+        stop_event = AnimationController._Event(AnimationController._EventType.stop, {
+            "animation_name": animation_name
+        })
+        self.controll_queue.put(stop_event)
+
+    def get_current_animation_name(self):
+        with self.animation_lock:
+            if self.current_animation is None:
+                return None
+
+            return self.current_animation.animation_name
+
+    def run(self):
+        while not self.stop_event.is_set():
+            # get the next event
+            event = self.controll_queue.get()
+
+            # check the event type
+            if event.event_type == AnimationController._EventType.start:
+                self.__start_animation(**event.event_parameter)
+            elif event.event_type == AnimationController._EventType.stop:
+                self.__stop_animation(**event.event_parameter)
+
+    def stop(self):
+        self.stop_event.set()
+        self.join()
 
 
 if __name__ == "__main__":
