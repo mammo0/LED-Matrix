@@ -159,6 +159,8 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
         self.animation_thread = None  # this variable contains the animation thread
 
+        self.animation_running = Event()
+
     @classproperty
     def animation_name(cls):
         return cls.__module__.rpartition(".")[-1]
@@ -213,6 +215,9 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         # start the animation thread
         self.animation_thread.start()
 
+        # mark the animation as running
+        self.animation_running.set()
+
     def _validate_parameter(self, parameter):
         # if no parameter is specified
         if (not parameter or
@@ -253,3 +258,6 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                         ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
                         eprint("Exception during killing of animation '%s'!" % self.animation_name)
                         eprint("It may be saver to restart the program.")
+
+        # release running event
+        self.animation_running.clear()
