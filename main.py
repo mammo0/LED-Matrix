@@ -41,8 +41,12 @@ class Main():
             hardware = self.config.get("MAIN", option="Hardware")
             self.display_width = self.config.getint("MAIN", option="DisplayWidth")
             self.display_height = self.config.getint("MAIN", option="DisplayHeight")
+            self.display_brightness = self.config.getint("MAIN", option="Brightness")
         except (NoSectionError, NoOptionError):
             raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
+        if not 0 <= self.display_brightness <= 100:
+            eprint("Invalid brightness value '%d'! Using default value '85'." % self.display_brightness)
+            self.display_brightness = 85
 
         # get [DEFAULTANIMATION] options
         try:
@@ -60,6 +64,7 @@ class Main():
         try:
             self.display = display_loader.plugins[hardware.casefold()](self.display_width,
                                                                        self.display_height,
+                                                                       self.display_brightness,
                                                                        config=self.config.get_section(hardware))
         except KeyError:
             raise RuntimeError("Display hardware '{}' not known.".format(hardware))

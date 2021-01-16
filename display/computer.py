@@ -9,8 +9,11 @@ import numpy as np
 
 
 class Computer(AbstractDisplay):
-    def __init__(self, width, height, config):
-        super().__init__(width, height, config)
+    def __init__(self, width, height, brightness, config):
+        super().__init__(width, height, brightness, config)
+
+        # expecting float brightness 0 .. 1.0
+        self.brightness = brightness / 100
 
         self.margin = self.config.getint(None, option="Margin")
         self.size = self.config.getint(None, option="LEDSize")

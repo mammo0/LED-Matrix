@@ -8,15 +8,15 @@ import numpy as np
 
 
 class AbstractDisplay(abc.ABC):
-    def __init__(self, width, height, config):
+    def __init__(self, width, height, brightness, config):
         self.width = width
         self.height = height
+        self.brightness = brightness
         self.config = config
 
         self.num_pixels = self.height * self.width
         self._buffer = np.zeros((self.height, self.width, 3),
                                 dtype=np.uint8)  # 3 for red, green, blue
-        self.brightness = 1.0
 
     @property
     def buffer(self):

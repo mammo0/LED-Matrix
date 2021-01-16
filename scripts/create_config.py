@@ -18,6 +18,10 @@ Hardware = APA102
 DisplayWidth = 15
 DisplayHeight = 12
 
+# Set the brightness in percent [Default: 85]
+# Possible values: 0 <= x <= 100
+Brightness = 85
+
 # (De-)Activate the server interfaces that control the matrix.
 # Available servers:
 #     - HttpServer [Default: true]: TCP 8080

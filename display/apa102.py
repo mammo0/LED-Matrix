@@ -39,17 +39,16 @@ class Origin(Enum):
 
 
 SPI_MAX_SPEED_HZ = 16000000  # 500000 is library default as it seems
-MAX_BRIGHTNESS = 25
-DEFAULT_BRIGHTNESS = 15
+MAX_BRIGHTNESS = 31
 DEFAULT_GAMMA = 2.22
 
 
 class Apa102(AbstractDisplay):
-    def __init__(self, width, height, config):
-        super().__init__(width, height, config)
+    def __init__(self, width, height, brightness, config):
+        super().__init__(width, height, brightness, config)
 
-        # setup initial brightness level
-        self.brightness = DEFAULT_BRIGHTNESS / MAX_BRIGHTNESS
+        # set the brightness level for the LEDs
+        self.brightness = int((brightness / 100) * MAX_BRIGHTNESS)
 
         # init SPI interface
         self.spi = spidev.SpiDev()
@@ -200,9 +199,8 @@ class Apa102(AbstractDisplay):
         return ret
 
     def get_brightness_array(self):
-        brightness = int(MAX_BRIGHTNESS * self.brightness)
         led_frame_first_byte = \
-            (brightness & ~self.__led_frame_start) | self.__led_frame_start
+            (self.brightness & ~self.__led_frame_start) | self.__led_frame_start
         ret = np.array([led_frame_first_byte] * self.num_pixels,
                        dtype=np.uint8)
         return ret.reshape((self.height, self.width, 1))
