@@ -8,12 +8,11 @@ import numpy as np
 
 
 class Tpm2NetServer(socketserver.UDPServer):
-    def __init__(self, main_app):
+    def __init__(self, main_app, display_width, display_height):
         super().__init__(('', 65506), Tpm2NetHandler, bind_and_activate=True)
         self.main_app = main_app
-        self.tmp_buffer = np.zeros((self.main_app.display.height,
-                                    self.main_app.display.width,
-                                    3), dtype=np.uint8)
+        self.tmp_buffer = np.zeros((display_height, display_width, 3),
+                                   dtype=np.uint8)
         self.tmp_buffer_index = 0
         self.timeout = 3  # seconds
         self.last_time_received = None
@@ -35,7 +34,8 @@ class Tpm2NetServer(socketserver.UDPServer):
     def check_for_timeout(self):
         if self.last_time_received:
             if self.last_time_received + self.timeout < time.time():
-                self.main_app.receiving_data.clear()
+                # stop dummy animation
+                self.main_app.stop_animation("dummy")
                 self.last_time_received = None
                 self.timeout_timer = None
                 self.misbehaving = False
@@ -64,7 +64,9 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
 
         if packet_type == 0xDA:  # data frame
             # tell main_app that tpm2_net data is received
-            self.server.main_app.receiving_data.set()
+            if not self.server.main_app.is_animation_running("dummy"):
+                # use dummy animation, because the frame_queue gets filled here
+                self.server.main_app.start_animation("dummy")
             self.server.update_time()
 
             if packet_number == 0:
@@ -79,7 +81,7 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
             np.put(self.server.tmp_buffer, arange, list(data[6:-1]))
             self.server.tmp_buffer_index = self.server.tmp_buffer_index + frame_size
             if packet_number == (number_of_packets if not self.server.misbehaving else number_of_packets - 1):
-                if not self.server.main_app.current_animation:
+                if self.server.main_app.is_animation_running("dummy"):
                     self.server.main_app.frame_queue.put(self.server.tmp_buffer.copy())
         elif data[1] == 0xC0:  # command
             # NOT IMPLEMENTED

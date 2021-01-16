@@ -88,7 +88,7 @@ class Main():
 
         # TPM2Net server
         if self.config.getboolean("MAIN", "TPM2NetServer"):
-            self.tpm2_net_server = Tpm2NetServer(self)
+            self.tpm2_net_server = Tpm2NetServer(self, self.display_width, self.display_height)
             threading.Thread(target=self.tpm2_net_server.serve_forever, daemon=True).start()
 
     def __stop_servers(self):
