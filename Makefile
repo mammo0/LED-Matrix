@@ -37,7 +37,7 @@ production: config
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync
 
 install:
-	ln -s $(INSTALL_DIR) $(BASE_DIR)
+	ln -s $(BASE_DIR) $(INSTALL_DIR)
 	cp $(INITD_SCRIPT) $(INITD_DIR)/$(INITD_SERVICE)
 	rc-update add $(INITD_SERVICE)
 
