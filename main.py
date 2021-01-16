@@ -262,6 +262,8 @@ class AnimationController(threading.Thread):
             elif event.event_type == AnimationController._EventType.stop:
                 self.__stop_animation(**event.event_parameter)
 
+            self.controll_queue.task_done()
+
     def stop(self):
         self.stop_event.set()
         self.join()
