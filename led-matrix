@@ -1,0 +1,17 @@
+#!/sbin/openrc-run
+
+name=$RC_SVCNAME
+description="Alpine Linux autostart service."
+
+BASE_DIR=/usr/bin/ledmatrix
+
+command="$BASE_DIR/.venv/bin/python"
+command_args="main.py"
+command_background="yes"
+pidfile="/run/$RC_SVCNAME/$RC_SVCNAME.pid"
+start_stop_daemon_args="--chdir $BASE_DIR"
+
+
+depend() {
+    use net
+}
