@@ -167,13 +167,25 @@ class Main():
 
 class AnimationController(threading.Thread):
     class _Event():
-        def __init__(self, event_type, parameter):
+        def __init__(self, event_type, animation_name, parameter={}):
             self.event_type = event_type
+            self.animation_name = animation_name
             self.event_parameter = parameter
 
     class _EventType(Enum):
         start = 1
         stop = 2
+
+    class _EventQueue(queue.Queue):
+        def _put(self, item):
+            # check for duplicates
+            for event in self.queue:
+                # compare event type and the animation name
+                if (event.event_type == item.event_type and
+                        event.animation_name == item.animation_name):
+                    return
+
+            queue.Queue._put(self, item)
 
     def __init__(self, display_width, display_height, display_frame_queue):
         super().__init__(daemon=True)
@@ -183,7 +195,7 @@ class AnimationController(threading.Thread):
         self.display_frame_queue = display_frame_queue
 
         self.stop_event = threading.Event()
-        self.controll_queue = queue.Queue()
+        self.controll_queue = AnimationController._EventQueue()
 
         # the current running animation
         self.current_animation = None
@@ -233,18 +245,18 @@ class AnimationController(threading.Thread):
                 self.current_animation = None
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
-        start_event = AnimationController._Event(AnimationController._EventType.start, {
-            "animation_name": animation_name,
-            "variant": variant,
-            "parameter": parameter,
-            "repeat": repeat
-        })
+        start_event = AnimationController._Event(AnimationController._EventType.start,
+                                                 animation_name,
+                                                 {
+                                                     "variant": variant,
+                                                     "parameter": parameter,
+                                                     "repeat": repeat
+                                                 })
         self.controll_queue.put(start_event)
 
     def stop_animation(self, animation_name=None):
-        stop_event = AnimationController._Event(AnimationController._EventType.stop, {
-            "animation_name": animation_name
-        })
+        stop_event = AnimationController._Event(AnimationController._EventType.stop,
+                                                animation_name)
         self.controll_queue.put(stop_event)
 
     def is_animation_running(self, animation_name):
@@ -264,9 +276,9 @@ class AnimationController(threading.Thread):
 
             # check the event type
             if event.event_type == AnimationController._EventType.start:
-                self.__start_animation(**event.event_parameter)
+                self.__start_animation(event.animation_name, **event.event_parameter)
             elif event.event_type == AnimationController._EventType.stop:
-                self.__stop_animation(**event.event_parameter)
+                self.__stop_animation(event.animation_name, **event.event_parameter)
 
             self.controll_queue.task_done()
 
