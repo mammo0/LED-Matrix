@@ -132,6 +132,9 @@ class Main():
         else:
             self.__clear_display()
 
+    def is_animation_running(self, animation_name):
+        return self.animation_controller.is_animation_running(animation_name)
+
     def mainloop(self):
         # start the animation controller
         self.animation_controller.start()
@@ -244,12 +247,15 @@ class AnimationController(threading.Thread):
         })
         self.controll_queue.put(stop_event)
 
-    def get_current_animation_name(self):
-        with self.animation_lock:
-            if self.current_animation is None:
-                return None
+    def is_animation_running(self, animation_name):
+        try:
+            # get the animation
+            animation = self.animations[animation_name]
+        except KeyError:
+            eprint("The animation '%s' could not be found!" % animation_name)
+            return False
 
-            return self.current_animation.animation_name
+        return animation.animation_running.is_set()
 
     def run(self):
         while not self.stop_event.is_set():
