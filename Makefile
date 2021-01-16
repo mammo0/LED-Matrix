@@ -1,4 +1,8 @@
 BASE_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+INSTALL_DIR=/usr/bin/ledmatrix
+INITD_SERVICE=led-matrix
+INITD_SCRIPT=$(BASE_DIR)/$(INITD_SERVICE)
+INITD_DIR=/etc/init.d
 
 
 D_BUILD_IMAGE_TAG=matrix_venv_builder:latest
@@ -31,6 +35,17 @@ develop: config
 
 production: config
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync
+
+install:
+	ln -s $(INSTALL_DIR) $(BASE_DIR)
+	cp $(INITD_SCRIPT) $(INITD_DIR)/$(INITD_SERVICE)
+	rc-update add $(INITD_SERVICE)
+
+uninstall:
+	rc-update del $(INITD_SERVICE)
+	rm $(INITD_DIR)/$(INITD_SERVICE)
+	rm $(INSTALL_DIR)
+	
 
 run:
 ifeq ("$(wildcard $(BASE_DIR)/.venv)","")
