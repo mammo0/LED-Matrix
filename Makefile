@@ -3,7 +3,7 @@ INITD_SERVICE=ledmatrix
 INSTALL_DIR=/usr/local/$(INITD_SERVICE)
 INITD_SCRIPT=$(BASE_DIR)/$(INITD_SERVICE)
 INITD_DIR=/etc/init.d
-INITD_CONFIG_FILE=/etc/conf.d/$(INITD_SERVICE)
+INITD_CONFIG_FILE=/etc/$(INITD_SERVICE).ini
 
 
 D_BUILD_IMAGE_TAG=matrix_venv_builder:latest
