@@ -63,4 +63,9 @@ else
 	$(eval VENV_DIR:=$(BASE_DIR)/.venv)
 endif
 	$(eval PYTHON=$(VENV_DIR)/bin/python)
+ifeq ("$(wildcard $(INITD_CONFIG_FILE))","")
 	$(PYTHON) main.py
+else
+	@# use global config file if it exists
+	$(PYTHON) main.py -c $(INITD_CONFIG_FILE)
+endif
