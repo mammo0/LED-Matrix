@@ -1,4 +1,4 @@
-FROM balenalib/raspberry-pi-alpine:latest
+FROM balenalib/raspberry-pi-alpine:3.12
 
 
 ARG BUILD_UID=1000
