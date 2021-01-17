@@ -38,6 +38,9 @@ class Main():
         signal.signal(signal.SIGQUIT, self.__quit)
         signal.signal(signal.SIGTERM, self.__quit)
 
+        # needed for 'set_brightness' method
+        self.display = None
+
         # load config
         self.config = Configuration(allow_no_value=True)
         if config_file_path is None:
@@ -50,12 +53,9 @@ class Main():
             hardware = self.config.get("MAIN", option="Hardware")
             self.display_width = self.config.getint("MAIN", option="DisplayWidth")
             self.display_height = self.config.getint("MAIN", option="DisplayHeight")
-            self.display_brightness = self.config.getint("MAIN", option="Brightness")
+            self.set_brightness(self.config.getint("MAIN", option="Brightness"))
         except (NoSectionError, NoOptionError):
             raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
-        if not 0 <= self.display_brightness <= 100:
-            eprint("Invalid brightness value '%d'! Using default value '85'." % self.display_brightness)
-            self.display_brightness = 85
 
         # get [DEFAULTANIMATION] options
         try:
@@ -152,6 +152,17 @@ class Main():
 
     def is_animation_running(self, animation_name):
         return self.animation_controller.is_animation_running(animation_name)
+
+    def set_brightness(self, brightness):
+        if not 0 <= brightness <= 100:
+            eprint("Invalid brightness value '%d'! Using default value '85'." % self.display_brightness)
+            self.display_brightness = 85
+        else:
+            self.display_brightness = brightness
+
+        # apply to the current display if it's already initialized
+        if self.display:
+            self.display.set_brightness(brightness)
 
     def mainloop(self):
         # start the animation controller

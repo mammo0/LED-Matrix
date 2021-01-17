@@ -12,8 +12,7 @@ class Computer(AbstractDisplay):
     def __init__(self, width, height, brightness, config):
         super().__init__(width, height, brightness, config)
 
-        # expecting float brightness 0 .. 1.0
-        self.brightness = brightness / 100
+        self.set_brightness(brightness)
 
         self.margin = self.config.getint(None, option="Margin")
         self.size = self.config.getint(None, option="LEDSize")
@@ -25,6 +24,10 @@ class Computer(AbstractDisplay):
         self.surface = pygame.display.set_mode(self.window_size)
         pygame.display.set_caption("RibbaPi {}x{}".format(width, height))
         self.show()
+
+    def set_brightness(self, brightness):
+        # expecting float brightness 0 .. 1.0
+        self.brightness = brightness / 100
 
     def show(self, gamma=False):
         for event in pygame.event.get():

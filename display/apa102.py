@@ -47,8 +47,7 @@ class Apa102(AbstractDisplay):
     def __init__(self, width, height, brightness, config):
         super().__init__(width, height, brightness, config)
 
-        # set the brightness level for the LEDs
-        self.brightness = int((brightness / 100) * MAX_BRIGHTNESS)
+        self.set_brightness(brightness)
 
         # init SPI interface
         self.spi = spidev.SpiDev()
@@ -211,6 +210,10 @@ class Apa102(AbstractDisplay):
                            flags=['external_loop', 'buffered'],
                            order='F'):
             x[...] = self.__gamma8[x]
+
+    def set_brightness(self, brightness):
+        # set the brightness level for the LEDs
+        self.brightness = int((brightness / 100) * MAX_BRIGHTNESS)
 
     def show(self, gamma=False):
         if gamma:
