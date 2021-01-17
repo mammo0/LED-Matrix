@@ -1,6 +1,6 @@
 BASE_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-INSTALL_DIR=/usr/bin/ledmatrix
 INITD_SERVICE=ledmatrix
+INSTALL_DIR=/usr/local/$(INITD_SERVICE)
 INITD_SCRIPT=$(BASE_DIR)/$(INITD_SERVICE)
 INITD_DIR=/etc/init.d
 

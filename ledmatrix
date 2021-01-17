@@ -3,7 +3,7 @@
 name=$RC_SVCNAME
 description="Alpine Linux autostart service."
 
-BASE_DIR=/usr/bin/ledmatrix
+BASE_DIR=/usr/local/$RC_SVCNAME
 
 command="$BASE_DIR/.venv/bin/python"
 command_args="main.py"
