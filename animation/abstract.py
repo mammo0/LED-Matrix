@@ -242,7 +242,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
         return parsed_p
 
-    def stop_antimation(self):
+    def stop_animation(self):
         # stop the animation if it's currently running.
         if (self.animation_thread and
                 self.animation_thread.is_alive()):
