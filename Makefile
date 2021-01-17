@@ -3,6 +3,7 @@ INITD_SERVICE=ledmatrix
 INSTALL_DIR=/usr/local/$(INITD_SERVICE)
 INITD_SCRIPT=$(BASE_DIR)/$(INITD_SERVICE)
 INITD_DIR=/etc/init.d
+INITD_CONFIG_FILE=/etc/conf.d/$(INITD_SERVICE)
 
 
 D_BUILD_IMAGE_TAG=matrix_venv_builder:latest
@@ -38,12 +39,20 @@ production: config
 
 install:
 	ln -s $(BASE_DIR) $(INSTALL_DIR)
+ifeq ("$(wildcard $(CONFIG_FILE))","")
+	@# create a new config file at the install point
+	$(BASE_DIR)/scripts/create_config.py $(INITD_CONFIG_FILE)
+else
+	@# copy the already existing config file
+	cp $(CONFIG_FILE) $(INITD_CONFIG_FILE)
+endif
 	cp $(INITD_SCRIPT) $(INITD_DIR)/$(INITD_SERVICE)
 	rc-update add $(INITD_SERVICE)
 
 uninstall:
 	rc-update del $(INITD_SERVICE)
 	rm $(INITD_DIR)/$(INITD_SERVICE)
+	rm $(INITD_CONFIG_FILE)
 	rm $(INSTALL_DIR)
 	
 

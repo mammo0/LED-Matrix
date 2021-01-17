@@ -5,10 +5,12 @@ description="Alpine Linux autostart service."
 
 BASE_DIR=/usr/local/$RC_SVCNAME
 
-command="$BASE_DIR/.venv/bin/python"
-command_args="main.py"
-command_background="yes"
+cfgfile="/etc/conf.d/$RC_SVCNAME"
 pidfile="/run/$RC_SVCNAME.pid"
+
+command="$BASE_DIR/.venv/bin/python"
+command_args="main.py -c ${cfgfile}"
+command_background="yes"
 start_stop_daemon_args="--chdir $BASE_DIR"
 
 
