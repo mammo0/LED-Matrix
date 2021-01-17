@@ -5,9 +5,9 @@ from enum import Enum
 import os
 from pathlib import Path
 import queue
+import signal
 import sys
 import threading
-import time
 
 from simple_plugin_loader import Loader
 
@@ -31,6 +31,12 @@ RESOURCES_DIR = BASE_DIR / "resources"
 
 class Main():
     def __init__(self):
+        # catch SIGINT, SIGQUIT and SIGTERM
+        self.quit_signal = threading.Event()
+        signal.signal(signal.SIGINT, self.__quit)
+        signal.signal(signal.SIGQUIT, self.__quit)
+        signal.signal(signal.SIGTERM, self.__quit)
+
         # load config
         self.config = Configuration(allow_no_value=True)
         with open(CONFIG_FILE, "r") as f:
@@ -122,6 +128,10 @@ class Main():
         self.display.clear_buffer()
         self.display.show()
 
+    def __quit(self, *_):
+        print("Exiting...")
+        self.quit_signal.set()
+
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         self.animation_controller.start_animation(animation_name, variant=variant, parameter=parameter, repeat=repeat)
 
@@ -150,19 +160,17 @@ class Main():
         # show the default animation
         self.__show_default_animation()
 
-        try:
-            while True:
-                # check if there is a frame that needs to be displayed
-                if not self.frame_queue.empty():
-                    # get frame and display it
-                    self.display.buffer = self.frame_queue.get()
-                    self.frame_queue.task_done()
-                    self.display.show(gamma=True)
+        # run until '__quit' method was called
+        while not self.quit_signal.is_set():
+            # check if there is a frame that needs to be displayed
+            if not self.frame_queue.empty():
+                # get frame and display it
+                self.display.buffer = self.frame_queue.get()
+                self.frame_queue.task_done()
+                self.display.show(gamma=True)
 
-                # to limit CPU usage do not go faster than 60 "fps"
-                time.sleep(1/60)
-        except KeyboardInterrupt:
-            pass
+            # to limit CPU usage do not go faster than 60 "fps"
+            self.quit_signal.wait(1/60)
 
         self.__clear_display()
 
