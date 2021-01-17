@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 from configparser import NoSectionError, NoOptionError
 from enum import Enum
 import os
@@ -30,7 +31,7 @@ RESOURCES_DIR = BASE_DIR / "resources"
 
 
 class Main():
-    def __init__(self):
+    def __init__(self, config_file_path=None):
         # catch SIGINT, SIGQUIT and SIGTERM
         self.quit_signal = threading.Event()
         signal.signal(signal.SIGINT, self.__quit)
@@ -39,7 +40,9 @@ class Main():
 
         # load config
         self.config = Configuration(allow_no_value=True)
-        with open(CONFIG_FILE, "r") as f:
+        if config_file_path is None:
+            config_file_path = CONFIG_FILE
+        with open(config_file_path, "r") as f:
             self.config.read_file(f)
 
         # get [MAIN] options
@@ -301,7 +304,16 @@ class AnimationController(threading.Thread):
 
 
 if __name__ == "__main__":
-    app = Main()
+    # cli parser
+    parser = argparse.ArgumentParser(description="LED-Matrix main control application.")
+    parser.add_argument("-c", "--config-file", type=Path,
+                        help="The path of the configuration file.")
+
+    # get config path
+    args = parser.parse_args(sys.argv[1:])
+
+    # load the main application
+    app = Main(args.config_file)
     app.display.show()
 
     app.mainloop()
