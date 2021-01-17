@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys
 
 import pygame
@@ -52,12 +50,3 @@ class Computer(AbstractDisplay):
 
         pygame.display.update()
         # pygame.event.clear()
-
-
-if __name__ == "__main__":
-    display = Computer()
-#    display.run_benchmark()
-    display.create_test_pattern()
-    display.show()
-    import time
-    time.sleep(5)

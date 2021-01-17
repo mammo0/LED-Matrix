@@ -1,10 +1,7 @@
-#!/usr/bin/env python3
-
 """
 This module implements a display consisting of APA102 leds.
 """
 from enum import Enum
-import time
 
 import spidev
 
@@ -227,36 +224,3 @@ class Apa102(AbstractDisplay):
             + reindexed_frames.flatten().tolist() \
             + self.__end_frame
         self.spi.writebytes(to_send)
-
-
-if __name__ == "__main__":
-    matrix = Apa102()
-    print(matrix)
-
-    matrix.run_benchmark()
-    matrix.run_benchmark(gamma=True)
-
-    matrix.create_test_pattern()
-    matrix.show(gamma=False)
-    time.sleep(5)
-    matrix.create_test_pattern()
-    matrix.show(gamma=True)
-    time.sleep(5)
-
-    matrix.clear_buffer()
-    matrix.show()
-
-    import random
-    try:
-        while(1):
-            x = random.randint(0, 15)
-            y = random.randint(0, 15)
-            red = random.randint(0, 255)
-            green = random.randint(0, 255)
-            blue = random.randint(0, 255)
-            matrix.set_pixel_at_coord(x, y, (red, green, blue))
-            matrix.show(gamma=True)
-    except KeyboardInterrupt:
-        pass
-    matrix.clear_buffer()
-    matrix.show()
