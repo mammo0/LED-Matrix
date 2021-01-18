@@ -1,8 +1,8 @@
-from bottle import template
+from bottle import template, static_file, request, redirect
 import bottle
 
 from common import RESOURCES_DIR
-from common.bottle import BottleCBVMeta, get
+from common.bottle import BottleCBVMeta, get, post
 from common.wsgi import CustomWSGIRefServer
 
 
@@ -16,6 +16,8 @@ class HttpServer(metaclass=BottleCBVMeta):
         self.__main_app = main_app
         self.__port = port
 
+        self.__js_dir = HTTP_RESOURCES_DIR / "js"
+
         self.__wsgi_server = CustomWSGIRefServer(port=8080, quiet=True)
 
     def start(self):
@@ -27,3 +29,18 @@ class HttpServer(metaclass=BottleCBVMeta):
     @get("/")
     def index(self):
         return template("index")
+
+    @get("/basic_settings")
+    def basic_settings(self):
+        return template("basic_settings", current_brightness=self.__main_app.display_brightness)
+
+    @post("/basic_settings/set_brightness")
+    def set_brightness(self):
+        value = request.forms.get("brightness_value")
+        self.__main_app.set_brightness(int(value))
+        # go back to the settings page
+        redirect("/basic_settings")
+
+    @get("/js/<file_name>")
+    def load_js(self, file_name):
+        return static_file(file_name, root=self.__js_dir, mimetype="text/javascript")

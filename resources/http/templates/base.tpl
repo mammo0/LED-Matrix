@@ -6,6 +6,8 @@
     <title>{{title}}</title>
     <meta name="author" content="">
     <meta name="description" content="">
+
+    <script src="js/slider.js"></script>
 </head>
 
 <body>
