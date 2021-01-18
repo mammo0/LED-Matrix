@@ -7,6 +7,7 @@ from common import eprint
 class CustomWSGIRefServer(WSGIRefServer):
     def __init__(self, host='127.0.0.1', port=8080, **options):
         WSGIRefServer.__init__(self, host=host, port=port, **options)
+        self.quiet = options.get("quiet", False)
 
         self.__server = None
         self.__server_started = Event()
