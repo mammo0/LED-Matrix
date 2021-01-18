@@ -3,7 +3,6 @@
 import argparse
 from configparser import NoSectionError, NoOptionError
 from enum import Enum
-import os
 from pathlib import Path
 import queue
 import signal
@@ -13,7 +12,7 @@ import threading
 from simple_plugin_loader import Loader
 
 from animation.abstract import AbstractAnimationController
-from common import eprint
+from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
@@ -25,11 +24,6 @@ from server.tpm2_net import Tpm2NetServer
 # add timer that displays a textmessage from predefined list of messages
 # restructure other animations
 # make mood light animation
-BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
-CONFIG_FILE = BASE_DIR / "config.ini"
-RESOURCES_DIR = BASE_DIR / "resources"
-
-
 class Main():
     def __init__(self, config_file_path=None):
         # catch SIGINT, SIGQUIT and SIGTERM
@@ -44,7 +38,7 @@ class Main():
         # load config
         self.config = Configuration(allow_no_value=True)
         if config_file_path is None:
-            config_file_path = CONFIG_FILE
+            config_file_path = DEFAULT_CONFIG_FILE
         with open(config_file_path, "r") as f:
             self.config.read_file(f)
 
@@ -55,13 +49,13 @@ class Main():
             self.display_height = self.config.getint("MAIN", option="DisplayHeight")
             self.set_brightness(self.config.getint("MAIN", option="Brightness"))
         except (NoSectionError, NoOptionError):
-            raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
+            raise RuntimeError("The configuration file '{}' is not valid!".format(DEFAULT_CONFIG_FILE))
 
         # get [DEFAULTANIMATION] options
         try:
             self.default_animation = self.config.get("DEFAULTANIMATION", option="Animation")
         except (NoSectionError, NoOptionError):
-            raise RuntimeError("The configuration file '{}' is not valid!".format(CONFIG_FILE))
+            raise RuntimeError("The configuration file '{}' is not valid!".format(DEFAULT_CONFIG_FILE))
         self.default_animation_variant = self.config.get("DEFAULTANIMATION", option="Variant", fallback=None)
         self.default_animation_parameter = self.config.get("DEFAULTANIMATION", option="Parameter", fallback=None)
         self.default_animation_repeat = self.config.getint("DEFAULTANIMATION", option="Repeat", fallback=0)
