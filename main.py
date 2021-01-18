@@ -93,7 +93,7 @@ class Main():
         # HTTP server
         if self.config.getboolean("MAIN", "HttpServer"):
             self.http_server = HttpServer(self)
-            threading.Thread(target=self.http_server.serve_forever, daemon=True).start()
+            self.http_server.start()
 
         # REST server
         if self.config.getboolean("MAIN", "RestServer"):
@@ -109,8 +109,7 @@ class Main():
         # stop only the servers that are started
         # HTTP server
         if self.http_server:
-            self.http_server.shutdown()
-            self.http_server.server_close()
+            self.http_server.stop()
 
         # REST server
         if self.rest_server:
