@@ -3,7 +3,7 @@ window.addEventListener("load", function(){
 
     for(container of slider_container){
         var slider = container.getElementsByClassName("slider")[0];
-        var output = container.getElementsByClassName("slider_value")[0];
+        var output = container.getElementsByClassName("slider-value")[0];
 
         if(output){
             output.innerHTML = slider.value;  // Display the default slider value

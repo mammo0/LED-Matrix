@@ -7,10 +7,10 @@
                 <h3 class="m-0">Main</h3>
             </div>
             <div class="card-body">
-                <form id="main-settings-form" method="post">
+                <form id="main_settings_form" method="post">
                     <div class="form-group">
-                        <label for="setting-brightness-container">Brightness</label>
-                        <div id="setting-brightness-container" class="slider_container d-flex align-items-center">
+                        <label for="setting_brightness_container">Brightness</label>
+                        <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
                             <input id="setting_brightness_slider"
                                    class="custom-range slider flex-grow-1 mr-2"
                                    style="width:1px"
@@ -18,21 +18,21 @@
                                    type="range"
                                    min="0" max="100" value="{{current_brightness}}">
                             <span class="pr-2">
-                                <span class="slider_value badge badge-warning" style="font-size:3ex;width:3em"></span>
+                                <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
                             </span>
                             <a id="setting_brightness_preview_btn" class="btn btn-success">Preview</a>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="setting-display-width">Display Width</label>
-                        <input id="setting-display-width"
+                        <label for="setting_display_width">Display Width</label>
+                        <input id="setting_display_width"
                                class="form-control"
                                type="number"
                                min="1">
                     </div>
                     <div class="form-group">
-                        <label for="setting-display-height">Display Height</label>
-                        <input id="setting-display-height"
+                        <label for="setting_display_height">Display Height</label>
+                        <input id="setting_display_height"
                                class="form-control"
                                type="number"
                                min="1">
@@ -40,7 +40,7 @@
                 </form>
             </div>
             <div class="card-footer">
-                <button type="submit" class="btn btn-primary float-right" form="main-settings-form">Save</button>
+                <button type="submit" class="btn btn-primary float-right" form="main_settings_form">Save</button>
             </div>
         </div>
     </div>
