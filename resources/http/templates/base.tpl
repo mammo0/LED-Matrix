@@ -18,7 +18,9 @@
 
 <body>
 
-    <div class="container">
+    % include("navbar.tpl", title=title)
+
+    <div class="container pt-3">
         {{!base}}
     </div>
 

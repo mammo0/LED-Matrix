@@ -1,6 +1,5 @@
 % rebase("base.tpl", title="Basic settings")
 
-<h2>Brightness</h2>
 <div class="main_settings row justify-content-center">
     <div class="col">
         <form action="/basic_settings/set_brightness" method="post">
