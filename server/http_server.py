@@ -17,6 +17,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         self.__port = port
 
         self.__js_dir = HTTP_RESOURCES_DIR / "js"
+        self.__css_dir = HTTP_RESOURCES_DIR / "css"
 
         self.__wsgi_server = CustomWSGIRefServer(port=8080, quiet=True)
 
@@ -41,6 +42,10 @@ class HttpServer(metaclass=BottleCBVMeta):
         # go back to the settings page
         redirect("/basic_settings")
 
-    @get("/js/<file_name>")
+    @get("/js/<file_name:path>")
     def load_js(self, file_name):
         return static_file(file_name, root=self.__js_dir, mimetype="text/javascript")
+
+    @get("/css/<file_name:path>")
+    def load_css(self, file_name):
+        return static_file(file_name, root=self.__css_dir, mimetype="text/css")

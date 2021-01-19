@@ -3,16 +3,23 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
     <title>{{title}}</title>
+
     <meta name="author" content="">
     <meta name="description" content="">
 
-    <script src="js/slider.js"></script>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script type="module" src="/js/bootstrap.native/bootstrap-native.esm.min.js"></script>
+    <script src="/js/slider.js"></script>
 </head>
 
 <body>
 
-    {{!base}}
+    <div class="container">
+        {{!base}}
+    </div>
 
 </body>
 
