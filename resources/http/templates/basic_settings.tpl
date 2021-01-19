@@ -11,10 +11,10 @@
                            name="brightness_value"
                            type="range"
                            min="0" max="100" value="{{current_brightness}}">
-                    <h3 class="pr-2">
-                        <span class="slider_value badge badge-info" style="width:3em"></span>
-                    </h3>
-                    <button class="btn" type="submit">Preview</button>
+                    <span class="pr-2">
+                        <span class="slider_value badge badge-warning" style="font-size:3ex;width:3em"></span>
+                    </span>
+                    <button class="btn btn-success" type="submit">Preview</button>
                 </div>
             </div>
         </form>
