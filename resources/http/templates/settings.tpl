@@ -40,7 +40,8 @@
                 </form>
             </div>
             <div class="card-footer">
-                <button type="submit" class="btn btn-primary float-right" form="main_settings_form">Save</button>
+                <button type="submit" class="btn btn-primary float-right ml-2" form="main_settings_form">Save</button>
+                <a class="btn btn-danger float-right" href="/settings/reset/main">Reset</a>
             </div>
         </div>
     </div>
