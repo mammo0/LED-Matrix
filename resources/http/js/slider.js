@@ -1,9 +1,9 @@
 window.onload = function(){
     var slider_container = document.getElementsByClassName("slider_container");
-    
-    for(i in slider_container){
-        var slider = slider_container[i].getElementsByClassName("slider")[0];
-        var output = slider_container[i].getElementsByClassName("slider_value")[0];
+
+    for(container of slider_container){
+        var slider = container.getElementsByClassName("slider")[0];
+        var output = container.getElementsByClassName("slider_value")[0];
 
         output.innerHTML = slider.value;  // Display the default slider value
 
@@ -13,4 +13,3 @@ window.onload = function(){
         }
     }
 };
- 
