@@ -1,4 +1,4 @@
-from bottle import template, static_file, request, redirect
+from bottle import template, static_file, request
 import bottle
 
 from common import RESOURCES_DIR
@@ -40,8 +40,6 @@ class HttpServer(metaclass=BottleCBVMeta):
     def set_brightness(self):
         value = request.forms.get("brightness_value")
         self.__main_app.set_brightness(int(value))
-        # go back to the settings page
-        redirect("/settings")
 
     @get("/js/<file_name:path>")
     def load_js(self, file_name):

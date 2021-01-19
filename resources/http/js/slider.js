@@ -1,4 +1,4 @@
-window.onload = function(){
+window.addEventListener("load", function(){
     var slider_container = document.getElementsByClassName("slider_container");
 
     for(container of slider_container){
@@ -14,4 +14,4 @@ window.onload = function(){
             }
         }
     }
-};
+});

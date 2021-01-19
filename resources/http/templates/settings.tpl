@@ -11,7 +11,8 @@
                     <div class="form-group">
                         <label for="setting-brightness-container">Brightness</label>
                         <div id="setting-brightness-container" class="slider_container d-flex align-items-center">
-                            <input class="custom-range slider flex-grow-1 mr-2"
+                            <input id="setting_brightness_slider"
+                                   class="custom-range slider flex-grow-1 mr-2"
                                    style="width:1px"
                                    name="brightness_value"
                                    type="range"
@@ -19,7 +20,7 @@
                             <span class="pr-2">
                                 <span class="slider_value badge badge-warning" style="font-size:3ex;width:3em"></span>
                             </span>
-                            <button class="btn btn-success">Preview</button>
+                            <a id="setting_brightness_preview_btn" class="btn btn-success">Preview</a>
                         </div>
                     </div>
                     <div class="form-group">
@@ -44,3 +45,17 @@
         </div>
     </div>
 </div>
+
+<script src="/js/post_request.js"></script>
+<script>
+    window.addEventListener("load", function(){
+        setting_brightness_preview_btn.onclick = function() {
+            // create a dynamic form object, that contains only the new brightness value
+            var form_data = new FormData();
+            form_data.append(setting_brightness_slider.name, setting_brightness_slider.value);
+
+            // send the request
+            post_request("/settings/set_brightness", form_data);
+        }
+    });
+</script>
