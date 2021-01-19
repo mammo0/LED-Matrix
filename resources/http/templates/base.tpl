@@ -11,6 +11,7 @@
     <meta name="description" content="">
 
     <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
     <script type="module" src="/js/bootstrap.native/bootstrap-native.esm.min.js"></script>
     <script src="/js/slider.js"></script>
 </head>

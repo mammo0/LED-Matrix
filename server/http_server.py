@@ -18,6 +18,7 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         self.__js_dir = HTTP_RESOURCES_DIR / "js"
         self.__css_dir = HTTP_RESOURCES_DIR / "css"
+        self.__fonts_dir = HTTP_RESOURCES_DIR / "fonts"
 
         self.__wsgi_server = CustomWSGIRefServer(port=8080, quiet=True)
 
@@ -49,3 +50,7 @@ class HttpServer(metaclass=BottleCBVMeta):
     @get("/css/<file_name:path>")
     def load_css(self, file_name):
         return static_file(file_name, root=self.__css_dir, mimetype="text/css")
+
+    @get("/fonts/<file_name:path>")
+    def load_font(self, file_name):
+        return static_file(file_name, root=self.__fonts_dir)

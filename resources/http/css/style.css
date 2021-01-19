@@ -1,0 +1,7 @@
+/* overwrite font path for bootstrap icons */
+@import url("./bootstrap-icons.css");
+@font-face {
+  font-family: "bootstrap-icons";
+  src: url("/fonts/bootstrap-icons.woff") format("woff"),
+url("/fonts/bootstrap-icons.woff2") format("woff2");
+}
