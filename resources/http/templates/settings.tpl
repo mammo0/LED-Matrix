@@ -7,7 +7,7 @@
                 <h3 class="m-0">Main</h3>
             </div>
             <div class="card-body">
-                <form id="main_settings_form" method="post">
+                <form id="main_settings_form" method="post" autocomplete="off">
                     <div class="form-group">
                         <label for="setting_brightness_container">Brightness</label>
                         <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
