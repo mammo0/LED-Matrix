@@ -8,46 +8,62 @@
 
 <div class="main_settings row justify-content-center">
     <div class="col">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="m-0">Main</h3>
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="tab_main" data-toggle="tab" href="#tab_pane_main" role="tab" aria-controls="tab_pane_main" aria-selected="true">
+                    Main
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="tab_default_animation" data-toggle="tab" href="#tab_pane_default_animation_pane" role="tab" aria-controls="tab_pane_default_animation_pane" aria-selected="true">
+                    Default Animation
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane show active" id="tab_pane_main" role="tabpanel" aria-labelledby="tab_main">
+                <div class="card border-0">
+                    <div class="card-body border-left border-right">
+                        <form id="main_settings_form" method="post" autocomplete="off">
+                            <div class="form-group">
+                                <label for="setting_brightness_container">Brightness</label>
+                                <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
+                                    <input id="setting_brightness_slider"
+                                           class="custom-range slider flex-grow-1 mr-2"
+                                           style="width:1px"
+                                           name="brightness_value"
+                                           type="range"
+                                           min="0" max="100" value="{{current_brightness}}">
+                                    <span class="pr-2">
+                                        <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
+                                    </span>
+                                    <a id="setting_brightness_preview_btn" class="btn btn-success">Preview</a>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="setting_display_width">Display Width</label>
+                                <input id="setting_display_width"
+                                       class="form-control"
+                                       type="number"
+                                       min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="setting_display_height">Display Height</label>
+                                <input id="setting_display_height"
+                                       class="form-control"
+                                       type="number"
+                                       min="1">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer border rounded-bottom">
+                        <button type="submit" class="btn btn-primary float-right ml-2" form="main_settings_form">Save</button>
+                        <a class="btn btn-danger float-right" href="/settings/reset/main">Reset</a>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <form id="main_settings_form" method="post" autocomplete="off">
-                    <div class="form-group">
-                        <label for="setting_brightness_container">Brightness</label>
-                        <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
-                            <input id="setting_brightness_slider"
-                                   class="custom-range slider flex-grow-1 mr-2"
-                                   style="width:1px"
-                                   name="brightness_value"
-                                   type="range"
-                                   min="0" max="100" value="{{current_brightness}}">
-                            <span class="pr-2">
-                                <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
-                            </span>
-                            <a id="setting_brightness_preview_btn" class="btn btn-success">Preview</a>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="setting_display_width">Display Width</label>
-                        <input id="setting_display_width"
-                               class="form-control"
-                               type="number"
-                               min="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="setting_display_height">Display Height</label>
-                        <input id="setting_display_height"
-                               class="form-control"
-                               type="number"
-                               min="1">
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer">
-                <button type="submit" class="btn btn-primary float-right ml-2" form="main_settings_form">Save</button>
-                <a class="btn btn-danger float-right" href="/settings/reset/main">Reset</a>
+            <div class="tab-pane" id="tab_pane_default_animation_pane" role="tabpanel" aria-labelledby="tab_default_animation">
+                <!-- TODO: fill with default animation settings -->
             </div>
         </div>
     </div>
