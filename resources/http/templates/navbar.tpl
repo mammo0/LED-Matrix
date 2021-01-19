@@ -12,9 +12,9 @@
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="/basic_settings">
+                    <a class="nav-link" href="/settings">
                         <span class="bi-gear-fill"></span>
-                        <span class="d-none d-sm-inline">Basic Settings</span>
+                        <span class="d-none d-sm-inline">Settings</span>
                     </a>
                 </li>
             </ul>

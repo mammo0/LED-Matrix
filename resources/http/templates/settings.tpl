@@ -7,7 +7,7 @@
                 <h3 class="m-0">Main</h3>
             </div>
             <div class="card-body">
-                <form id="main-settings-form" action="/basic_settings/set_brightness" method="post">
+                <form id="main-settings-form" method="post">
                     <div class="form-group">
                         <label for="setting-brightness-container">Brightness</label>
                         <div id="setting-brightness-container" class="slider_container d-flex align-items-center">

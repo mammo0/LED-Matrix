@@ -32,16 +32,16 @@ class HttpServer(metaclass=BottleCBVMeta):
     def index(self):
         return template("index")
 
-    @get("/basic_settings")
-    def basic_settings(self):
-        return template("basic_settings", current_brightness=self.__main_app.display_brightness)
+    @get("/settings")
+    def settings(self):
+        return template("settings", current_brightness=self.__main_app.display_brightness)
 
-    @post("/basic_settings/set_brightness")
+    @post("/settings/set_brightness")
     def set_brightness(self):
         value = request.forms.get("brightness_value")
         self.__main_app.set_brightness(int(value))
         # go back to the settings page
-        redirect("/basic_settings")
+        redirect("/settings")
 
     @get("/js/<file_name:path>")
     def load_js(self, file_name):
