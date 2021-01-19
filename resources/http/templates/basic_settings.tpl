@@ -2,21 +2,45 @@
 
 <div class="main_settings row justify-content-center">
     <div class="col">
-        <form action="/basic_settings/set_brightness" method="post">
-            <div class="form-group">
-                <label for="brightness-form-container">Brightness</label>
-                <div id="brightness-form-container" class="slider_container d-flex align-items-center">
-                    <input class="custom-range slider flex-grow-1 mr-2"
-                           style="width:1px"
-                           name="brightness_value"
-                           type="range"
-                           min="0" max="100" value="{{current_brightness}}">
-                    <span class="pr-2">
-                        <span class="slider_value badge badge-warning" style="font-size:3ex;width:3em"></span>
-                    </span>
-                    <button class="btn btn-success" type="submit">Preview</button>
-                </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="m-0">Main</h3>
             </div>
-        </form>
+            <div class="card-body">
+                <form id="main-settings-form" action="/basic_settings/set_brightness" method="post">
+                    <div class="form-group">
+                        <label for="setting-brightness-container">Brightness</label>
+                        <div id="setting-brightness-container" class="slider_container d-flex align-items-center">
+                            <input class="custom-range slider flex-grow-1 mr-2"
+                                   style="width:1px"
+                                   name="brightness_value"
+                                   type="range"
+                                   min="0" max="100" value="{{current_brightness}}">
+                            <span class="pr-2">
+                                <span class="slider_value badge badge-warning" style="font-size:3ex;width:3em"></span>
+                            </span>
+                            <button class="btn btn-success">Preview</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="setting-display-width">Display Width</label>
+                        <input id="setting-display-width"
+                               class="form-control"
+                               type="number"
+                               min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="setting-display-height">Display Height</label>
+                        <input id="setting-display-height"
+                               class="form-control"
+                               type="number"
+                               min="1">
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary float-right" form="main-settings-form">Save</button>
+            </div>
+        </div>
     </div>
 </div>
