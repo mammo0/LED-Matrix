@@ -1,4 +1,10 @@
-% rebase("base.tpl", title="Basic settings")
+% setdefault('page_title', 'Settings')
+% rebase("base.tpl", title=page_title)
+
+<h1>
+    {{page_title}}
+    <hr/>
+</h1>
 
 <div class="main_settings row justify-content-center">
     <div class="col">
