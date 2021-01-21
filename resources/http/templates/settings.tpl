@@ -18,7 +18,7 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="tab_default_animation" data-toggle="tab" href="#tab_pane_default_animation_pane" role="tab" aria-controls="tab_pane_default_animation_pane" aria-selected="true">
+                <a class="nav-link" id="tab_default_animation" data-toggle="tab" href="#tab_pane_default_animation" role="tab" aria-controls="tab_pane_default_animation" aria-selected="true">
                     Default Animation
                 </a>
             </li>
@@ -69,7 +69,7 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" id="tab_pane_default_animation_pane" role="tabpanel" aria-labelledby="tab_default_animation">
+            <div class="tab-pane" id="tab_pane_default_animation" role="tabpanel" aria-labelledby="tab_default_animation">
                 <!-- TODO: fill with default animation settings -->
             </div>
         </div>
