@@ -34,7 +34,11 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @get("/settings")
     def settings(self):
-        return template("settings", current_brightness=self.__main_app.display_brightness)
+        return template("settings",
+                        # provide the main config
+                        config=self.__main_app.config,
+                        # except the brightness value should be always actual
+                        current_brightness=self.__main_app.display_brightness)
 
     @post("/settings/set_brightness")
     def set_brightness(self):

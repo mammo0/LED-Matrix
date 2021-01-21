@@ -1,3 +1,6 @@
+% from common.config import Config
+
+
 % setdefault('page_title', 'Settings')
 % rebase("base.tpl", title=page_title)
 
@@ -45,13 +48,13 @@
                                 <label for="setting_services_container">Services</label>
                                 <div id="setting_services_container">
                                     <div class="form-check">
-                                        <input id="setting_rest_toggle" class="form-check-input" type="checkbox" name="enable_rest">
+                                        <input id="setting_rest_toggle" class="form-check-input" type="checkbox" name="enable_rest" {{"checked" if config.get(Config.MAIN.RestServer) else ""}}>
                                         <label class="form-check-label" for="setting_rest_toggle">
                                             REST Server
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input id="setting_tpm2net_toggle" class="form-check-input" type="checkbox" name="enable_tpm2net">
+                                        <input id="setting_tpm2net_toggle" class="form-check-input" type="checkbox" name="enable_tpm2net" {{"checked" if config.get(Config.MAIN.TPM2NetServer) else ""}}>
                                         <label class="form-check-label" for="setting_tpm2net_toggle">
                                             TPM2Net Server
                                         </label>
