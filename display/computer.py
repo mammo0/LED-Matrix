@@ -2,6 +2,7 @@ import sys
 
 import pygame
 
+from common.config import Config
 from display.abstract import AbstractDisplay
 import numpy as np
 
@@ -12,8 +13,8 @@ class Computer(AbstractDisplay):
 
         self.set_brightness(brightness)
 
-        self.margin = self.config.getint(None, option="Margin")
-        self.size = self.config.getint(None, option="LEDSize")
+        self.margin = self.config.get(Config.COMPUTER.Margin)
+        self.size = self.config.get(Config.COMPUTER.LEDSize)
 
         self.window_size = (width * self.size + (width + 1) * self.margin,
                             height * self.size + (height + 1) * self.margin)

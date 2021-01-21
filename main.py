@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-from configparser import NoSectionError, NoOptionError
 from enum import Enum
 from pathlib import Path
 import queue
@@ -13,7 +12,7 @@ from simple_plugin_loader import Loader
 
 from animation.abstract import AbstractAnimationController
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
-from common.config import Configuration
+from common.config import Configuration, Config
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
 from server.rest_server import RestServer
@@ -36,29 +35,21 @@ class Main():
         self.display = None
 
         # load config
-        self.config = Configuration(allow_no_value=True)
         if config_file_path is None:
             config_file_path = DEFAULT_CONFIG_FILE
-        with open(config_file_path, "r") as f:
-            self.config.read_file(f)
+        self.config = Configuration(config_file_path=config_file_path, allow_no_value=True)
 
         # get [MAIN] options
-        try:
-            hardware = self.config.get("MAIN", option="Hardware")
-            self.display_width = self.config.getint("MAIN", option="DisplayWidth")
-            self.display_height = self.config.getint("MAIN", option="DisplayHeight")
-            self.set_brightness(self.config.getint("MAIN", option="Brightness"))
-        except (NoSectionError, NoOptionError):
-            raise RuntimeError("The configuration file '{}' is not valid!".format(DEFAULT_CONFIG_FILE))
+        hardware = self.config.get(Config.MAIN.Hardware)
+        self.display_width = self.config.get(Config.MAIN.DisplayWidth)
+        self.display_height = self.config.get(Config.MAIN.DisplayHeight)
+        self.set_brightness(self.config.get(Config.MAIN.Brightness))
 
         # get [DEFAULTANIMATION] options
-        try:
-            self.default_animation = self.config.get("DEFAULTANIMATION", option="Animation")
-        except (NoSectionError, NoOptionError):
-            raise RuntimeError("The configuration file '{}' is not valid!".format(DEFAULT_CONFIG_FILE))
-        self.default_animation_variant = self.config.get("DEFAULTANIMATION", option="Variant", fallback=None)
-        self.default_animation_parameter = self.config.get("DEFAULTANIMATION", option="Parameter", fallback=None)
-        self.default_animation_repeat = self.config.getint("DEFAULTANIMATION", option="Repeat", fallback=0)
+        self.default_animation = self.config.get(Config.DEFAULTANIMATION.Animation)
+        self.default_animation_variant = self.config.get(Config.DEFAULTANIMATION.Variant)
+        self.default_animation_parameter = self.config.get(Config.DEFAULTANIMATION.Parameter)
+        self.default_animation_repeat = self.config.get(Config.DEFAULTANIMATION.Repeat)
 
         # load display plugins
         display_loader = Loader()
@@ -68,7 +59,7 @@ class Main():
             self.display = display_loader.plugins[hardware.casefold()](self.display_width,
                                                                        self.display_height,
                                                                        self.display_brightness,
-                                                                       config=self.config.get_section(hardware))
+                                                                       config=self.config)
         except KeyError:
             raise RuntimeError("Display hardware '{}' not known.".format(hardware))
 
@@ -85,17 +76,17 @@ class Main():
 
     def __start_servers(self):
         # HTTP server
-        if self.config.getboolean("MAIN", "HttpServer"):
+        if self.config.get(Config.MAIN.HttpServer):
             self.http_server = HttpServer(self)
             self.http_server.start()
 
         # REST server
-        if self.config.getboolean("MAIN", "RestServer"):
+        if self.config.get(Config.MAIN.RestServer):
             self.rest_server = RestServer(self)
             self.rest_server.start()
 
         # TPM2Net server
-        if self.config.getboolean("MAIN", "TPM2NetServer"):
+        if self.config.get(Config.MAIN.TPM2NetServer):
             self.tpm2_net_server = Tpm2NetServer(self, self.display_width, self.display_height)
             threading.Thread(target=self.tpm2_net_server.serve_forever, daemon=True).start()
 

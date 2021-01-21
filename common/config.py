@@ -1,23 +1,215 @@
 from configparser import ConfigParser
 import configparser
+from io import StringIO
+import shutil
+
+from common import eprint
+from common.structure import NestedStructure, Structure, StructureROMixin
 
 
-class Configuration(ConfigParser):
-    def get(self, section, option, *, raw=False, vars=None, fallback=configparser._UNSET):
-        if not section:
-            section = configparser.DEFAULTSECT
+class ConfigSection(NestedStructure, StructureROMixin):
+    def __init__(self, description=None):
+        if description is None:
+            self.__description = ""
+        elif isinstance(description, list):
+            self.__description = "\n".join(["# %s" % d for d in description])
+        else:
+            self.__description = "# %s" % description
 
-        return ConfigParser.get(self, section, option, raw=raw, vars=vars, fallback=fallback)
+    @property
+    def description(self):
+        return self.__description
 
-    def get_section(self, section):
-        """
-        Get a new instance of this class that only contains the values for a specific section.
-        The values are stored in the 'DEFAULTSECT' section.
-        """
-        section_config = Configuration()
-        config = dict(self.items(section))
 
-        for key in config.keys():
-            section_config.set(configparser.DEFAULTSECT, option=key, value=config[key])
+class ConfigValue(ConfigSection):
+    def __init__(self, value_type, default_value=configparser._UNSET, description=None):
+        ConfigSection.__init__(self, description=description)
 
-        return section_config
+        if (default_value != configparser._UNSET and
+                not isinstance(default_value, value_type)):
+            raise ValueError("The default value '%s' is not of type '%s'!" % (str(default_value), str(value_type)))
+
+        self.__value_type = value_type
+        self.__default_value = default_value
+
+    @property
+    def value_type(self):
+        return self.__value_type
+
+    @property
+    def default_value(self):
+        return self.__default_value
+
+    def parse_value(self, value):
+        if isinstance(value, self.value_type):
+            return value
+        else:
+            try:
+                return self.value_type(value)
+            except ValueError:
+                raise ValueError("The value '%s' is not of type '%s'!" % (str(value), str(self.value_type)))
+
+
+class Config(Structure, StructureROMixin):
+    class __Main(ConfigSection):
+        Hardware = ConfigValue(value_type=str, default_value="APA102", description=[
+            "The display defines where the animations should be showed.",
+            "There are two possible values here:",
+            "    - 'APA102'   [Default]",
+            "      The actual LED hardware addressed via SPI.",
+            "    - 'COMPUTER'",
+            "      This is for developing on a PC. It opens a virtual LED matrix via 'pygame'.",
+        ])
+        DisplayWidth = ConfigValue(value_type=int, default_value=15,
+                                   description="Set the number of LEDs for width and height of your matrix")
+        DisplayHeight = ConfigValue(value_type=int, default_value=12)
+        Brightness = ConfigValue(value_type=int, default_value=85, description=[
+            "Set the brightness in percent [Default: 85]",
+            "Possible values: 0 < = x <= 100"
+        ])
+        HttpServer = ConfigValue(value_type=bool, default_value=True, description=[
+            "(De-)Activate the server interfaces that control the matrix.",
+            "Available servers:",
+            "    - HttpServer [Default: true]: TCP 8080",
+            "    - RestServer [Default: true]: TCP 8081",
+            "    - TPM2NetServer [Default: false]: UDP 65506"
+        ])
+        RestServer = ConfigValue(value_type=bool, default_value=True)
+        TPM2NetServer = ConfigValue(value_type=bool, default_value=False)
+
+    class __DefaultAnimation(ConfigSection):
+        Animation = ConfigValue(value_type=str, default_value="clock", description=[
+            "The value is equal to the name of the Python module in the 'animation' directory.",
+            "Default start animation is 'clock'."
+        ])
+        Variant = ConfigValue(value_type=str, default_value="digital", description=[
+            "The possible variants can be checked in the Python module of the corresponding animation.",
+            "Default for animation 'clock' is variant 'digital'."
+        ])
+        Parameter = ConfigValue(value_type=str, default_value="\n".join([
+                                                                            "{",
+                                                                            '"background_color": [0, 0, 0],',
+                                                                            '"divider_color": [255, 255, 255],',
+                                                                            '"hour_color": [255, 0, 0],',
+                                                                            '"minute_color": [255, 255, 255]',
+                                                                            "}"
+                                                                        ]),
+                                description=[
+            "Sometimes a variant needs a parameter.",
+            "If multiple parameters are needed, a JSON-like dictionary can be entered after the equal sign.",
+            "Multiline is supported but every line must have an indention."
+        ])
+        Repeat = ConfigValue(value_type=int, default_value=0, description=[
+            "This integer defines, how many times an animation gets repeated.",
+            "    0: no repeat [Default]",
+            "   -1: forever",
+            "x > 0: x-times"
+        ])
+
+    class __Apa102(ConfigSection):
+        ColorType = ConfigValue(value_type=int, default_value=5, description=[
+            "This section contains variables that describe how the LED matrix is built up.",
+            "Specify the color type of the used LEDs:",
+            "    - '1': RGB",
+            "    - '2': RBG",
+            "    - '3': GRB",
+            "    - '4': GBR",
+            "    - '5': BGR [Default]",
+            "    - '6': BRG"
+        ])
+        WireMode = ConfigValue(value_type=int, default_value=2, description=[
+            "Specify how the LED strip is wired to form a matrix:",
+            "    - '1': line by line",
+            "    - '2': zig zag      [Default]"
+        ])
+        Orientation = ConfigValue(value_type=int, default_value=1, description=[
+            "Specify how the matrix dimensions (form [MAIN] section) should be interpreted:",
+            "    - '1': horizontally [Default]",
+            "    - '2': vertically"
+        ])
+        Origin = ConfigValue(value_type=int, default_value=1, description=[
+            "The position of the first controlled LED on the matrix:",
+            "    - '1': top left     [Default]",
+            "    - '2': top right",
+            "    - '3': bottom left",
+            "    - '4': bottom right"
+        ])
+
+    class __Computer(ConfigSection):
+        Margin = ConfigValue(value_type=int, default_value=5,
+                             description="Number of pixels that defines the space between single (virtual) LEDs.")
+        LEDSize = ConfigValue(value_type=int, default_value=30,
+                              description="Size of the square that represents a (virtual) LED on the matrix.")
+
+    MAIN = __Main()
+    DEFAULTANIMATION = __DefaultAnimation("Default animation that is displayed on start/idle")
+    APA102 = __Apa102("This section contains variables that describe how the LED matrix is built up.")
+    COMPUTER = __Computer("This section contains variables for the computer display.")
+
+
+class Configuration():
+    def __init__(self, *args, config_file_path=None, **kwargs):
+        self.__config_parser = ConfigParser(*args, **kwargs)
+        self.__config_parser.optionxform = lambda option: option
+
+        self.__config = {}
+
+        self.__config_file_path = config_file_path
+
+        if self.__config_file_path is not None:
+            with open(self.__config_file_path, "r") as f:
+                self.__config_parser.read_file(f)
+
+            for section_name, section in Config:
+                self.__config[section_name] = {}
+
+                for option_name, option in section:
+                    try:
+                        value = option.parse_value(self.__config_parser[section_name][option_name])
+                    except KeyError:
+                        eprint("The option '%s.%s' was not found in the configuration file '%s'!" % (
+                            section_name,
+                            option_name,
+                            str(self.__config_file_path)
+                        ))
+                        eprint("Using the default value '%s'." % str(option.default_value))
+                        value = option.default_value
+
+                    self.__config[section_name][option_name] = value
+
+    def get(self, option):
+        return self.__config[option.parent.name][option.name]
+
+    def save(self):
+        if self.__config_file_path is not None:
+            output = StringIO()
+
+            for section_name, section in Config:
+                # section heading
+                print("[%s]" % section_name, file=output)
+                # section description
+                if section.description:
+                    print(section.description, file=output)
+
+                for option_name, option in section:
+                    # option description
+                    if option.description:
+                        print(option.description, file=output)
+
+                    # option value
+                    value = self.get(option)
+                    # preserve multiline strings -> starting from the second line indention is needed
+                    if (option.value_type == str and
+                            "\n" in value):
+                        value = "\n    ".join(value.split("\n"))
+                    print("{} = {}".format(option_name, value), file=output)
+                    print(file=output)
+
+                print(file=output)
+                print(file=output)
+
+            with open(self.__config_file_path, "w+") as f:
+                output.seek(0)
+                shutil.copyfileobj(output, f)
+        else:
+            eprint("This configuration object can't be saved!")

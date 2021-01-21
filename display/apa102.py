@@ -5,6 +5,7 @@ from enum import Enum
 
 import spidev
 
+from common.config import Config
 from display.abstract import AbstractDisplay
 import numpy as np
 
@@ -52,10 +53,10 @@ class Apa102(AbstractDisplay):
         self.spi.max_speed_hz = SPI_MAX_SPEED_HZ
 
         # setup hardware and wiring related parameters
-        self.color_type = ColorType(self.config.getint(None, option="ColorType"))
-        self.wire_mode = WireMode(self.config.getint(None, option="WireMode"))
-        self.origin = Origin(self.config.getint(None, option="Origin"))
-        self.orientation = Orientation(self.config.getint(None, option="Orientation"))
+        self.color_type = ColorType(self.config.get(Config.APA102.ColorType))
+        self.wire_mode = WireMode(self.config.get(Config.APA102.WireMode))
+        self.origin = Origin(self.config.get(Config.APA102.Origin))
+        self.orientation = Orientation(self.config.get(Config.APA102.Orientation))
 
         # setup apa102 protocol stuff
         self.__start_frame = [0] * 4
