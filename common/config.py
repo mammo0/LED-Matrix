@@ -180,6 +180,10 @@ class Configuration():
     def get(self, option):
         return self.__config[option.parent.name][option.name]
 
+    def set(self, option, value):
+        value = option.parse_value(value)
+        self.__config[option.parent.name][option.name] = value
+
     def save(self):
         if self.__config_file_path is not None:
             output = StringIO()
