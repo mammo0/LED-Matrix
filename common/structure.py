@@ -1,3 +1,4 @@
+from inspect import isclass
 import types
 
 
@@ -47,6 +48,9 @@ class _StructureMeta(type):
         cls._check_get(name)
         return cls._params_map_[name]
 
+    def __getitem__(cls, name):
+        return cls.__getattr__(name)
+
     def _check_set(cls, name):
         params_map = cls.__dict__.get('_params_map_', {})
         if name in params_map:
@@ -77,8 +81,15 @@ class Structure(metaclass=_StructureMeta):
         _StructureMeta._check_get(type(self), name)
         return self._params_map_[name]
 
+    def __getitem__(self, name):
+        return self.__getattr__(name)
+
     def __iter__(self):
         return iter(self._params_map_.items())
+
+    @property
+    def names(self):
+        return self._params_names_
 
 
 class StructureROMixin():
@@ -105,7 +116,8 @@ class _NestedStructureMeta(_StructureMeta):
         # iterate over the structure
         for name, value in iterable:
             if (isinstance(value, NestedStructure) or
-                    issubclass(value, NestedStructure)):
+                    (isclass(value) and
+                     issubclass(value, NestedStructure))):
                 # set the name property
                 setattr(value, NestedStructure.name_attr_name, name)
 
