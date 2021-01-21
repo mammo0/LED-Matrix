@@ -38,7 +38,22 @@ class Main():
         if config_file_path is None:
             config_file_path = DEFAULT_CONFIG_FILE
         self.config = Configuration(config_file_path=config_file_path, allow_no_value=True)
+        self.__load_settings()
 
+        # this is the queue that holds the frames to display
+        self.frame_queue = queue.Queue(maxsize=1)
+
+        # animation controller
+        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue)
+
+        # server interfaces
+        self.http_server = None
+        self.rest_server = None
+        self.tpm2_net_server = None
+
+        self.reload_signal = threading.Event()
+
+    def __load_settings(self):
         # get [MAIN] options
         hardware = self.config.get(Config.MAIN.Hardware)
         self.display_width = self.config.get(Config.MAIN.DisplayWidth)
@@ -63,25 +78,20 @@ class Main():
         except KeyError:
             raise RuntimeError("Display hardware '{}' not known.".format(hardware))
 
-        # this is the queue that holds the frames to display
-        self.frame_queue = queue.Queue(maxsize=1)
-
-        # animation controller
-        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue)
-
-        # server interfaces
-        self.http_server = None
-        self.rest_server = None
-        self.tpm2_net_server = None
-
     def __start_servers(self):
         # HTTP server
-        if self.config.get(Config.MAIN.HttpServer):
+        if (self.config.get(Config.MAIN.HttpServer) and
+                # if the variable is set, that means we're in a reload phase
+                # so the server is already started
+                self.http_server is None):
             self.http_server = HttpServer(self)
             self.http_server.start()
 
         # REST server
-        if self.config.get(Config.MAIN.RestServer):
+        if (self.config.get(Config.MAIN.RestServer) and
+                # if the variable is set, that means we're in a reload phase
+                # so the server is already started
+                self.rest_server is None):
             self.rest_server = RestServer(self)
             self.rest_server.start()
 
@@ -92,13 +102,15 @@ class Main():
 
     def __stop_servers(self):
         # stop only the servers that are started
-        # HTTP server
-        if self.http_server:
-            self.http_server.stop()
+        # except on reload, then do not stop the HTTP and REST server
+        if not self.reload_signal.is_set():
+            # HTTP server
+            if self.http_server:
+                self.http_server.stop()
 
-        # REST server
-        if self.rest_server:
-            self.rest_server.stop()
+            # REST server
+            if self.rest_server:
+                self.rest_server.stop()
 
         # TPM2Net server
         if self.tpm2_net_server:
@@ -119,6 +131,17 @@ class Main():
         print("Exiting...")
         self.quit_signal.set()
 
+    def reload(self):
+        print("Reloading...")
+
+        # set the reload and quit signal to exit mainloop
+        self.reload_signal.set()
+        self.quit_signal.set()
+
+        # wait until the the reload_signal is unset
+        with self.reload_signal._cond:
+            self.reload_signal._cond.wait_for(lambda: not self.reload_signal.is_set())
+
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         self.animation_controller.start_animation(animation_name, variant=variant, parameter=parameter, repeat=repeat)
 
@@ -133,6 +156,9 @@ class Main():
             self.__show_default_animation()
         else:
             self.__clear_display()
+
+    def get_animation(self, animation_name):
+        return self.animation_controller.get_animation(animation_name)
 
     def is_animation_running(self, animation_name):
         return self.animation_controller.is_animation_running(animation_name)
@@ -150,6 +176,7 @@ class Main():
 
     def mainloop(self):
         # start the animation controller
+        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue)
         self.animation_controller.start()
 
         # start the server interfaces
@@ -170,10 +197,25 @@ class Main():
             # to limit CPU usage do not go faster than 60 "fps"
             self.quit_signal.wait(1/60)
 
+        self.animation_controller.stop()
         self.__clear_display()
 
         # stop the server interfaces
         self.__stop_servers()
+
+        if self.reload_signal.is_set():
+            # reload settings
+            self.__load_settings()
+
+            # clear signals
+            self.quit_signal.clear()
+            self.reload_signal.clear()
+            # notify reload method, that reloading is done
+            with self.reload_signal._cond:
+                self.reload_signal._cond.notify_all()
+
+            # restart mainloop
+            self.mainloop()
 
 
 class AnimationController(threading.Thread):
@@ -270,20 +312,32 @@ class AnimationController(threading.Thread):
                                                 animation_name)
         self.controll_queue.put(stop_event)
 
-    def is_animation_running(self, animation_name):
+    def get_animation(self, animation_name):
         try:
             # get the animation
             animation = self.animations[animation_name]
         except KeyError:
             eprint("The animation '%s' could not be found!" % animation_name)
-            return False
+            return None
 
-        return animation.animation_running.is_set()
+        return animation
+
+    def is_animation_running(self, animation_name):
+        animation = self.get_animation(animation_name)
+        if animation is None:
+            return False
+        else:
+            return animation.animation_running.is_set()
 
     def run(self):
         while not self.stop_event.is_set():
             # get the next event
             event = self.controll_queue.get()
+
+            # sometimes get can take a while to return, so check the stop flag again here
+            if self.stop_event.is_set():
+                self.controll_queue.task_done()
+                break
 
             # check the event type
             if event.event_type == AnimationController._EventType.start:
@@ -295,7 +349,13 @@ class AnimationController(threading.Thread):
 
     def stop(self):
         self.stop_event.set()
+        # add a new element into the control_queue to force returning of get method in loop
+        self.controll_queue.put(None)
         self.join()
+
+        # after the control thread has stopped, there could be an animation thread remaining
+        # so stop this animation
+        self.__stop_animation()
 
 
 if __name__ == "__main__":

@@ -47,11 +47,17 @@ class HttpServer(metaclass=BottleCBVMeta):
         enable_rest = request.forms.get("enable_rest")
         enable_tpm2net = request.forms.get("enable_tpm2net")
 
+        # save the settings
         self.__main_app.config.set(Config.MAIN.Brightness, brightness)
         self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
         self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
         self.__main_app.config.save()
-        redirect("/settings")
+
+        # reload the application
+        self.__main_app.reload()
+
+        # reload the page
+        redirect("/settings#tab_pane_" + pane)
 
     @get("/settings/reset/<pane>")
     def reset_settings(self, pane):
