@@ -1,9 +1,10 @@
-from bottle import template, static_file, request
+from bottle import template, static_file, request, redirect
 import bottle
 
 from common import RESOURCES_DIR
 from common.bottle import BottleCBVMeta, get, post
 from common.wsgi import CustomWSGIRefServer
+from common.config import Config
 
 
 # change bottle template path
@@ -39,6 +40,23 @@ class HttpServer(metaclass=BottleCBVMeta):
                         config=self.__main_app.config,
                         # except the brightness value should be always actual
                         current_brightness=self.__main_app.display_brightness)
+
+    @post("/settings/<pane>")
+    def save_settings(self, pane):
+        brightness = request.forms.get("brightness_value")
+        enable_rest = request.forms.get("enable_rest")
+        enable_tpm2net = request.forms.get("enable_tpm2net")
+
+        self.__main_app.config.set(Config.MAIN.Brightness, brightness)
+        self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
+        self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
+        self.__main_app.config.save()
+        redirect("/settings")
+
+    @get("/settings/reset/<pane>")
+    def reset_settings(self, pane):
+        # a simple reload should be sufficient
+        redirect("/settings#tab_pane_" + pane)
 
     @post("/settings/set_brightness")
     def set_brightness(self):

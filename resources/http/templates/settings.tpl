@@ -27,7 +27,7 @@
             <div class="tab-pane show active" id="tab_pane_main" role="tabpanel" aria-labelledby="tab_main">
                 <div class="card border-0">
                     <div class="card-body border-left border-right">
-                        <form id="main_settings_form" method="post" autocomplete="off">
+                        <form id="main_settings_form" method="post" action="/settings/main" autocomplete="off">
                             <div class="form-group">
                                 <label for="setting_brightness_container">Brightness</label>
                                 <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
