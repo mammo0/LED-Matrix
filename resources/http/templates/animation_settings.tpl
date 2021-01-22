@@ -67,10 +67,26 @@
 
 <script>
     window.addEventListener("load", function(){
-        animation_selector.onchange = function(event) {
-            // TODO: change visibility of the current shown animation form
-            // var animation_name = animation_selector.value
-            // document.getElementById()
+        var previos_selected_animation_name;
+
+        // save the current selected animation on every focus event
+        animation_selector.onfocus = function(){
+            previos_selected_animation_name = animation_selector.value;
+        }
+        // on every change show the corresponding animation pane
+        animation_selector.onchange = function(event){
+            let new_selected_animation_name = animation_selector.value;
+            if(new_selected_animation_name == previos_selected_animation_name){
+                return;
+            }
+
+            let previous_animation_pane = document.getElementById("animation_settings_" + previos_selected_animation_name);
+            let new_animation_pane = document.getElementById("animation_settings_" + new_selected_animation_name);
+
+            previous_animation_pane.classList.add("d-none");
+            new_animation_pane.classList.remove("d-none");
+
+            previos_selected_animation_name = new_selected_animation_name;
         }
     });
 </script>
