@@ -22,8 +22,8 @@
         <form id="animation_settings_form_{{animation_name}}" method="post" autocomplete="off">
             % if animation.animation_variants is not None:
                 <div class="form-group">
-                    <label for="variant_selector_{{animation_name}}">Variant</label>
-                    <select id="variant_selector_{{animation_name}}" class="custom-select" autocomplete="off">
+                    <label for="{{animation_name}}_variant">Variant</label>
+                    <select id="{{animation_name}}_variant" class="custom-select" name="{{animation_name}}_variant_value" autocomplete="off">
                         % if animation.current_variant:
                             <option value="{{animation.current_variant.name}}" selected>{{animation.current_variant.name.title()}} (Current)</option>
                         % end
@@ -52,14 +52,14 @@
                     %>
                             <div class="form-group">
                                 <label for="{{animation_name}}_parameter_{{p_name}}">{{p_name.replace("_", " ").title()}}</label>
-                                <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" value="{{input.value}}">
+                                <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" name="{{animation_name}}_parameter_{{p_name}}_value" value="{{input.value}}">
                             </div>
                     %   end
                 </div>
             % end
             <div class="form-group">
-                <label for="repeat_value_{{animation_name}}">Repeat</label>
-                <input id="repeat_value_{{animation_name}}" type="number" class="form-control" min="-1" default value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
+                <label for="{{animation_name}}_repeat">Repeat</label>
+                <input id="{{animation_name}}_repeat" type="number" class="form-control" name="{{animation_name}}_repeat_value" min="-1" value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
             </div>
         </form>
     </div>
