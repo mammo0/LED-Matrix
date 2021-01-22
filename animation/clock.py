@@ -200,3 +200,7 @@ class ClockController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return ClockParameter
+
+    @property
+    def is_repeat_supported(self):
+        return False

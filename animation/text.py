@@ -212,3 +212,7 @@ class TextController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return TextParameter
+
+    @property
+    def is_repeat_supported(self):
+        return True

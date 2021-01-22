@@ -187,3 +187,7 @@ class BlmController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return BlmParameter
+
+    @property
+    def is_repeat_supported(self):
+        return True

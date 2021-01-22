@@ -217,3 +217,7 @@ class GameframeController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return GameframeParameter
+
+    @property
+    def is_repeat_supported(self):
+        return True

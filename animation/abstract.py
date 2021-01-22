@@ -175,6 +175,13 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
             return None
 
     @property
+    @abstractmethod
+    def is_repeat_supported(self):
+        """
+        @return: True if the repeat value is supported by the animation. False otherwise.
+        """
+
+    @property
     def current_repeat_value(self):
         if (self.animation_running.is_set() and
                 self.animation_thread and

@@ -124,8 +124,9 @@ class HttpServer(metaclass=BottleCBVMeta):
                 self.__main_app.config.set(Config.DEFAULTANIMATION.Parameter, new_parameter)
 
             # repeat
-            new_default_animation_repeat = request.forms.get(new_default_animation_name + "_repeat_value")
-            self.__main_app.config.set(Config.DEFAULTANIMATION.Repeat, new_default_animation_repeat)
+            if new_default_animation.is_repeat_supported:
+                new_default_animation_repeat = request.forms.get(new_default_animation_name + "_repeat_value")
+                self.__main_app.config.set(Config.DEFAULTANIMATION.Repeat, new_default_animation_repeat)
 
         self.__main_app.config.save()
 

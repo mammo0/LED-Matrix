@@ -27,3 +27,7 @@ class DummyController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return None
+
+    @property
+    def is_repeat_supported(self):
+        return False

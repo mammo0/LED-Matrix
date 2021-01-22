@@ -57,10 +57,12 @@
                     %   end
                 </div>
             % end
-            <div class="form-group">
-                <label for="{{animation_name}}_repeat">Repeat</label>
-                <input id="{{animation_name}}_repeat" type="number" class="form-control" name="{{animation_name}}_repeat_value" min="-1" value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
-            </div>
+            % if animation.is_repeat_supported:
+                <div class="form-group">
+                    <label for="{{animation_name}}_repeat">Repeat</label>
+                    <input id="{{animation_name}}_repeat" type="number" class="form-control" name="{{animation_name}}_repeat_value" min="-1" value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
+                </div>
+            % end
         </form>
     </div>
 % end
