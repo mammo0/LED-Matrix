@@ -34,6 +34,14 @@ class MoodlightAnimation(AbstractAnimation):
         self.frequency = 60  # frames per second
         print("MoodlightAnimation created")
 
+    @property
+    def variant_value(self):
+        return self.variant
+
+    @property
+    def parameter_instance(self):
+        return None
+
     def ribbapi_hsv_to_rgb(self, h, s, v):
         # h is in degrees
         # s, v in percent

@@ -30,11 +30,11 @@ class ClockAnimation(AbstractAnimation):
         self.name = "clock"
         self.variant = variant
 
-        params = ClockParameter(**kwargs)
-        self.background_color = params.background_color
-        self.divider_color = params.divider_color
-        self.hour_color = params.hour_color
-        self.minute_color = params.minute_color
+        self.params = ClockParameter(**kwargs)
+        self.background_color = self.params.background_color
+        self.divider_color = self.params.divider_color
+        self.hour_color = self.params.hour_color
+        self.minute_color = self.params.minute_color
 
         self.background = Image.new("RGB", (width, height), self.background_color)
 
@@ -42,6 +42,14 @@ class ClockAnimation(AbstractAnimation):
         self.analog_middle_y = self.middle_calculation(height)
         self.analog_max_hand_length = min([self.analog_middle_x + 1,
                                            self.analog_middle_y + 1])
+
+    @property
+    def variant_value(self):
+        return self.variant
+
+    @property
+    def parameter_instance(self):
+        return self.params
 
     def middle_calculation(self, value):
         value /= 2

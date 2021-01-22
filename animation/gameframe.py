@@ -23,13 +23,13 @@ class GameframeAnimation(AbstractAnimation):
 
         self.folder = Path(kwargs.pop("variant").value)
 
-        params = GameframeParameter(**kwargs)
+        self.params = GameframeParameter(**kwargs)
 
         if not self.folder.is_dir():
             raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), self.folder)
         self.name = "gameframe.{}".format(self.folder.name)
 
-        self.background_color = params.background_color
+        self.background_color = self.params.background_color
 
         self.load_frames()
         self.read_config()
@@ -38,6 +38,14 @@ class GameframeAnimation(AbstractAnimation):
             self.repeat = 0
 
         print(self.name, self.intrinsic_duration())
+
+    @property
+    def variant_value(self):
+        return self.folder
+
+    @property
+    def parameter_instance(self):
+        return self.params
 
     def intrinsic_duration(self):
         return sum(1 for _ in self.rendered_frames()) * self.hold/1000

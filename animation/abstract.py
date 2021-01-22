@@ -67,6 +67,20 @@ class AbstractAnimation(ABC, Thread):
         # no id found
         return -1
 
+    @property
+    @abstractmethod
+    def variant_value(self):
+        """Return the current variant value of this animation."""
+
+    @property
+    @abstractmethod
+    def parameter_instance(self):
+        """Return the current parameter of this animation."""
+
+    @property
+    def repeat_value(self):
+        return self.repeat
+
     # @property
     # @abstractmethod
     # def intrinsic_duration(self):
@@ -120,6 +134,33 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         @return: A subclass of AnimationParameter that holds the parameters of the underlying animation.
                  Or None if there are no parameters.
         """
+
+    @property
+    def current_variant(self):
+        if (self.animation_running.is_set() and
+                self.animation_thread and
+                self.animation_thread.is_alive()):
+            return self.animation_variants(self.animation_thread.variant_value)
+        else:
+            return None
+
+    @property
+    def current_parameter(self):
+        if (self.animation_running.is_set() and
+                self.animation_thread and
+                self.animation_thread.is_alive()):
+            return self.animation_thread.parameter_instance
+        else:
+            return None
+
+    @property
+    def current_repeat_value(self):
+        if (self.animation_running.is_set() and
+                self.animation_thread and
+                self.animation_thread.is_alive()):
+            return self.animation_thread.repeat_value
+        else:
+            return None
 
     def start_animation(self, variant=None, parameter=None, repeat=0):
         """

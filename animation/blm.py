@@ -21,7 +21,7 @@ class BlmAnimation(AbstractAnimation):
 
         self.path = Path(kwargs.pop("variant").value)
 
-        params = BlmParameter(**kwargs)
+        self.params = BlmParameter(**kwargs)
 
         if not self.path.is_file():
             raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.path)
@@ -29,11 +29,19 @@ class BlmAnimation(AbstractAnimation):
 
         self.load_frames()
 
-        self.foregound_color = params.foregound_color
-        self.background_color = params.background_color
-        self.padding_color = params.padding_color
+        self.foregound_color = self.params.foregound_color
+        self.background_color = self.params.background_color
+        self.padding_color = self.params.padding_color
 
         print(self)
+
+    @property
+    def variant_value(self):
+        return self.path
+
+    @property
+    def parameter_instance(self):
+        return self.params
 
     def intrinsic_duration(self):
         ret = 0

@@ -20,14 +20,14 @@ class TextAnimation(AbstractAnimation):
                  **kwargs):
         super().__init__(width, height, frame_queue, repeat)
 
-        params = TextParameter(**kwargs)
+        self.params = TextParameter(**kwargs)
 
         self.name = "text"
-        self.text = params.text
-        self.text_size = params.text_size
+        self.text = self.params.text
+        self.text_size = self.params.text_size
         self.emoji_size = 109
-        self.steps_per_second = params.steps_per_second
-        self.pixels_per_step = params.pixels_per_step
+        self.steps_per_second = self.params.steps_per_second
+        self.pixels_per_step = self.params.pixels_per_step
 
         self.text_face = freetype.Face("resources/fonts/LiberationSans-Regular_2.1.2.ttf")
         self.emoji_face = freetype.Face("resources/fonts/joypixels-android_6.0.0.ttf")
@@ -39,6 +39,14 @@ class TextAnimation(AbstractAnimation):
     def __del__(self):
         del self.text_face
         del self.emoji_face
+
+    @property
+    def variant_value(self):
+        return None
+
+    @property
+    def parameter_instance(self):
+        return self.params
 
     def render(self, text):
         xmin, xmax = 0, 0

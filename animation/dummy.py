@@ -2,6 +2,14 @@ from animation.abstract import AbstractAnimation, AbstractAnimationController
 
 
 class DummyAnimation(AbstractAnimation):
+    @property
+    def variant_value(self):
+        return None
+
+    @property
+    def parameter_instance(self):
+        return None
+
     def animate(self):
         # do nothing and wait until the animation is stopped
         self._stop_event.wait()
