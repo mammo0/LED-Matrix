@@ -10,8 +10,8 @@ import numpy as np
 
 
 class BlmParameter(AnimationParameter):
-    foregound_color = Color(255, 255, 255),
-    background_color = Color(10, 10, 10),
+    foregound_color = Color(255, 255, 255)
+    background_color = Color(10, 10, 10)
     padding_color = Color(60, 60, 60)
 
 
