@@ -13,7 +13,6 @@ import numpy as np
 
 # TODO: Subfolders have not been implemented yet.
 class GameframeParameter(AnimationParameter):
-    folder = ""
     background_color = (0, 0, 0)
 
 
@@ -22,12 +21,10 @@ class GameframeAnimation(AbstractAnimation):
                  **kwargs):
         super().__init__(width, height, frame_queue, repeat)
 
+        self.folder = Path(kwargs.pop("variant").value)
+
         params = GameframeParameter(**kwargs)
 
-        if "variant" in kwargs:
-            self.folder = Path(kwargs["variant"].value)
-        else:
-            self.folder = Path(params.folder)
         if not self.folder.is_dir():
             raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), self.folder)
         self.name = "gameframe.{}".format(self.folder.name)

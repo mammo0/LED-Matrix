@@ -9,7 +9,6 @@ import numpy as np
 
 
 class BlmParameter(AnimationParameter):
-    path = ""
     foregound_color = (255, 255, 255),
     background_color = (10, 10, 10),
     padding_color = (60, 60, 60)
@@ -20,12 +19,10 @@ class BlmAnimation(AbstractAnimation):
                  **kwargs):
         super().__init__(width, height, frame_queue, repeat)
 
+        self.path = Path(kwargs.pop("variant").value)
+
         params = BlmParameter(**kwargs)
 
-        if "variant" in kwargs:
-            self.path = Path(kwargs["variant"].value)
-        else:
-            self.path = Path(params.path)
         if not self.path.is_file():
             raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.path)
         self.name = "blm.{}".format(self.path.stem)
