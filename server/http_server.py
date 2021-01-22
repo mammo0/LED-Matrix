@@ -7,6 +7,7 @@ from common import RESOURCES_DIR
 from common.bottle import BottleCBVMeta, get, post
 from common.config import Config
 from common.wsgi import CustomWSGIRefServer
+from common.color import Color
 
 
 # change bottle template path
@@ -17,6 +18,36 @@ bottle.TEMPLATE_PATH = [(HTTP_RESOURCES_DIR / "templates").resolve()]
 class SettingsTabs(Enum):
     main = "main"
     default_animation = "default_animation"
+
+
+class Input():
+    def __init__(self, value):
+        self.__type = "text"
+        self.__value = value
+        self.__step = "1"
+
+        if isinstance(value, bool):
+            self.__type = "checkbox"
+        elif isinstance(value, int):
+            self.__type = "number"
+        elif isinstance(value, float):
+            self.__type = "number"
+            self.__step = "any"
+        elif isinstance(value, Color):
+            self.__type = "color"
+            self.__value = value.hex_value
+
+    @property
+    def type(self):
+        return self.__type
+
+    @property
+    def value(self):
+        return self.__value
+
+    @property
+    def step(self):
+        return self.__step
 
 
 class HttpServer(metaclass=BottleCBVMeta):
@@ -37,7 +68,6 @@ class HttpServer(metaclass=BottleCBVMeta):
         self.__wsgi_server.stop()
 
     def __show_settings(self, tab=SettingsTabs.main):
-        default_animation = self.__main_app.get_animation(self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
         return template("settings",
                         active_tab=tab,
                         # provide the main config
@@ -46,7 +76,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                         current_brightness=self.__main_app.display_brightness,
                         # provide the animations
                         animations=self.__main_app.get_animations(),
-                        default_animation=default_animation)
+                        default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
 
     @get("/")
     def index(self):

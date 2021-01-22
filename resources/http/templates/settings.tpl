@@ -70,8 +70,19 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" id="tab_pane_default_animation" role="tabpanel" aria-labelledby="tab_default_animation">
-                <!-- TODO: fill with default animation settings -->
+            <div class="tab-pane {{"active" if active_tab == SettingsTabs.default_animation else ""}}" id="tab_pane_default_animation" role="tabpanel" aria-labelledby="tab_default_animation">
+                <div class="card border-0">
+                    <div class="card-body border-left border-right">
+                        <%
+                            include("animation_settings.tpl", animations=animations,
+                                                              current_animation_name=default_animation_name)
+                        %>
+                    </div>
+                    <div class="card-footer border rounded-bottom">
+                        <button type="submit" class="btn btn-primary float-right ml-2" form="default_animation_form">Save</button>
+                        <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.default_animation.value}}">Reset</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

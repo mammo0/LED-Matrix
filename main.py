@@ -160,6 +160,9 @@ class Main():
     def get_animation(self, animation_name):
         return self.animation_controller.get_animation(animation_name)
 
+    def get_animations(self):
+        return self.animation_controller.get_animations()
+
     def is_animation_running(self, animation_name):
         return self.animation_controller.is_animation_running(animation_name)
 
@@ -321,6 +324,9 @@ class AnimationController(threading.Thread):
             return None
 
         return animation
+
+    def get_animations(self):
+        return self.animations
 
     def is_animation_running(self, animation_name):
         animation = self.get_animation(animation_name)
