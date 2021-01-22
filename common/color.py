@@ -12,9 +12,9 @@ class Color():
                 self.__blue = int(arg[2])
             elif (isinstance(arg, str) and
                     arg.startswith("#")):
-                self.__red = int(arg[1:2], 16)
-                self.__green = int(arg[3:4], 16)
-                self.__blue = int(arg[5:6], 16)
+                self.__red = int(arg[1:3], 16)
+                self.__green = int(arg[3:5], 16)
+                self.__blue = int(arg[5:7], 16)
         else:
             self.__red = 0
             self.__green = 0
