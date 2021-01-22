@@ -59,7 +59,7 @@
             % end
             <div class="form-group">
                 <label for="repeat_value_{{animation_name}}">Repeat</label>
-                <input id="repeat_value_{{animation_name}}" type="number" class="form-control" min="-1" value="{{animation.current_repeat_value if animation.current_repeat_value is not None else ""}}">
+                <input id="repeat_value_{{animation_name}}" type="number" class="form-control" min="-1" default value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
             </div>
         </form>
     </div>
