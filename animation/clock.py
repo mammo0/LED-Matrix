@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController
+from common.color import Color
 import numpy as np
 
 
@@ -16,10 +17,10 @@ class ClockVariant(Enum):
 
 class ClockParameter(AnimationParameter):
     # default values
-    background_color = (0, 0, 0)
-    divider_color = (255, 255, 255)
-    hour_color = (255, 0, 0)
-    minute_color = (255, 255, 255)
+    background_color = Color(0, 0, 0)
+    divider_color = Color(255, 255, 255)
+    hour_color = Color(255, 0, 0)
+    minute_color = Color(255, 255, 255)
 
 
 class ClockAnimation(AbstractAnimation):
@@ -31,10 +32,10 @@ class ClockAnimation(AbstractAnimation):
         self.variant = variant
 
         self.params = ClockParameter(**kwargs)
-        self.background_color = self.params.background_color
-        self.divider_color = self.params.divider_color
-        self.hour_color = self.params.hour_color
-        self.minute_color = self.params.minute_color
+        self.background_color = self.params.background_color.pil_tuple
+        self.divider_color = self.params.divider_color.pil_tuple
+        self.hour_color = self.params.hour_color.pil_tuple
+        self.minute_color = self.params.minute_color.pil_tuple
 
         self.background = Image.new("RGB", (width, height), self.background_color)
 

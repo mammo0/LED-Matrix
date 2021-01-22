@@ -8,12 +8,13 @@ from PIL import Image
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController
+from common.color import Color
 import numpy as np
 
 
 # TODO: Subfolders have not been implemented yet.
 class GameframeParameter(AnimationParameter):
-    background_color = (0, 0, 0)
+    background_color = Color(0, 0, 0)
 
 
 class GameframeAnimation(AbstractAnimation):
@@ -29,7 +30,7 @@ class GameframeAnimation(AbstractAnimation):
             raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), self.folder)
         self.name = "gameframe.{}".format(self.folder.name)
 
-        self.background_color = self.params.background_color
+        self.background_color = self.params.background_color.pil_tuple
 
         self.load_frames()
         self.read_config()

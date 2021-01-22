@@ -5,13 +5,14 @@ from pathlib import Path
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController
+from common.color import Color
 import numpy as np
 
 
 class BlmParameter(AnimationParameter):
-    foregound_color = (255, 255, 255),
-    background_color = (10, 10, 10),
-    padding_color = (60, 60, 60)
+    foregound_color = Color(255, 255, 255),
+    background_color = Color(10, 10, 10),
+    padding_color = Color(60, 60, 60)
 
 
 class BlmAnimation(AbstractAnimation):
@@ -29,9 +30,9 @@ class BlmAnimation(AbstractAnimation):
 
         self.load_frames()
 
-        self.foregound_color = self.params.foregound_color
-        self.background_color = self.params.background_color
-        self.padding_color = self.params.padding_color
+        self.foregound_color = self.params.foregound_color.pil_tuple
+        self.background_color = self.params.background_color.pil_tuple
+        self.padding_color = self.params.padding_color.pil_tuple
 
         print(self)
 
