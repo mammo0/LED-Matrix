@@ -157,11 +157,9 @@ class Main():
         else:
             self.__clear_display()
 
-    def get_animation(self, animation_name):
-        return self.animation_controller.get_animation(animation_name)
-
-    def get_animations(self):
-        return self.animation_controller.get_animations()
+    @property
+    def available_animations(self):
+        return self.animation_controller.available_animations
 
     def is_animation_running(self, animation_name):
         return self.animation_controller.is_animation_running(animation_name)
@@ -315,25 +313,19 @@ class AnimationController(threading.Thread):
                                                 animation_name)
         self.controll_queue.put(stop_event)
 
-    def get_animation(self, animation_name):
+    @property
+    def available_animations(self):
+        return self.animations
+
+    def is_animation_running(self, animation_name):
         try:
             # get the animation
             animation = self.animations[animation_name]
         except KeyError:
             eprint("The animation '%s' could not be found!" % animation_name)
-            return None
-
-        return animation
-
-    def get_animations(self):
-        return self.animations
-
-    def is_animation_running(self, animation_name):
-        animation = self.get_animation(animation_name)
-        if animation is None:
             return False
-        else:
-            return animation.animation_running.is_set()
+
+        return animation.animation_running.is_set()
 
     def run(self):
         while not self.stop_event.is_set():
