@@ -91,9 +91,9 @@
 <script src="/js/post_request.js"></script>
 <script>
     window.addEventListener("load", function(){
-        setting_brightness_preview_btn.onclick = function() {
+        setting_brightness_preview_btn.onclick = function(){
             // create a dynamic form object, that contains only the new brightness value
-            var form_data = new FormData();
+            let form_data = new FormData();
             form_data.append(setting_brightness_slider.name, setting_brightness_slider.value);
 
             // send the request
