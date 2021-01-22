@@ -38,6 +38,7 @@ class AbstractAnimation(ABC, Thread):
         self.height = height  # height of frames to produce
         self.frame_queue = frame_queue  # queue to put frames onto
         self.repeat = repeat  # 0: no repeat, -1: forever, > 0: x-times
+        self.__remaining_repeat = repeat
 
         self._stop_event = Event()  # query this often! exit self.animate quickly
 
@@ -55,6 +56,21 @@ class AbstractAnimation(ABC, Thread):
     def stop_and_wait(self):
         self._stop_event.set()
         self.join(timeout=5)
+
+    def is_repeat(self):
+        # no repeat
+        if self.repeat == 0:
+            return False
+        # infinity repeat
+        elif self.repeat == -1:
+            return True
+        else:
+            # check remaining repeat cycles
+            if self.__remaining_repeat > 0:
+                self.__remaining_repeat -= 1
+                return True
+            else:
+                return False
 
     @abstractmethod
     def animate(self):
@@ -178,7 +194,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         # parse the parameters
         options = self._validate_parameter(parameter)
 
-        if variant:
+        if variant and self.animation_variants is not None:
             if isinstance(variant, self.animation_variants):
                 options["variant"] = variant
             else:
