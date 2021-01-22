@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 import configparser
 from io import StringIO
+import json
 import shutil
 
 from common import eprint
@@ -43,6 +44,10 @@ class ConfigValue(ConfigSection):
     def parse_value(self, value):
         if isinstance(value, self.value_type):
             return value
+        elif (isinstance(value, dict) and
+                self.value_type == str):
+            # convert the dict to a JSON string
+            return json.dumps(value)
         else:
             try:
                 return self.value_type(value)
