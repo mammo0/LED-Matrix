@@ -171,7 +171,7 @@ class TextAnimation(AbstractAnimation):
         return np.dstack((red, green, blue))
 
     def animate(self):
-        if not self._stop_event.is_set():
+        while not self._stop_event.is_set():
             if self.steps_per_second <= 0 or self.pixels_per_step < 1:
                 return
             buf = self.render(self.text)
@@ -194,6 +194,10 @@ class TextAnimation(AbstractAnimation):
                 cut = buf[0:self.height, i:i+self.width, :]
                 self.frame_queue.put(cut.copy())
                 self._stop_event.wait(timeout=wait)
+
+            # check repeat
+            if not self.is_repeat():
+                break
 
 
 class TextController(AbstractAnimationController):

@@ -185,9 +185,9 @@ class GameframeAnimation(AbstractAnimation):
                 self._stop_event.wait(timeout=self.hold/1000)
                 # if (time.time() - self.started) > self.duration:
                 #     break
-            if self.repeat > 0:
-                self.repeat -= 1
-            elif self.repeat == 0:
+
+            # check repeat
+            if not self.is_repeat():
                 break
 
 

@@ -90,9 +90,9 @@ class BlmAnimation(AbstractAnimation):
                 else:
                     break
                 self._stop_event.wait(timeout=frame["hold"]/1000)
-            if self.repeat > 0:
-                self.repeat -= 1
-            elif self.repeat == 0:
+
+            # check repeat
+            if not self.is_repeat():
                 break
 
     def rendered_frames(self):
