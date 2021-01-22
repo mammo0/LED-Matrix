@@ -79,7 +79,7 @@
                         %>
                     </div>
                     <div class="card-footer border rounded-bottom">
-                        <button type="submit" class="btn btn-primary float-right ml-2" form="default_animation_form">Save</button>
+                        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right ml-2">Save</button>
                         <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.default_animation.value}}">Reset</a>
                     </div>
                 </div>
@@ -98,6 +98,23 @@
 
             // send the request
             post_request("/settings/set_brightness", form_data);
+        }
+
+        btn_save_default_animation.onclick = function(){
+            // this selector and form is defined by 'animation_settings.tpl'
+            let animation_selector = document.getElementById("animation_selector");
+            let animation_form = document.getElementById("animation_settings_form_" + animation_selector.value);
+
+            // add a hidden field that contains the selected animation name
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = "selected_animation_name";
+            hiddenField.value = animation_selector.value;
+            animation_form.appendChild(hiddenField);
+
+            // submit the form
+            animation_form.action = "/settings/{{SettingsTabs.default_animation.value}}"
+            animation_form.submit();
         }
 
         // change the browser address bar to the current selected settings tab

@@ -92,14 +92,42 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @post("/settings/<tab>")
     def save_settings(self, tab):
-        brightness = request.forms.get("brightness_value")
-        enable_rest = request.forms.get("enable_rest")
-        enable_tpm2net = request.forms.get("enable_tpm2net")
+        if SettingsTabs(tab) == SettingsTabs.main:
+            brightness = request.forms.get("brightness_value")
+            enable_rest = request.forms.get("enable_rest")
+            enable_tpm2net = request.forms.get("enable_tpm2net")
 
-        # save the settings
-        self.__main_app.config.set(Config.MAIN.Brightness, brightness)
-        self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
-        self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
+            # save the settings
+            self.__main_app.config.set(Config.MAIN.Brightness, brightness)
+            self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
+            self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
+        elif SettingsTabs(tab) == SettingsTabs.default_animation:
+            # the animation itself
+            new_default_animation_name = request.forms.get("selected_animation_name")
+            self.__main_app.config.set(Config.DEFAULTANIMATION.Animation, new_default_animation_name)
+
+            new_default_animation = self.__main_app.available_animations[new_default_animation_name]
+
+            # variant
+            if new_default_animation.animation_variants is not None:
+                new_default_animation_variant = request.forms.get(new_default_animation_name + "_variant_value")
+                self.__main_app.config.set(Config.DEFAULTANIMATION.Variant, new_default_animation_variant)
+
+            # parameter
+            if new_default_animation.animation_parameters is not None:
+                new_parameter = {}
+                for p_name, _ in new_default_animation.animation_parameters:
+                    new_parameter[p_name] = request.forms.get(new_default_animation_name +
+                                                              "_parameter_" +
+                                                              p_name +
+                                                              "_value")
+
+                self.__main_app.config.set(Config.DEFAULTANIMATION.Parameter, new_parameter)
+
+            # repeat
+            new_default_animation_repeat = request.forms.get(new_default_animation_name + "_repeat_value")
+            self.__main_app.config.set(Config.DEFAULTANIMATION.Repeat, new_default_animation_repeat)
+
         self.__main_app.config.save()
 
         # reload the application
