@@ -17,13 +17,18 @@ from common.structure import Structure
 
 class AnimationParameter(Structure):
     def __init__(self, **params):
+        # safe the default types
+        self.__default_types = {
+            k: type(v) for k, v in self._params_map_.items()
+        }
+        self._params_map_ = self._params_map_.copy()
+
         # overwrite values in the instance
         for k, v in params.items():
             if k in self.names:
                 # try to cast values to the default type
                 # because not all types are supported by JSON
-                default_type = type(self._params_map_[k])
-                setattr(self, k, default_type(v))
+                self._params_map_[k] = self.__default_types[k](v)
 
 
 class AbstractAnimation(ABC, Thread):
