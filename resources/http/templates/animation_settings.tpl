@@ -14,11 +14,11 @@
     %   end
 </select>
 
+<div class="my-3"></div>
+<hr/>
+
 % for animation_name, animation in animations.items():
     <div id="animation_settings_{{animation_name}}" class="{{"d-none" if animation_name != current_animation_name else ""}}">
-        <h3>
-            {{animation_name.title()}}
-        </h3>
         <form id="animation_settings_form_{{animation_name}}" method="post" autocomplete="off">
             % if animation.animation_variants is not None:
                 <div class="form-group">
