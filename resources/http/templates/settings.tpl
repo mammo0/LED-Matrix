@@ -1,4 +1,5 @@
 % from common.config import Config
+% from server.http_server import SettingsTabs
 
 
 % setdefault('page_title', 'Settings')
@@ -13,21 +14,21 @@
     <div class="col">
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="tab_main" data-toggle="tab" href="#tab_pane_main" role="tab" aria-controls="tab_pane_main" aria-selected="true">
+                <a class="nav-link {{"active" if active_tab == SettingsTabs.main else ""}}" id="tab_main" data-toggle="tab" href="#tab_pane_main" role="tab" aria-controls="tab_pane_main">
                     Main
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="tab_default_animation" data-toggle="tab" href="#tab_pane_default_animation" role="tab" aria-controls="tab_pane_default_animation" aria-selected="true">
+                <a class="nav-link {{"active" if active_tab == SettingsTabs.default_animation else ""}}" id="tab_default_animation" data-toggle="tab" href="#tab_pane_default_animation" role="tab" aria-controls="tab_pane_default_animation">
                     Default Animation
                 </a>
             </li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane show active" id="tab_pane_main" role="tabpanel" aria-labelledby="tab_main">
+            <div class="tab-pane {{"active" if active_tab == SettingsTabs.main else ""}}" id="tab_pane_main" role="tabpanel" aria-labelledby="tab_main">
                 <div class="card border-0">
                     <div class="card-body border-left border-right">
-                        <form id="main_settings_form" method="post" action="/settings/main" autocomplete="off">
+                        <form id="main_settings_form" method="post" action="/settings/{{SettingsTabs.main.value}}" autocomplete="off">
                             <div class="form-group">
                                 <label for="setting_brightness_container">Brightness</label>
                                 <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
@@ -65,7 +66,7 @@
                     </div>
                     <div class="card-footer border rounded-bottom">
                         <button type="submit" class="btn btn-primary float-right ml-2" form="main_settings_form">Save</button>
-                        <a class="btn btn-danger float-right" href="/settings/reset/main">Reset</a>
+                        <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.main.value}}">Reset</a>
                     </div>
                 </div>
             </div>
@@ -86,6 +87,15 @@
 
             // send the request
             post_request("/settings/set_brightness", form_data);
+        }
+
+        // change the browser address bar to the current selected settings tab
+        // so on page reload the same tab is displayed
+        tab_main.onclick = function(){
+            window.history.replaceState("", "{{page_title}}", "/settings/{{SettingsTabs.main.value}}");
+        }
+        tab_default_animation.onclick = function(){
+            window.history.replaceState("", "{{page_title}}", "/settings/{{SettingsTabs.default_animation.value}}");
         }
     });
 </script>

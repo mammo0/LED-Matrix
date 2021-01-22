@@ -1,15 +1,22 @@
+from enum import Enum
+
 from bottle import template, static_file, request, redirect
 import bottle
 
 from common import RESOURCES_DIR
 from common.bottle import BottleCBVMeta, get, post
-from common.wsgi import CustomWSGIRefServer
 from common.config import Config
+from common.wsgi import CustomWSGIRefServer
 
 
 # change bottle template path
 HTTP_RESOURCES_DIR = RESOURCES_DIR / "http"
 bottle.TEMPLATE_PATH = [(HTTP_RESOURCES_DIR / "templates").resolve()]
+
+
+class SettingsTabs(Enum):
+    main = "main"
+    default_animation = "default_animation"
 
 
 class HttpServer(metaclass=BottleCBVMeta):
@@ -29,20 +36,32 @@ class HttpServer(metaclass=BottleCBVMeta):
     def stop(self):
         self.__wsgi_server.stop()
 
+    def __show_settings(self, tab=SettingsTabs.main):
+        default_animation = self.__main_app.get_animation(self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
+        return template("settings",
+                        active_tab=tab,
+                        # provide the main config
+                        config=self.__main_app.config,
+                        # except the brightness value should be always actual
+                        current_brightness=self.__main_app.display_brightness,
+                        # provide the animations
+                        animations=self.__main_app.get_animations(),
+                        default_animation=default_animation)
+
     @get("/")
     def index(self):
         return template("index")
 
     @get("/settings")
     def settings(self):
-        return template("settings",
-                        # provide the main config
-                        config=self.__main_app.config,
-                        # except the brightness value should be always actual
-                        current_brightness=self.__main_app.display_brightness)
+        return self.__show_settings()
 
-    @post("/settings/<pane>")
-    def save_settings(self, pane):
+    @get("/settings/<tab>")
+    def settings_with_pane(self, tab):
+        return self.__show_settings(SettingsTabs(tab))
+
+    @post("/settings/<tab>")
+    def save_settings(self, tab):
         brightness = request.forms.get("brightness_value")
         enable_rest = request.forms.get("enable_rest")
         enable_tpm2net = request.forms.get("enable_tpm2net")
@@ -57,12 +76,12 @@ class HttpServer(metaclass=BottleCBVMeta):
         self.__main_app.reload()
 
         # reload the page
-        redirect("/settings#tab_pane_" + pane)
+        redirect("/settings/" + tab)
 
-    @get("/settings/reset/<pane>")
-    def reset_settings(self, pane):
+    @get("/settings/reset/<tab>")
+    def reset_settings(self, tab):
         # a simple reload should be sufficient
-        redirect("/settings#tab_pane_" + pane)
+        redirect("/settings/" + tab)
 
     @post("/settings/set_brightness")
     def set_brightness(self):
