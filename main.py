@@ -186,6 +186,7 @@ class Main():
         # show the default animation
         self.__show_default_animation()
 
+        first_loop = True
         # run until '__quit' method was called
         while not self.quit_signal.is_set():
             # check if there is a frame that needs to be displayed
@@ -194,6 +195,13 @@ class Main():
                 self.display.buffer = self.frame_queue.get()
                 self.frame_queue.task_done()
                 self.display.show(gamma=True)
+
+                # after the first frame is displayed, clear the reload signal
+                if first_loop:
+                    self.reload_signal.clear()
+                    # notify reload method, that reloading is done
+                    with self.reload_signal._cond:
+                        self.reload_signal._cond.notify_all()
 
             # to limit CPU usage do not go faster than 60 "fps"
             self.quit_signal.wait(1/60)
@@ -208,12 +216,9 @@ class Main():
             # reload settings
             self.__load_settings()
 
-            # clear signals
+            # clear quit signal
+            # the reload signal gets cleared after the first frame is displayed again
             self.quit_signal.clear()
-            self.reload_signal.clear()
-            # notify reload method, that reloading is done
-            with self.reload_signal._cond:
-                self.reload_signal._cond.notify_all()
 
             # restart mainloop
             self.mainloop()
