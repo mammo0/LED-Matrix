@@ -178,7 +178,10 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @get("/settings/reset/<tab>")
     def reset_settings(self, tab):
-        # a simple reload should be sufficient
+        # reset the brightness value
+        self.__main_app.set_brightness(self.__main_app.config.get(Config.MAIN.Brightness))
+
+        # for all other values a simple reload should be sufficient
         redirect("/settings/" + tab)
 
     @post("/settings/preview_brightness")
