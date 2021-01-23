@@ -232,6 +232,10 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
             # convert it to a dictionary
             return dict(parameter)
 
+        # if it's already a dictionary, just return it
+        if isinstance(parameter, dict):
+            return parameter
+
         if len(self.animation_parameters.names) == 1:
             # this is the only possible parameter, so pass it as it is
             return {self.animation_parameters.names[0]: parameter}
