@@ -3,7 +3,7 @@
 
 <div class="card">
     <div class="card-header">
-        Set new Animation
+        Start new Animation
     </div>
     <div class="card-body">
         <%

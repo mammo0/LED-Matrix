@@ -1,8 +1,13 @@
 % from server.http_server import Input
 
 
+<label for="animation_selector">
+    <b>Animation</b>
+</label>
 <select id="animation_selector" class="custom-select" autocomplete="off">
-    <option value="{{current_animation_name}}" selected>{{current_animation_name.title()}} (Current)</option>
+    <option value="{{current_animation_name}}" selected>
+        {{current_animation_name.title()}} (Current)
+    </option>
 
     <%
         for animation_name in animations:
@@ -10,7 +15,9 @@
                 continue
             end
     %>
-            <option value="{{animation_name}}">{{animation_name.title()}}</option>
+            <option value="{{animation_name}}">
+                {{animation_name.title()}}
+            </option>
     %   end
 </select>
 
@@ -40,7 +47,7 @@
             % end
             % if animation.animation_parameters:
                 <label for="parameter_container_{{animation_name}}">Paramter(s)</label>
-                <div id="parameter_container_{{animation_name}}">
+                <ul id="parameter_container_{{animation_name}}" class="list-group">
                     <%
                         parameters = animation.current_parameter
                         if parameters is None:
@@ -50,12 +57,16 @@
                         for p_name, p_value in parameters:
                             input = Input(p_value)
                     %>
-                            <div class="form-group">
-                                <label for="{{animation_name}}_parameter_{{p_name}}">{{p_name.replace("_", " ").title()}}</label>
-                                <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" name="{{animation_name}}_parameter_{{p_name}}_value" value="{{input.value}}">
-                            </div>
+                            <li class="list-group-item m-0 p-0 border-0 pl-5">
+                                <div class="form-group">
+                                    <label for="{{animation_name}}_parameter_{{p_name}}">
+                                        {{p_name.replace("_", " ").title()}}
+                                    </label>
+                                    <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" name="{{animation_name}}_parameter_{{p_name}}_value" value="{{input.value}}">
+                                </div>
+                            </li>
                     %   end
-                </div>
+                </ul>
             % end
             % if animation.is_repeat_supported:
                 <div class="form-group">
