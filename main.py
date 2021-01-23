@@ -242,6 +242,11 @@ class AnimationController(threading.Thread):
 
             queue.Queue._put(self, item)
 
+        @property
+        def tasks_remaining(self):
+            with self.all_tasks_done:
+                return self.unfinished_tasks > 0
+
     def __init__(self, display_width, display_height, display_frame_queue,
                  default_animation_name,
                  default_animation_variant,
@@ -280,7 +285,8 @@ class AnimationController(threading.Thread):
         for _name, cls in animation_loader.plugins.items():
             animations[cls.animation_name] = cls(width=self.display_width, height=self.display_height,
                                                  frame_queue=self.display_frame_queue,
-                                                 resources_path=RESOURCES_DIR)
+                                                 resources_path=RESOURCES_DIR,
+                                                 on_finish_callable=self.animation_finished)
 
         return animations
 
@@ -289,6 +295,12 @@ class AnimationController(threading.Thread):
                              variant=self.__def_a_variant,
                              parameter=self.__def_a_parameter,
                              repeat=self.__def_a_repeat)
+
+    def animation_finished(self):
+        # whenever an animation stops or finishes check if there are unfinished jobs
+        if not self.controll_queue.tasks_remaining:
+            # if not, start the default animation
+            self.__start_default_animation()
 
     def __start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         with self.animation_lock:

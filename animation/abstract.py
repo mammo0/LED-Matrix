@@ -32,13 +32,14 @@ class AnimationParameter(Structure):
 
 
 class AbstractAnimation(ABC, Thread):
-    def __init__(self, width, height, frame_queue, repeat):
+    def __init__(self, width, height, frame_queue, repeat, on_finish_callable):
         super().__init__(daemon=True)
         self.width = width  # width of frames to produce
         self.height = height  # height of frames to produce
         self.frame_queue = frame_queue  # queue to put frames onto
         self.repeat = repeat  # 0: no repeat, -1: forever, > 0: x-times
         self.__remaining_repeat = repeat
+        self.on_finish_callable = on_finish_callable
 
         self._stop_event = Event()  # query this often! exit self.animate quickly
 
@@ -48,7 +49,14 @@ class AbstractAnimation(ABC, Thread):
         # print("Starting")
 
         self.started = time.time()
-        self.animate()
+        try:
+            self.animate()
+        except Exception as e:
+            eprint("During the execution of the animation the following error occurred:")
+            eprint(repr(e))
+        finally:
+            # now the animation has stopped, so call the finish callable
+            self.on_finish_callable()
 
     # def start(self):
     """We do not overwrite this. It is from threading.Thread"""
@@ -120,11 +128,12 @@ class AbstractAnimationControllerMeta(ABCMeta, ClasspropertyMeta):
 
 
 class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
-    def __init__(self, width, height, frame_queue, resources_path):
+    def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
         self.width = width  # width of frames to produce
         self.height = height  # height of frames to produce
         self.frame_queue = frame_queue  # queue to put frames onto
         self.resources_path = resources_path  # path to the 'resources' directory
+        self.on_finish_callable = on_finish_callable  # this gets called whenever an animation stops/finishes
 
         self.animation_thread = None  # this variable contains the animation thread
 
@@ -212,14 +221,16 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                     eprint("Available variants: %s" % ", ".join(self.animation_variants._member_names_))
 
         self.animation_thread = self.animation_class(width=self.width, height=self.height,
-                                                     frame_queue=self.frame_queue, repeat=repeat,
+                                                     frame_queue=self.frame_queue,
+                                                     repeat=repeat,
+                                                     on_finish_callable=self.__animation_finished_stopped,
                                                      **options)
-
-        # start the animation thread
-        self.animation_thread.start()
 
         # mark the animation as running
         self.animation_running.set()
+
+        # start the animation thread
+        self.animation_thread.start()
 
     def _validate_parameter(self, parameter):
         # if no parameter is specified
@@ -249,6 +260,13 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
         return parsed_p
 
+    def __animation_finished_stopped(self):
+        # release running event
+        self.animation_running.clear()
+
+        # call finished callable
+        self.on_finish_callable()
+
     def stop_animation(self):
         # stop the animation if it's currently running.
         if (self.animation_thread and
@@ -265,6 +283,3 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                         ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
                         eprint("Exception during killing of animation '%s'!" % self.animation_name)
                         eprint("It may be saver to restart the program.")
-
-        # release running event
-        self.animation_running.clear()

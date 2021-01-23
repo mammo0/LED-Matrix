@@ -18,9 +18,9 @@ class GameframeParameter(AnimationParameter):
 
 
 class GameframeAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat,
+    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
                  **kwargs):
-        super().__init__(width, height, frame_queue, repeat)
+        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
 
         self.folder = Path(kwargs.pop("variant").value)
 
@@ -192,8 +192,8 @@ class GameframeAnimation(AbstractAnimation):
 
 
 class GameframeController(AbstractAnimationController):
-    def __init__(self, width, height, frame_queue, resources_path):
-        super(GameframeController, self).__init__(width, height, frame_queue, resources_path)
+    def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
+        super(GameframeController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
 
         self.resources_path = self.resources_path / "animations" / "gameframe"
 

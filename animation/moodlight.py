@@ -23,9 +23,9 @@ class _Style(Enum):
 
 
 class MoodlightAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat,
+    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
                  variant=MoodlightVariant.wish_down_up):
-        super().__init__(width, height, frame_queue, repeat)
+        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
         self.variant = variant
         self.colors = [(255, 0, 0), (255, 255, 0), (0, 255, 255), (0, 0, 255)]  # if empty choose random colors
         self.random = False  # how to step through colors

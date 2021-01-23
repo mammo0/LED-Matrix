@@ -24,10 +24,10 @@ class ClockParameter(AnimationParameter):
 
 
 class ClockAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat,
+    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
                  variant=ClockVariant.analog,
                  **kwargs):
-        super().__init__(width, height, frame_queue, repeat)
+        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
         self.name = "clock"
         self.variant = variant
 

@@ -16,9 +16,9 @@ class BlmParameter(AnimationParameter):
 
 
 class BlmAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat,
+    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
                  **kwargs):
-        super().__init__(width, height, frame_queue, repeat)
+        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
 
         self.path = Path(kwargs.pop("variant").value)
 
@@ -162,8 +162,8 @@ class BlmAnimation(AbstractAnimation):
 
 
 class BlmController(AbstractAnimationController):
-    def __init__(self, width, height, frame_queue, resources_path):
-        super(BlmController, self).__init__(width, height, frame_queue, resources_path)
+    def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
+        super(BlmController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
 
         self.resources_path = self.resources_path / "animations" / "162-blms"
 
