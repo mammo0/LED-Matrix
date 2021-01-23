@@ -181,7 +181,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         # a simple reload should be sufficient
         redirect("/settings/" + tab)
 
-    @post("/settings/set_brightness")
+    @post("/settings/preview_brightness")
     def set_brightness(self):
         value = request.forms.get("brightness_value")
         self.__main_app.set_brightness(int(value))

@@ -98,7 +98,7 @@
             form_data.append(setting_brightness_slider.name, setting_brightness_slider.value);
 
             // send the request
-            post_request("/settings/set_brightness", form_data);
+            post_request("/settings/preview_brightness", form_data);
         }
 
         btn_save_default_animation.onclick = function(){
