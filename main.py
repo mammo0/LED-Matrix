@@ -118,12 +118,6 @@ class Main():
             self.tpm2_net_server.shutdown()
             self.tpm2_net_server.server_close()
 
-    def __show_default_animation(self):
-        self.animation_controller.start_animation(self.default_animation,
-                                                  variant=self.default_animation_variant,
-                                                  parameter=self.default_animation_parameter,
-                                                  repeat=self.default_animation_repeat)
-
     def __clear_display(self):
         self.display.clear_buffer()
         self.display.show()
@@ -152,15 +146,6 @@ class Main():
         if self.animation_controller is not None:
             self.animation_controller.stop_animation(animation_name)
 
-        # check if this method was called from start_animation above
-        if (sys._getframe().f_back.f_code !=  # code object of the calling method
-                self.start_animation.__code__):  # the code object of the above start_animation method
-            # if it's NOT called from above, show the default animation
-            # because then no other animation will be started afterwards
-            self.__show_default_animation()
-        else:
-            self.__clear_display()
-
     @property
     def available_animations(self):
         if self.animation_controller is not None:
@@ -187,14 +172,15 @@ class Main():
 
     def mainloop(self):
         # start the animation controller
-        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue)
+        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue,
+                                                        self.default_animation,
+                                                        self.default_animation_variant,
+                                                        self.default_animation_parameter,
+                                                        self.default_animation_repeat)
         self.animation_controller.start()
 
         # start the server interfaces
         self.__start_servers()
-
-        # show the default animation
-        self.__show_default_animation()
 
         first_loop = True
         # run until '__quit' method was called
@@ -256,12 +242,23 @@ class AnimationController(threading.Thread):
 
             queue.Queue._put(self, item)
 
-    def __init__(self, display_width, display_height, display_frame_queue):
+    def __init__(self, display_width, display_height, display_frame_queue,
+                 default_animation_name,
+                 default_animation_variant,
+                 default_animation_parameter,
+                 default_animation_repeat):
         super().__init__(daemon=True)
 
+        # the display settings
         self.display_width = display_width
         self.display_height = display_height
         self.display_frame_queue = display_frame_queue
+
+        # the default animation settings
+        self.__def_a_name = default_animation_name
+        self.__def_a_variant = default_animation_variant
+        self.__def_a_parameter = default_animation_parameter
+        self.__def_a_repeat = default_animation_repeat
 
         self.stop_event = threading.Event()
         self.controll_queue = AnimationController._EventQueue()
@@ -286,6 +283,12 @@ class AnimationController(threading.Thread):
                                                  resources_path=RESOURCES_DIR)
 
         return animations
+
+    def __start_default_animation(self):
+        self.start_animation(self.__def_a_name,
+                             variant=self.__def_a_variant,
+                             parameter=self.__def_a_parameter,
+                             repeat=self.__def_a_repeat)
 
     def __start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         with self.animation_lock:
@@ -343,6 +346,9 @@ class AnimationController(threading.Thread):
         return animation.animation_running.is_set()
 
     def run(self):
+        # on start show default animation
+        self.__start_default_animation()
+
         while not self.stop_event.is_set():
             # get the next event
             event = self.controll_queue.get()
