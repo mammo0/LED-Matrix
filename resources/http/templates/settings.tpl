@@ -88,6 +88,7 @@
     </div>
 </div>
 
+<script src="/js/slider.js"></script>
 <script src="/js/post_request.js"></script>
 <script>
     window.addEventListener("load", function(){
