@@ -44,7 +44,8 @@ class Main():
         self.frame_queue = queue.Queue(maxsize=1)
 
         # animation controller
-        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue)
+        # gets initialized in mainloop method
+        self.animation_controller = None
 
         # server interfaces
         self.http_server = None
@@ -143,10 +144,13 @@ class Main():
             self.reload_signal._cond.wait_for(lambda: not self.reload_signal.is_set())
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
-        self.animation_controller.start_animation(animation_name, variant=variant, parameter=parameter, repeat=repeat)
+        if self.animation_controller is not None:
+            self.animation_controller.start_animation(animation_name,
+                                                      variant=variant, parameter=parameter, repeat=repeat)
 
     def stop_animation(self, animation_name=None):
-        self.animation_controller.stop_animation(animation_name)
+        if self.animation_controller is not None:
+            self.animation_controller.stop_animation(animation_name)
 
         # check if this method was called from start_animation above
         if (sys._getframe().f_back.f_code !=  # code object of the calling method
@@ -159,10 +163,16 @@ class Main():
 
     @property
     def available_animations(self):
-        return self.animation_controller.available_animations
+        if self.animation_controller is not None:
+            return self.animation_controller.available_animations
+        else:
+            return {}
 
     def is_animation_running(self, animation_name):
-        return self.animation_controller.is_animation_running(animation_name)
+        if self.animation_controller is not None:
+            return self.animation_controller.is_animation_running(animation_name)
+        else:
+            return False
 
     def set_brightness(self, brightness):
         if not 0 <= brightness <= 100:
