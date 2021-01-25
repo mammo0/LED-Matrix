@@ -3,7 +3,8 @@
 
 <div class="card">
     <div class="card-header">
-        Start new Animation
+        <span class="icon bi-plus-square"></span>
+        <span class="d-none d-sm-inline">Start new Animation</span>
     </div>
     <div class="card-body">
         <%

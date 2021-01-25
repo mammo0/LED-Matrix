@@ -29,7 +29,10 @@
         <form id="animation_settings_form_{{animation_name}}" method="post" autocomplete="off">
             % if animation.animation_variants is not None:
                 <div class="form-group">
-                    <label for="{{animation_name}}_variant">Variant</label>
+                    <label for="{{animation_name}}_variant">
+                        <span class="icon bi-alt"></span>
+                        <span class="d-none d-sm-inline">Variant</span>
+                    </label>
                     <select id="{{animation_name}}_variant" class="custom-select" name="{{animation_name}}_variant_value" autocomplete="off">
                         % if animation.current_variant:
                             <option value="{{animation.current_variant.name}}" selected>{{animation.current_variant.name.title()}} (Current)</option>
@@ -46,7 +49,10 @@
                 </div>
             % end
             % if animation.animation_parameters:
-                <label for="parameter_container_{{animation_name}}">Paramter(s)</label>
+                <label for="parameter_container_{{animation_name}}">
+                    <span class="icon bi-sliders"></span>
+                    <span class="d-none d-sm-inline">Paramter(s)</span>
+                </label>
                 <ul id="parameter_container_{{animation_name}}" class="list-group">
                     <%
                         parameters = animation.current_parameter
@@ -70,7 +76,10 @@
             % end
             % if animation.is_repeat_supported:
                 <div class="form-group">
-                    <label for="{{animation_name}}_repeat">Repeat</label>
+                    <label for="{{animation_name}}_repeat">
+                        <span class="icon bi-arrow-repeat"></span>
+                        <span class="d-none d-sm-inline">Repeat</span>
+                    </label>
                     <input id="{{animation_name}}_repeat" type="number" class="form-control" name="{{animation_name}}_repeat_value" min="-1" value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
                 </div>
             % end
