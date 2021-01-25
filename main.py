@@ -31,6 +31,7 @@ class Main():
         signal.signal(signal.SIGINT, self.__quit)
         signal.signal(signal.SIGQUIT, self.__quit)
         signal.signal(signal.SIGTERM, self.__quit)
+        signal.signal(signal.SIGHUP, self.__reload)
 
         # needed for 'set_brightness' method
         self.display = None
@@ -127,12 +128,16 @@ class Main():
         print("Exiting...")
         self.quit_signal.set()
 
-    def reload(self):
+    def __reload(self, *_):
         print("Reloading...")
 
         # set the reload and quit signal to exit mainloop
         self.reload_signal.set()
         self.quit_signal.set()
+
+    def reload(self):
+        # start reload process
+        self.__reload()
 
         # wait until the the reload_signal is unset
         self.reload_signal.wait_unset()
