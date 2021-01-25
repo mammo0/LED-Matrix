@@ -139,6 +139,11 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         redirect("/")
 
+    @get("/stop-animation")
+    def stop_current_animation(self):
+        self.__main_app.stop_animation(blocking=True)
+        redirect("/")
+
     @get("/settings")
     def settings(self):
         return self.__show_settings()
