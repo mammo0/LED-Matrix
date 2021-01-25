@@ -21,6 +21,7 @@ class ClockParameter(AnimationParameter):
     divider_color = Color(255, 255, 255)
     hour_color = Color(255, 0, 0)
     minute_color = Color(255, 255, 255)
+    blinking_seconds = True
 
 
 class ClockAnimation(AbstractAnimation):
@@ -36,6 +37,7 @@ class ClockAnimation(AbstractAnimation):
         self.divider_color = self.params.divider_color.pil_tuple
         self.hour_color = self.params.hour_color.pil_tuple
         self.minute_color = self.params.minute_color.pil_tuple
+        self.blinking_seconds = self.params.blinking_seconds
 
         self.background = Image.new("RGB", (width, height), self.background_color)
 
@@ -161,9 +163,12 @@ class ClockAnimation(AbstractAnimation):
         self.digital_draw_digit(draw, int(minute_txt[1]),
                                 x=minute_2_x, y=1, width=char_width, height=char_height, color=self.minute_color)
 
-        # draw the minute hour divider every two seconds
+        # minute hour divider
         divider_space = int(char_height / 4)
-        if second % 2 == 0:
+        # always draw it if it should not blink
+        if (not self.blinking_seconds or
+                # if it should blink, draw the divider every two seconds
+                second % 2 == 0):
             draw.point([self.analog_middle_x, self.analog_middle_y + divider_space],
                        fill=self.divider_color)
             draw.point([self.analog_middle_x, self.analog_middle_y - divider_space],
