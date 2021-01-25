@@ -27,5 +27,6 @@ class EventWithUnsetSignal(Event):
         with self._cond:
             signaled = self._flag
             if signaled:
-                signaled = self._cond.wait_for(lambda: not self._flag, timeout=timeout)
+                self._cond.wait_for(lambda: not self._flag, timeout=timeout)
+                signaled = self._flag
             return signaled
