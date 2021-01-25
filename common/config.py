@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 import configparser
+from distutils.util import strtobool
 from io import StringIO
 import json
 import shutil
@@ -48,6 +49,8 @@ class ConfigValue(ConfigSection):
                 self.value_type == str):
             # convert the dict to a JSON string
             return json.dumps(value)
+        elif self.value_type == bool:
+            return bool(strtobool(value))
         else:
             try:
                 return self.value_type(value)
