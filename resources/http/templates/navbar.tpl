@@ -5,7 +5,7 @@
             <ul class="navbar-nav">
                 <li class="nav-item active">
                     <a class="nav-link" href="/">
-                        <span class="bi-house-door-fill"></span>
+                        <span class="icon bi-house-door-fill"></span>
                         <span class="d-none d-sm-inline">Home</span>
                     </a>
                 </li>
@@ -13,7 +13,7 @@
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="/settings">
-                        <span class="bi-gear-fill"></span>
+                        <span class="icon bi-gear-fill"></span>
                         <span class="d-none d-sm-inline">Settings</span>
                     </a>
                 </li>

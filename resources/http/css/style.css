@@ -5,3 +5,9 @@
   src: url("/fonts/bootstrap-icons.woff") format("woff"),
 url("/fonts/bootstrap-icons.woff2") format("woff2");
 }
+
+
+/* fix line height for bootstrap icons */
+.icon::before{
+    line-height: 1.25rem !important;
+}
