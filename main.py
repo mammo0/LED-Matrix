@@ -264,7 +264,8 @@ class AnimationController(threading.Thread):
             queue.Queue.task_done(self)
 
             # mark the corresponding event also as done
-            event.done()
+            if event is not None:
+                event.done()
 
         @property
         def tasks_remaining(self):
