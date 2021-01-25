@@ -3,7 +3,6 @@ This is the sceleton code for all animations.
 """
 
 from abc import abstractmethod, ABC, ABCMeta
-import ctypes
 import json
 from threading import Thread, Event
 import threading
@@ -63,7 +62,7 @@ class AbstractAnimation(ABC, Thread):
 
     def stop_and_wait(self):
         self._stop_event.set()
-        self.join(timeout=5)
+        self.join()
 
     def is_repeat(self):
         # no repeat
@@ -272,14 +271,3 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         if (self.animation_thread and
                 self.animation_thread.is_alive()):
             self.animation_thread.stop_and_wait()
-
-            # if the thread is still alive, try to kill it
-            if self.animation_thread.is_alive():
-                thread_id = self.animation_thread.thread_id
-                if thread_id != -1:
-                    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
-                                                                     ctypes.py_object(SystemExit))
-                    if res > 1:
-                        ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-                        eprint("Exception during killing of animation '%s'!" % self.animation_name)
-                        eprint("It may be saver to restart the program.")
