@@ -226,6 +226,24 @@ class AnimationController(threading.Thread):
             self.animation_name = animation_name
             self.event_parameter = parameter
 
+            self.next_event = None
+            self.event_lock = threading.Event()
+
+        def wait(self):
+            # first wait for the own lock (when the event is processed the done method should be called)
+            self.event_lock.wait()
+            # if there is an event that directly follows to this one, also wait for it
+            if self.next_event is not None:
+                self.next_event.wait()
+
+        def chain(self, event):
+            # create an event chain of events that belong together
+            self.next_event = event
+
+        def done(self):
+            # mark the event as done
+            self.event_lock.set()
+
     class _EventType(Enum):
         start = 1
         stop = 2
@@ -241,10 +259,22 @@ class AnimationController(threading.Thread):
 
             queue.Queue._put(self, item)
 
+        def task_done(self, event):
+            # super call
+            queue.Queue.task_done(self)
+
+            # mark the corresponding event also as done
+            event.done()
+
         @property
         def tasks_remaining(self):
-            with self.all_tasks_done:
+            with self.mutex:
                 return self.unfinished_tasks > 0
+
+        @property
+        def last_task_running(self):
+            with self.mutex:
+                return self._qsize() == 0 and self.unfinished_tasks <= 1
 
     def __init__(self, display_width, display_height, display_frame_queue,
                  default_animation_name,
@@ -290,10 +320,10 @@ class AnimationController(threading.Thread):
         return animations
 
     def __start_default_animation(self):
-        self.start_animation(self.__def_a_name,
-                             variant=self.__def_a_variant,
-                             parameter=self.__def_a_parameter,
-                             repeat=self.__def_a_repeat)
+        return self.start_animation(self.__def_a_name,
+                                    variant=self.__def_a_variant,
+                                    parameter=self.__def_a_parameter,
+                                    repeat=self.__def_a_repeat)
 
     def animation_finished(self):
         # whenever an animation stops or finishes check if there are unfinished jobs
@@ -338,23 +368,33 @@ class AnimationController(threading.Thread):
         self.controll_queue.put(start_event)
 
         # check blocking
-        if (blocking and
-                animation_name in self.animations):
-            # wait until the animation is marked as running
-            self.animations[animation_name].animation_running.wait()
+        if blocking:
+            start_event.wait()
+
+        return start_event
 
     def stop_animation(self, animation_name=None, blocking=False):
+        # by default the current animation should be stopped
+        animation_to_stop = self.current_animation
+        if animation_to_stop is None:
+            # nothing can be stopped
+            return
+        # check if the current animation is the one that should be stopped
+        if (animation_name is not None and
+                animation_to_stop.animation_name != animation_name):
+            # otherwise do nothing
+            return
+
+        # create and schedule the stop event
         stop_event = AnimationController._Event(AnimationController._EventType.stop,
-                                                animation_name)
+                                                animation_to_stop.animation_name)
         self.controll_queue.put(stop_event)
 
         # check blocking
         if blocking:
-            # with block for accessing current_animation
-            with self.animation_lock:
-                if self.current_animation is not None:
-                    # wait until the animation is marked as stopped
-                    self.current_animation.animation_running.wait_unset()
+            stop_event.wait()
+
+        return stop_event
 
     @property
     def available_animations(self):
@@ -380,7 +420,7 @@ class AnimationController(threading.Thread):
 
             # sometimes get can take a while to return, so check the stop flag again here
             if self.stop_event.is_set():
-                self.controll_queue.task_done()
+                self.controll_queue.task_done(event)
                 break
 
             # check the event type
@@ -388,8 +428,17 @@ class AnimationController(threading.Thread):
                 self.__start_animation(event.animation_name, **event.event_parameter)
             elif event.event_type == AnimationController._EventType.stop:
                 self.__stop_animation(event.animation_name, **event.event_parameter)
+                # special case on stop event:
+                # after the animation was stopped check if this was the last task (for now)
+                if self.controll_queue.last_task_running:
+                    # if so, start the default animation
+                    default_start_event = self.__start_default_animation()
+                    # link the new event to the old one
+                    # this is needed for a blocking stop event
+                    event.chain(default_start_event)
 
-            self.controll_queue.task_done()
+            # the event is processed now
+            self.controll_queue.task_done(event)
 
     def stop(self):
         self.stop_event.set()
