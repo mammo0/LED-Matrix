@@ -38,8 +38,9 @@ class Main():
 
         # load config
         if config_file_path is None:
-            config_file_path = DEFAULT_CONFIG_FILE
-        self.config = Configuration(config_file_path=config_file_path, allow_no_value=True)
+            self.config_file_path = DEFAULT_CONFIG_FILE
+        else:
+            self.config_file_path = config_file_path
         self.__load_settings()
 
         # this is the queue that holds the frames to display
@@ -57,6 +58,8 @@ class Main():
         self.reload_signal = EventWithUnsetSignal()
 
     def __load_settings(self):
+        self.config = Configuration(config_file_path=self.config_file_path, allow_no_value=True)
+
         # get [MAIN] options
         hardware = self.config.get(Config.MAIN.Hardware)
         self.display_width = self.config.get(Config.MAIN.DisplayWidth)
