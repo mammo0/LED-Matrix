@@ -25,9 +25,12 @@ class Input():
         self.__type = "text"
         self.__value = value
         self.__step = "1"
+        self.__additional_attr = ""
 
         if isinstance(value, bool):
             self.__type = "checkbox"
+            if value:
+                self.__additional_attr = "checked"
         elif isinstance(value, int):
             self.__type = "number"
         elif isinstance(value, float):
@@ -48,6 +51,10 @@ class Input():
     @property
     def step(self):
         return self.__step
+
+    @property
+    def additional_attr(self):
+        return self.__additional_attr
 
 
 class HttpServer(metaclass=BottleCBVMeta):

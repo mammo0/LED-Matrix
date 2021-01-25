@@ -68,7 +68,7 @@
                                     <label for="{{animation_name}}_parameter_{{p_name}}">
                                         {{p_name.replace("_", " ").title()}}
                                     </label>
-                                    <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" name="{{animation_name}}_parameter_{{p_name}}_value" value="{{input.value}}">
+                                    <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" name="{{animation_name}}_parameter_{{p_name}}_value" value="{{input.value}}" {{input.additional_attr}}>
                                 </div>
                             </li>
                     %   end
