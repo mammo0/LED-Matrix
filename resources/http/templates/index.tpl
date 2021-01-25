@@ -20,7 +20,7 @@
         %>
     </div>
     <div class="card-footer border rounded-bottom">
-        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right">
+        <button id="btn_start_animation" type="submit" class="btn btn-primary float-right">
             <span class="icon bi-play-fill"></span>
             <span>Start</span>
         </button>
@@ -29,7 +29,7 @@
 
 <script>
     window.addEventListener("load", function(){
-        btn_save_default_animation.onclick = function(){
+        btn_start_animation.onclick = function(){
             // this selector and form is defined by 'animation_settings.tpl'
             let animation_selector = document.getElementById("animation_selector");
             let animation_form = document.getElementById("animation_settings_form_" + animation_selector.value);
