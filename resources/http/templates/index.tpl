@@ -2,9 +2,16 @@
 
 
 <div class="card">
-    <div class="card-header">
-        <span class="icon bi-plus-square"></span>
-        <span>Start new Animation</span>
+    <div class="card-header d-flex align-items-baseline justify-content-between">
+        <div>
+            <span class="icon bi-play-fill"></span>
+            <span>New Animation</span>
+        </div>
+        <a class="btn btn-danger" href="/stop-animation">
+            <span class="icon bi-stop-fill"></span>
+            <span class="d-none d-sm-inline">Stop Current Animation</span>
+            <span class="d-inline d-sm-none">Current</span>
+        </a>
     </div>
     <div class="card-body">
         <%
@@ -13,7 +20,10 @@
         %>
     </div>
     <div class="card-footer border rounded-bottom">
-        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right">Apply</button>
+        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right">
+            <span class="icon bi-play-fill"></span>
+            <span>Start</span>
+        </button>
     </div>
 </div>
 
