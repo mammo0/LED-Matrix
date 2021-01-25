@@ -13,6 +13,7 @@ from simple_plugin_loader import Loader
 from animation.abstract import AbstractAnimationController
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
+from common.event import EventWithUnsetSignal
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
 from server.rest_server import RestServer
@@ -52,7 +53,7 @@ class Main():
         self.rest_server = None
         self.tpm2_net_server = None
 
-        self.reload_signal = threading.Event()
+        self.reload_signal = EventWithUnsetSignal()
 
     def __load_settings(self):
         # get [MAIN] options
@@ -134,8 +135,7 @@ class Main():
         self.quit_signal.set()
 
         # wait until the the reload_signal is unset
-        with self.reload_signal._cond:
-            self.reload_signal._cond.wait_for(lambda: not self.reload_signal.is_set())
+        self.reload_signal.wait_unset()
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
         if self.animation_controller is not None:
@@ -195,9 +195,7 @@ class Main():
                 # after the first frame is displayed, clear the reload signal
                 if first_loop:
                     self.reload_signal.clear()
-                    # notify reload method, that reloading is done
-                    with self.reload_signal._cond:
-                        self.reload_signal._cond.notify_all()
+                    first_loop = False
 
             # to limit CPU usage do not go faster than 60 "fps"
             self.quit_signal.wait(1/60)
