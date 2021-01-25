@@ -11,3 +11,16 @@ url("/fonts/bootstrap-icons.woff2") format("woff2");
 .icon::before{
     line-height: 1.25rem !important;
 }
+
+
+/* a class for lists with bootstrap icons as bullets */
+.bullet-list li{
+    display: block;
+}
+.bullet-list li::before{
+    /* define the position of the bullet */
+    font-family: bootstrap-icons !important;
+    float: left;
+    line-height: 1.66rem !important;
+    margin-left: -1.5em;
+}

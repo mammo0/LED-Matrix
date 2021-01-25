@@ -53,7 +53,7 @@
                     <span class="icon bi-sliders"></span>
                     <span class="d-none d-sm-inline">Paramter(s)</span>
                 </label>
-                <ul id="parameter_container_{{animation_name}}" class="list-group">
+                <ul id="parameter_container_{{animation_name}}" class="list-group bullet-list">
                     <%
                         parameters = animation.current_parameter
                         if parameters is None:
@@ -63,7 +63,7 @@
                         for p_name, p_value in parameters:
                             input = Input(p_value)
                     %>
-                            <li class="list-group-item m-0 p-0 border-0 pl-5">
+                            <li class="list-group-item bi-caret-right-fill m-0 p-0 border-0 pl-5">
                                 <div class="form-group">
                                     <label for="{{animation_name}}_parameter_{{p_name}}">
                                         {{p_name.replace("_", " ").title()}}
