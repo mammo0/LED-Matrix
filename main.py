@@ -143,9 +143,9 @@ class Main():
                                                       variant=variant, parameter=parameter, repeat=repeat,
                                                       blocking=blocking)
 
-    def stop_animation(self, animation_name=None):
+    def stop_animation(self, animation_name=None, blocking=False):
         if self.animation_controller is not None:
-            self.animation_controller.stop_animation(animation_name)
+            self.animation_controller.stop_animation(animation_name, blocking=blocking)
 
     @property
     def available_animations(self):
@@ -343,10 +343,18 @@ class AnimationController(threading.Thread):
             # wait until the animation is marked as running
             self.animations[animation_name].animation_running.wait()
 
-    def stop_animation(self, animation_name=None):
+    def stop_animation(self, animation_name=None, blocking=False):
         stop_event = AnimationController._Event(AnimationController._EventType.stop,
                                                 animation_name)
         self.controll_queue.put(stop_event)
+
+        # check blocking
+        if blocking:
+            # with block for accessing current_animation
+            with self.animation_lock:
+                if self.current_animation is not None:
+                    # wait until the animation is marked as stopped
+                    self.current_animation.animation_running.wait_unset()
 
     @property
     def available_animations(self):

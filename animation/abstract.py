@@ -11,6 +11,7 @@ import time
 from simple_classproperty import ClasspropertyMeta, classproperty
 
 from common import eprint
+from common.event import EventWithUnsetSignal
 from common.structure import Structure
 
 
@@ -136,7 +137,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
         self.animation_thread = None  # this variable contains the animation thread
 
-        self.animation_running = Event()
+        self.animation_running = EventWithUnsetSignal()
 
     @classproperty
     def animation_name(cls):
