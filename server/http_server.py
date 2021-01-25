@@ -58,7 +58,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         self.__css_dir = HTTP_RESOURCES_DIR / "css"
         self.__fonts_dir = HTTP_RESOURCES_DIR / "fonts"
 
-        self.__wsgi_server = CustomWSGIRefServer(port=port, quiet=True)
+        self.__wsgi_server = CustomWSGIRefServer(host="0.0.0.0", port=port, quiet=True)
 
     def start(self):
         self.__wsgi_server.start()
