@@ -4,7 +4,7 @@
 <div class="card">
     <div class="card-header">
         <span class="icon bi-plus-square"></span>
-        <span class="d-none d-sm-inline">Start new Animation</span>
+        <span>Start new Animation</span>
     </div>
     <div class="card-body">
         <%

@@ -31,7 +31,7 @@
                 <div class="form-group">
                     <label for="{{animation_name}}_variant">
                         <span class="icon bi-alt"></span>
-                        <span class="d-none d-sm-inline">Variant</span>
+                        <span>Variant</span>
                     </label>
                     <select id="{{animation_name}}_variant" class="custom-select" name="{{animation_name}}_variant_value" autocomplete="off">
                         % if animation.current_variant:
@@ -51,7 +51,7 @@
             % if animation.animation_parameters:
                 <label for="parameter_container_{{animation_name}}">
                     <span class="icon bi-sliders"></span>
-                    <span class="d-none d-sm-inline">Paramter(s)</span>
+                    <span>Paramter(s)</span>
                 </label>
                 <ul id="parameter_container_{{animation_name}}" class="list-group bullet-list">
                     <%
@@ -78,7 +78,7 @@
                 <div class="form-group">
                     <label for="{{animation_name}}_repeat">
                         <span class="icon bi-arrow-repeat"></span>
-                        <span class="d-none d-sm-inline">Repeat</span>
+                        <span>Repeat</span>
                     </label>
                     <input id="{{animation_name}}_repeat" type="number" class="form-control" name="{{animation_name}}_repeat_value" min="-1" value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
                 </div>
