@@ -25,12 +25,9 @@ class Input():
         self.__type = "text"
         self.__value = value
         self.__step = "1"
-        self.__additional_attr = ""
 
         if isinstance(value, bool):
             self.__type = "checkbox"
-            if value:
-                self.__additional_attr = "checked"
         elif isinstance(value, int):
             self.__type = "number"
         elif isinstance(value, float):
@@ -51,10 +48,6 @@ class Input():
     @property
     def step(self):
         return self.__step
-
-    @property
-    def additional_attr(self):
-        return self.__additional_attr
 
 
 class HttpServer(metaclass=BottleCBVMeta):
@@ -99,11 +92,19 @@ class HttpServer(metaclass=BottleCBVMeta):
         # parameter
         if new_default_animation.animation_parameters is not None:
             new_parameter = {}
-            for p_name, _ in new_default_animation.animation_parameters:
-                new_parameter[p_name] = form.get(new_default_animation_name +
-                                                 "_parameter_" +
-                                                 p_name +
-                                                 "_value")
+            for p_name, parameter in new_default_animation.animation_parameters:
+                # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
+                if isinstance(parameter, bool):
+                    new_parameter[p_name] = form.get(new_default_animation_name +
+                                                     "_parameter_" +
+                                                     p_name +
+                                                     "_value",
+                                                     default=False, type=bool)
+                else:
+                    new_parameter[p_name] = form.get(new_default_animation_name +
+                                                     "_parameter_" +
+                                                     p_name +
+                                                     "_value")
 
             animation_settings["parameter"] = new_parameter
 
@@ -156,8 +157,9 @@ class HttpServer(metaclass=BottleCBVMeta):
     def save_settings(self, tab):
         if SettingsTabs(tab) == SettingsTabs.main:
             brightness = request.forms.get("brightness_value")
-            enable_rest = request.forms.get("enable_rest")
-            enable_tpm2net = request.forms.get("enable_tpm2net")
+            # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
+            enable_rest = request.forms.get("enable_rest", default=False, type=bool)
+            enable_tpm2net = request.forms.get("enable_tpm2net", default=False, type=bool)
 
             # save the settings
             self.__main_app.config.set(Config.MAIN.Brightness, brightness)

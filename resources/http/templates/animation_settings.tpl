@@ -54,10 +54,20 @@
                     %>
                             <li class="list-group-item bi-caret-right-fill m-0 p-0 border-0 pl-5">
                                 <div class="form-group">
-                                    <label for="{{animation_name}}_parameter_{{p_name}}">
-                                        {{p_name.replace("_", " ").title()}}
-                                    </label>
-                                    <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" name="{{animation_name}}_parameter_{{p_name}}_value" value="{{input.value}}" {{input.additional_attr}}>
+
+                                    % if isinstance(input.value, bool):
+                                        <div class="form-check">
+                                            <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-check-input" name="{{animation_name}}_parameter_{{p_name}}_value" {{"checked" if input.value else ""}}>
+                                            <label class="form-check-label" for="{{animation_name}}_parameter_{{p_name}}">
+                                                {{p_name.replace("_", " ").title()}}
+                                            </label>
+                                        </div>
+                                    % else:
+                                        <label for="{{animation_name}}_parameter_{{p_name}}">
+                                            {{p_name.replace("_", " ").title()}}
+                                        </label>
+                                        <input id="{{animation_name}}_parameter_{{p_name}}" type="{{input.type}}" class="form-control" name="{{animation_name}}_parameter_{{p_name}}_value" value="{{input.value}}">
+                                    % end
                                 </div>
                             </li>
                     %   end
