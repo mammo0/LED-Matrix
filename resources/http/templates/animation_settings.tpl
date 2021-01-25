@@ -5,19 +5,12 @@
     <b>Animation</b>
 </label>
 <select id="animation_selector" class="custom-select" autocomplete="off">
-    <option value="{{current_animation_name}}" selected>
-        {{current_animation_name.title()}} (Current)
-    </option>
-
-    <%
-        for animation_name in animations:
-            if animation_name == current_animation_name:
-                continue
-            end
-    %>
-            <option value="{{animation_name}}">
-                {{animation_name.title()}}
-            </option>
+    %   for animation_name in animations:
+    %       if animation_name == current_animation_name:
+                <option value="{{animation_name}}" selected>{{animation_name.title()}} (Current)</option>
+    %       else:
+                <option value="{{animation_name}}">{{animation_name.title()}}</option>
+    %       end
     %   end
 </select>
 
@@ -34,16 +27,12 @@
                         <span>Variant</span>
                     </label>
                     <select id="{{animation_name}}_variant" class="custom-select" name="{{animation_name}}_variant_value" autocomplete="off">
-                        % if animation.current_variant:
-                            <option value="{{animation.current_variant.name}}" selected>{{animation.current_variant.name.title()}} (Current)</option>
-                        % end
-                        <%
-                            for variant in animation.animation_variants:
-                                if variant == animation.current_variant:
-                                    continue
-                                end
-                        %>
-                                <option value="{{variant.name}}">{{variant.name.title()}}</option>
+                        %   for variant in animation.animation_variants:
+                        %       if variant == animation.current_variant:
+                                    <option value="{{variant.name}}" selected>{{variant.name.title()}} (Current)</option>
+                        %       else:
+                                    <option value="{{variant.name}}">{{variant.name.title()}}</option>
+                        %       end
                         %   end
                     </select>
                 </div>
