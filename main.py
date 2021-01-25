@@ -137,10 +137,11 @@ class Main():
         # wait until the the reload_signal is unset
         self.reload_signal.wait_unset()
 
-    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
+    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
         if self.animation_controller is not None:
             self.animation_controller.start_animation(animation_name,
-                                                      variant=variant, parameter=parameter, repeat=repeat)
+                                                      variant=variant, parameter=parameter, repeat=repeat,
+                                                      blocking=blocking)
 
     def stop_animation(self, animation_name=None):
         if self.animation_controller is not None:
@@ -326,7 +327,7 @@ class AnimationController(threading.Thread):
                 self.current_animation.stop_animation()
                 self.current_animation = None
 
-    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
+    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
         start_event = AnimationController._Event(AnimationController._EventType.start,
                                                  animation_name,
                                                  {
@@ -335,6 +336,12 @@ class AnimationController(threading.Thread):
                                                      "repeat": repeat
                                                  })
         self.controll_queue.put(start_event)
+
+        # check blocking
+        if (blocking and
+                animation_name in self.animations):
+            # wait until the animation is marked as running
+            self.animations[animation_name].animation_running.wait()
 
     def stop_animation(self, animation_name=None):
         stop_event = AnimationController._Event(AnimationController._EventType.stop,

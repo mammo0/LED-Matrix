@@ -133,9 +133,10 @@ class HttpServer(metaclass=BottleCBVMeta):
     def start_new_animation(self):
         new_animation_name, new_animation_settings = self.__parse_animation_form(request.forms)
         self.__main_app.start_animation(new_animation_name,
-                                        **new_animation_settings)
-        # wait until the new animation runs
-        self.__main_app.available_animations[new_animation_name].animation_running.wait()
+                                        **new_animation_settings,
+                                        # wait until the new animation runs
+                                        blocking=True)
+
         redirect("/")
 
     @get("/settings")
