@@ -16,3 +16,12 @@ start_stop_daemon_args="--chdir $BASE_DIR"
 depend() {
     need net
 }
+
+reload() {
+    ebegin "Reloading $RC_SVCNAME"
+    # send SIGHUP(1) to process
+    start-stop-daemon --exec $command \
+                      --pidfile $pidfile \
+                      -s 1
+    eend $?
+}
