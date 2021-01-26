@@ -55,12 +55,16 @@ else
 endif
 	cp $(INITD_SCRIPT) $(INITD_DIR)/$(INITD_SERVICE)
 	rc-update add $(INITD_SERVICE)
+	@# save changes to disk
+	lbu commit -d
 
 uninstall:
 	-rc-update del $(INITD_SERVICE)
 	-rm $(INITD_DIR)/$(INITD_SERVICE)
 	-rm $(INITD_CONFIG_FILE)
 	-rm $(INSTALL_DIR)
+	@# save changes to disk
+	lbu commit -d
 
 run:
 ifeq ("$(wildcard $(BASE_DIR)/.venv)","")
