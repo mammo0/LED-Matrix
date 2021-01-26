@@ -20,29 +20,28 @@ class BlmAnimation(AbstractAnimation):
                  **kwargs):
         super().__init__(width, height, frame_queue, repeat, on_finish_callable)
 
-        self.path = Path(kwargs.pop("variant").value)
+        self.__path = Path(kwargs.pop("variant").value)
 
-        self.params = BlmParameter(**kwargs)
+        self.__params = BlmParameter(**kwargs)
 
-        if not self.path.is_file():
-            raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.path)
-        self.name = "blm.{}".format(self.path.stem)
+        if not self.__path.is_file():
+            raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.__path)
 
-        self.load_frames()
+        self.__load_frames()
 
-        self.foregound_color = self.params.foregound_color.pil_tuple
-        self.background_color = self.params.background_color.pil_tuple
-        self.padding_color = self.params.padding_color.pil_tuple
+        self.__foregound_color = self.__params.foregound_color.pil_tuple
+        self.__background_color = self.__params.background_color.pil_tuple
+        self.__padding_color = self.__params.padding_color.pil_tuple
 
         print(self)
 
     @property
     def variant_value(self):
-        return self.path
+        return self.__path
 
     @property
     def parameter_instance(self):
-        return self.params
+        return self.__params
 
     def intrinsic_duration(self):
         ret = 0
@@ -52,17 +51,17 @@ class BlmAnimation(AbstractAnimation):
 
     def __str__(self):
         return "Path: {} file: {} frames: {} shape: {} duration: {}\n"\
-               "".format(self.path,
-                         self.name,
+               "".format(self.__path,
+                         "blm.{}".format(self.__path.stem),
                          str(len(self.frames)),
                          (len(self.frames[0]["frame"]),
                           len(self.frames[0]["frame"][0])) if len(self.frames)
                          else "no frames available",
                          self.intrinsic_duration())
 
-    def load_frames(self):
+    def __load_frames(self):
         self.frames = []
-        with self.path.open(encoding='latin1') as f:
+        with self.__path.open(encoding='latin1') as f:
             hold = 0
             frame = []
             for line in f:
@@ -84,7 +83,7 @@ class BlmAnimation(AbstractAnimation):
 
     def animate(self):
         while not self._stop_event.is_set():
-            for frame in self.rendered_frames():
+            for frame in self.__rendered_frames():
                 if not self._stop_event.is_set():
                     self._frame_queue.put(frame["frame"].copy())
                 else:
@@ -95,7 +94,7 @@ class BlmAnimation(AbstractAnimation):
             if not self.is_repeat():
                 break
 
-    def rendered_frames(self):
+    def __rendered_frames(self):
         """
         Generator function to iterate through all frames of animation.
         Cropped to fit matrix size.
@@ -112,8 +111,8 @@ class BlmAnimation(AbstractAnimation):
             ones = array == 1
             zeros = array == 0
 
-            np.putmask(array, ones, self.foregound_color)
-            np.putmask(array, zeros, self.background_color)
+            np.putmask(array, ones, self.__foregound_color)
+            np.putmask(array, zeros, self.__background_color)
 
             (h, w, _b) = array.shape
 
@@ -136,8 +135,8 @@ class BlmAnimation(AbstractAnimation):
                                        (0, 0),
                                        (0, 0)),
                                'constant',
-                               constant_values=((self.padding_color,
-                                                 self.padding_color),
+                               constant_values=((self.__padding_color,
+                                                 self.__padding_color),
                                                 (0, 0), (0, 0)))
             elif diff_h > 0:
                 # cropping
@@ -150,8 +149,8 @@ class BlmAnimation(AbstractAnimation):
                                        (0, 0)),
                                'constant',
                                constant_values=((0, 0),
-                                                (self.padding_color,
-                                                 self.padding_color),
+                                                (self.__padding_color,
+                                                 self.__padding_color),
                                                 (0, 0)))
             elif diff_w > 0:
                 # cropping

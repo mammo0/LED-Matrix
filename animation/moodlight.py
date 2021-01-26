@@ -26,23 +26,23 @@ class MoodlightAnimation(AbstractAnimation):
     def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
                  variant=MoodlightVariant.wish_down_up):
         super().__init__(width, height, frame_queue, repeat, on_finish_callable)
-        self.variant = variant
-        self.colors = [(255, 0, 0), (255, 255, 0), (0, 255, 255), (0, 0, 255)]  # if empty choose random colors
-        self.random = False  # how to step through colors
-        self.hold = 10  # seconds to hold colors
-        self.transition_duration = 10  # seconds to change from one to other
-        self.frequency = 60  # frames per second
+        self.__variant = variant
+        self.__colors = [(255, 0, 0), (255, 255, 0), (0, 255, 255), (0, 0, 255)]  # if empty choose random colors
+        # TODO: implement hold and transition_duration
+        self.__hold = 10  # seconds to hold colors
+        self.__transition_duration = 10  # seconds to change from one to other
+        self.__frequency = 60  # frames per second
         print("MoodlightAnimation created")
 
     @property
     def variant_value(self):
-        return self.variant
+        return self.__variant
 
     @property
     def parameter_instance(self):
         return None
 
-    def ribbapi_hsv_to_rgb(self, h, s, v):
+    def __hsv_to_rgb(self, h, s, v):
         # h is in degrees
         # s, v in percent
         h %= 360
@@ -52,27 +52,27 @@ class MoodlightAnimation(AbstractAnimation):
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
         return (int(r * 255), int(g * 255), int(b * 255))
 
-    def ribbapi_rgb_to_hsv(self, r, g, b):
+    def __rgb_to_hsv(self, r, g, b):
         r /= 255
         g /= 255
         b /= 255
         h, s, v = colorsys.rgb_to_hsv(r, g, b)
         return (h * 360, s * 100, v * 100)
 
-    def color_wheel_generator(self, steps):
+    def __color_wheel_generator(self, steps):
         # steps: how many steps to take to go from 0 to 360.
         increase = (360 - 0) / steps
         while True:
             for i in np.arange(0, 360, increase):
-                color = self.ribbapi_hsv_to_rgb(i, 100, 100)
+                color = self.__hsv_to_rgb(i, 100, 100)
                 yield color
 
-    def cycle_selected_colors_generator(self, steps, hold):
+    def __cycle_selected_colors_generator(self, steps, hold):
         # steps: how many steps from one color to other color
         # hold: how many iterations to stay at one color
         current_color = None
         while True:
-            for color in self.colors:
+            for color in self.__colors:
                 if not current_color:
                     current_color = color
                     yield color
@@ -93,13 +93,13 @@ class MoodlightAnimation(AbstractAnimation):
                 for _ in range(hold):
                     yield color
 
-    def frame_generator(self, color_mode, style):
+    def __frame_generator(self, color_mode, style):
         frame = np.zeros((self._height, self._width, 3), dtype=np.uint8)
 
         if color_mode == _ColorMode.colorwheel:
-            colors = self.color_wheel_generator(500)
+            colors = self.__color_wheel_generator(500)
         elif color_mode == _ColorMode.cyclecolors:
-            colors = self.cycle_selected_colors_generator(5, 100)
+            colors = self.__cycle_selected_colors_generator(5, 100)
 
         while True:
             if style == _Style.fill:
@@ -118,21 +118,21 @@ class MoodlightAnimation(AbstractAnimation):
 
     def animate(self):
         while not self._stop_event.is_set():
-            if self.variant == MoodlightVariant.colorwheel:
-                generator = self.frame_generator(_ColorMode.colorwheel, _Style.fill)
+            if self.__variant == MoodlightVariant.colorwheel:
+                generator = self.__frame_generator(_ColorMode.colorwheel, _Style.fill)
 
-            elif self.variant == MoodlightVariant.cyclecolors:
-                generator = self.frame_generator(_ColorMode.cyclecolors, _Style.random_dot)
+            elif self.__variant == MoodlightVariant.cyclecolors:
+                generator = self.__frame_generator(_ColorMode.cyclecolors, _Style.random_dot)
 
-            elif self.variant == MoodlightVariant.wish_down_up:
-                generator = self.frame_generator(_ColorMode.colorwheel, _Style.wish_down_up)
+            elif self.__variant == MoodlightVariant.wish_down_up:
+                generator = self.__frame_generator(_ColorMode.colorwheel, _Style.wish_down_up)
 
             for frame in generator:
                 if not self._stop_event.is_set():
                     self._frame_queue.put(frame.copy())
                 else:
                     break
-                self._stop_event.wait(timeout=1/self.frequency)
+                self._stop_event.wait(timeout=1/self.__frequency)
             # if self.repeat > 0:
             #     self.repeat -= 1
             # elif self.repeat == 0:
