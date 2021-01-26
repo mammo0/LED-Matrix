@@ -64,10 +64,10 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def is_animation_running(self, animation_name):
+    def get_current_animation_name(self):
         """
-        @param animation_name: The name of the animation to check.
-        @return: True if the specific animation is currently running, otherwise false.
+        @return: The name of the currently running animation.
+                 Empty string if no animation is running.
         """
 
     @abstractmethod
@@ -241,11 +241,11 @@ class Main(MainInterface):
         else:
             return {}
 
-    def is_animation_running(self, animation_name):
+    def get_current_animation_name(self):
         if self.__animation_controller is not None:
-            return self.__animation_controller.is_animation_running(animation_name)
+            return self.__animation_controller.get_current_animation_name()
         else:
-            return False
+            return ""
 
     def get_brightness(self):
         return self.__display_brightness
@@ -492,15 +492,12 @@ class AnimationController(threading.Thread):
     def all_animations(self):
         return self.__all_animations
 
-    def is_animation_running(self, animation_name):
-        try:
-            # get the animation
-            animation = self.__all_animations[animation_name]
-        except KeyError:
-            eprint("The animation '%s' could not be found!" % animation_name)
-            return False
-
-        return animation.animation_running.is_set()
+    def get_current_animation_name(self):
+        cur_a = self.__current_animation
+        if cur_a:
+            return cur_a.animation_name
+        else:
+            return ""
 
     def run(self):
         # on start show default animation

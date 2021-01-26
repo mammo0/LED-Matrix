@@ -120,18 +120,9 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @get("/")
     def index(self):
-        animations = self.__main_app.available_animations
-
-        current_animation_name = ""
-
-        for animmation_name in animations:
-            if self.__main_app.is_animation_running(animmation_name):
-                current_animation_name = animmation_name
-                break
-
         return template("index",
                         animations=self.__main_app.available_animations,
-                        current_animation_name=current_animation_name)
+                        current_animation_name=self.__main_app.get_current_animation_name())
 
     @post("/")
     def start_new_animation(self):
