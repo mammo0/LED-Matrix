@@ -187,7 +187,7 @@ class GameframeAnimation(AbstractAnimation):
                 #     break
 
             # check repeat
-            if not self.is_repeat():
+            if not self.is_next_iteration():
                 break
 
 

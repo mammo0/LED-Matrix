@@ -36,7 +36,7 @@ class AbstractAnimation(ABC, Thread):
         self._height = height  # height of frames to produce
         self._frame_queue = frame_queue  # queue to put frames onto
         self._repeat = repeat  # 0: no repeat, -1: forever, > 0: x-times
-        self.__remaining_repeat = repeat
+        self.__remaining_repeat = repeat - 1
         self.__on_finish_callable = on_finish_callable
 
         self._stop_event = Event()  # query this often! exit self.animate quickly
@@ -59,7 +59,7 @@ class AbstractAnimation(ABC, Thread):
         self._stop_event.set()
         self.join()
 
-    def is_repeat(self):
+    def is_next_iteration(self):
         # no repeat
         if self._repeat == 0:
             return False

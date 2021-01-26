@@ -91,7 +91,7 @@ class BlmAnimation(AbstractAnimation):
                 self._stop_event.wait(timeout=frame["hold"]/1000)
 
             # check repeat
-            if not self.is_repeat():
+            if not self.is_next_iteration():
                 break
 
     def __rendered_frames(self):

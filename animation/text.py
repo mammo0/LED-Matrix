@@ -195,7 +195,7 @@ class TextAnimation(AbstractAnimation):
                 self._stop_event.wait(timeout=wait)
 
             # check repeat
-            if not self.is_repeat():
+            if not self.is_next_iteration():
                 break
 
 
