@@ -9,7 +9,6 @@ import numpy as np
 
 class Tpm2NetServer(socketserver.UDPServer):
     def __init__(self, main_app, display_width, display_height):
-        super().__init__(('', 65506), Tpm2NetHandler, bind_and_activate=True)
         self.__main_app = main_app
         self.__display_width = display_width
         self.__display_height = display_height
@@ -17,6 +16,8 @@ class Tpm2NetServer(socketserver.UDPServer):
         self.__timeout = 3  # seconds
         self.__last_time_received = None
         self.__timeout_timer = None
+
+        super().__init__(('', 65506), Tpm2NetHandler, bind_and_activate=True)
 
     @property
     def main_app(self):
