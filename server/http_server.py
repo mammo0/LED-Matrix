@@ -51,14 +51,17 @@ class Input():
 
 
 class HttpServer(metaclass=BottleCBVMeta):
-    def __init__(self, main_app, port=8080):
+    def __init__(self, main_app):
         self.__main_app = main_app
 
         self.__js_dir = HTTP_RESOURCES_DIR / "js"
         self.__css_dir = HTTP_RESOURCES_DIR / "css"
         self.__fonts_dir = HTTP_RESOURCES_DIR / "fonts"
 
-        self.__wsgi_server = CustomWSGIRefServer(host="0.0.0.0", port=port, quiet=True)
+        port = self.__main_app.config.get(Config.MAIN.HttpServerPort)
+        host = self.__main_app.config.get(Config.MAIN.HttpServerInterfaceIP)
+
+        self.__wsgi_server = CustomWSGIRefServer(host=host, port=port, quiet=True)
 
     def start(self):
         self.__wsgi_server.start()
