@@ -236,7 +236,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         try:
             parsed_p = json.loads(parameter)
         except ValueError:
-            eprint("[Clock] Parameter could not be parsed! Is it valid JSON?")
+            eprint("[%s] Parameter could not be parsed! Is it valid JSON?" % self.animation_name)
             return {}
 
         return parsed_p
