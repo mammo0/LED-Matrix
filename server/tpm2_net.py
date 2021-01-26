@@ -13,6 +13,8 @@ class Tpm2NetServer(socketserver.UDPServer):
         self.__display_width = display_width
         self.__display_height = display_height
 
+        self.__dummy_animation = self.__main_app.available_animations["dummy"]
+
         self.__timeout = 3  # seconds
         self.__last_time_received = None
         self.__timeout_timer = None
@@ -44,7 +46,7 @@ class Tpm2NetServer(socketserver.UDPServer):
         if self.__last_time_received:
             if self.__last_time_received + self.__timeout < time.time():
                 # stop dummy animation
-                self.__main_app.stop_animation("dummy")
+                self.__main_app.stop_animation(self.__dummy_animation.animation_name)
                 self.__last_time_received = None
                 self.__timeout_timer = None
                 self.__misbehaving = False
@@ -58,6 +60,8 @@ class Tpm2NetServer(socketserver.UDPServer):
 class Tpm2NetHandler(socketserver.BaseRequestHandler):
     def __init__(self, request, client_address, server):
         socketserver.BaseRequestHandler.__init__(self, request, client_address, server)
+
+        self.__dummy_animation = self.server.main_app.available_animations["dummy"]
 
         self.__tmp_buffer = np.zeros((self.server.display_height, self.server.display_width, 3),
                                      dtype=np.uint8)
@@ -84,9 +88,9 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
 
         if packet_type == 0xDA:  # data frame
             # tell main_app that tpm2_net data is received
-            if not self.server.main_app.is_animation_running("dummy"):
+            if not self.__dummy_animation.is_running:
                 # use dummy animation, because the frame_queue gets filled here
-                self.server.main_app.start_animation("dummy")
+                self.server.main_app.start_animation(self.__dummy_animation.animation_name)
             self.server.update_time()
 
             if packet_number == 0:
@@ -101,8 +105,7 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
             np.put(self.__tmp_buffer, arange, list(data[6:-1]))
             self.__tmp_buffer_index = self.__tmp_buffer_index + frame_size
             if packet_number == (number_of_packets if not self.__misbehaving else number_of_packets - 1):
-                if self.main_app.is_animation_running("dummy"):
-                    self.main_app.frame_queue.put(self.__tmp_buffer.copy())
+                self.__dummy_animation.display_frame(self.__tmp_buffer.copy())
         elif data[1] == 0xC0:  # command
             # NOT IMPLEMENTED
             return

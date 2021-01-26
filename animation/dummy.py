@@ -14,6 +14,11 @@ class DummyAnimation(AbstractAnimation):
         # do nothing and wait until the animation is stopped
         self._stop_event.wait()
 
+    def display_frame(self, frame):
+        # check stop event
+        if not self._stop_event.is_set():
+            self._frame_queue.put(frame)
+
 
 class DummyController(AbstractAnimationController):
     @property
@@ -31,3 +36,12 @@ class DummyController(AbstractAnimationController):
     @property
     def is_repeat_supported(self):
         return False
+
+    def display_frame(self, frame):
+        """
+        This method is special and only available in the Dummy animation.
+        It allows direct access to the frame queue.
+        @param frame: This frame gets directly added to the frame queue if the animation is running.
+        """
+        if self.is_running:
+            self.__animation_thread.display_frame(frame)
