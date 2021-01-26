@@ -575,7 +575,7 @@ class AnimationController(threading.Thread):
 if __name__ == "__main__":
     # cli parser
     parser = argparse.ArgumentParser(description="LED-Matrix main control application.")
-    parser.add_argument("-c", "--config-file", type=Path,
+    parser.add_argument("-f", "--config-file", type=Path,
                         help="The path of the configuration file.")
 
     # get config path
