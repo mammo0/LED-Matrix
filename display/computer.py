@@ -13,20 +13,20 @@ class Computer(AbstractDisplay):
 
         self.set_brightness(brightness)
 
-        self.margin = self.config.get(Config.COMPUTER.Margin)
-        self.size = self.config.get(Config.COMPUTER.LEDSize)
+        self.__margin = self._config.get(Config.COMPUTER.Margin)
+        self.__size = self._config.get(Config.COMPUTER.LEDSize)
 
-        self.window_size = (width * self.size + (width + 1) * self.margin,
-                            height * self.size + (height + 1) * self.margin)
+        window_size = (width * self.__size + (width + 1) * self.__margin,
+                       height * self.__size + (height + 1) * self.__margin)
 
         pygame.init()
-        self.surface = pygame.display.set_mode(self.window_size)
+        self.__surface = pygame.display.set_mode(window_size)
         pygame.display.set_caption("RibbaPi {}x{}".format(width, height))
         self.show()
 
     def set_brightness(self, brightness):
         # expecting float brightness 0 .. 1.0
-        self.brightness = brightness / 100
+        self._brightness = brightness / 100
 
     def show(self, gamma=False):
         for event in pygame.event.get():
@@ -34,19 +34,19 @@ class Computer(AbstractDisplay):
                 pygame.quit()
                 sys.exit()
 
-        self.surface.fill((0, 0, 0))
+        self.__surface.fill((0, 0, 0))
 
         it = np.nditer([self.buffer[:, :, 0],
                         self.buffer[:, :, 1],
                         self.buffer[:, :, 2]], flags=['multi_index'])
         while not it.finished:
-            color = (it[0] * self.brightness, it[1] * self.brightness, it[2] * self.brightness)
+            color = (it[0] * self._brightness, it[1] * self._brightness, it[2] * self._brightness)
             (row, column) = it.multi_index
-            pygame.draw.rect(self.surface, color,
-                             [(self.margin + self.size) * column + self.margin,
-                              (self.margin + self.size) * row + self.margin,
-                              self.size,
-                              self.size])
+            pygame.draw.rect(self.__surface, color,
+                             [(self.__margin + self.__size) * column + self.__margin,
+                              (self.__margin + self.__size) * row + self.__margin,
+                              self.__size,
+                              self.__size])
             it.iternext()
 
         pygame.display.update()

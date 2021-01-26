@@ -48,20 +48,20 @@ class Apa102(AbstractDisplay):
         self.set_brightness(brightness)
 
         # init SPI interface
-        self.spi = spidev.SpiDev()
-        self.spi.open(0, 1)
-        self.spi.max_speed_hz = SPI_MAX_SPEED_HZ
+        self.__spi = spidev.SpiDev()
+        self.__spi.open(0, 1)
+        self.__spi.max_speed_hz = SPI_MAX_SPEED_HZ
 
         # setup hardware and wiring related parameters
-        self.color_type = ColorType(self.config.get(Config.APA102.ColorType))
-        self.wire_mode = WireMode(self.config.get(Config.APA102.WireMode))
-        self.origin = Origin(self.config.get(Config.APA102.Origin))
-        self.orientation = Orientation(self.config.get(Config.APA102.Orientation))
+        self.__color_type = ColorType(self._config.get(Config.APA102.ColorType))
+        self.__wire_mode = WireMode(self._config.get(Config.APA102.WireMode))
+        self.__origin = Origin(self._config.get(Config.APA102.Origin))
+        self.__orientation = Orientation(self._config.get(Config.APA102.Orientation))
 
         # setup apa102 protocol stuff
         self.__start_frame = [0] * 4
         # end frame is >= (n/2) bits of 1, where n is the number of LEDs
-        self.__end_frame = [0xff] * ((self.num_pixels + 15) // (2 * 8))
+        self.__end_frame = [0xff] * ((self._num_pixels + 15) // (2 * 8))
         self.__led_frame_start = 0b11100000
 
         # setup datastructures for fast lookup of led
@@ -71,87 +71,87 @@ class Apa102(AbstractDisplay):
             self.__create_pixel_to_led_index_datastructures()
 
         # create gamma correction values
-        self.gamma = DEFAULT_GAMMA
-        self.__gamma8 = self.get_gamma8_array(self.gamma)
+        gamma = DEFAULT_GAMMA
+        self.__gamma8 = self.__get_gamma8_array(gamma)
 
         self.show()
 
     @staticmethod
-    def get_gamma8_array(gamma):
+    def __get_gamma8_array(gamma):
         gamma8 = np.zeros((256,), dtype=np.uint8)
         for i in np.arange(256, dtype=np.uint8):
             gamma8[i] = (255 * ((i/255)**gamma) + 0.5).astype(np.uint8)
         return gamma8
 
     def __create_pixel_to_led_index_datastructures(self):
-        pixel_coord_to_led_index = np.zeros((self.height, self.width),
+        pixel_coord_to_led_index = np.zeros((self._height, self._width),
                                             dtype=np.int)
-        virtual_to_physical_byte_indices = np.zeros((self.height,
-                                                     self.width,
+        virtual_to_physical_byte_indices = np.zeros((self._height,
+                                                     self._width,
                                                      4), dtype=np.int)
 
-        outer, inner = (self.height, self.width) if \
-            self.orientation == Orientation.horizontally else \
-                       (self.width, self.height)
+        outer, inner = (self._height, self._width) if \
+            self.__orientation == Orientation.horizontally else \
+                       (self._width, self._height)
         current_outer_count = 0
         outer_range = range(outer)
-        if (self.orientation == Orientation.horizontally and
-           (self.origin == Origin.bottom_left or
-                self.origin == Origin.bottom_right)) \
+        if (self.__orientation == Orientation.horizontally and
+           (self.__origin == Origin.bottom_left or
+                self.__origin == Origin.bottom_right)) \
                 or \
-           (self.orientation == Orientation.vertically and
-           (self.origin == Origin.top_right or
-                self.origin == Origin.bottom_right)):
+           (self.__orientation == Orientation.vertically and
+           (self.__origin == Origin.top_right or
+                self.__origin == Origin.bottom_right)):
             outer_range = reversed(outer_range)
         for i in outer_range:
             current_inner_count = 0
             for j in range(inner):
-                mod = (0 if self.orientation == Orientation.horizontally and
-                       ((self.origin == Origin.bottom_left and
+                mod = (0 if self.__orientation == Orientation.horizontally and
+                       ((self.__origin == Origin.bottom_left and
                         outer % 2 == 0) or
-                        (self.origin == Origin.bottom_right and
+                        (self.__origin == Origin.bottom_right and
                         outer % 2 == 1) or
-                        self.origin == Origin.top_right)
+                        self.__origin == Origin.top_right)
                        or
-                       self.orientation == Orientation.vertically and
-                       ((self.origin == Origin.top_right and
+                       self.__orientation == Orientation.vertically and
+                       ((self.__origin == Origin.top_right and
                         outer % 2 == 0) or
-                        (self.origin == Origin.bottom_right and
+                        (self.__origin == Origin.bottom_right and
                          outer % 2 == 1) or
-                        self.origin == Origin.bottom_left)
+                        self.__origin == Origin.bottom_left)
                        else 1)
-                if (self.wire_mode == WireMode.zig_zag and i % 2 == mod) or \
-                   (self.wire_mode == WireMode.line_by_line and
-                       ((self.orientation == Orientation.horizontally and
-                           (self.origin == Origin.bottom_right or
-                            self.origin == Origin.top_right))
+                if (self.__wire_mode == WireMode.zig_zag and i % 2 == mod) or \
+                   (self.__wire_mode == WireMode.line_by_line and
+                       ((self.__orientation == Orientation.horizontally and
+                           (self.__origin == Origin.bottom_right or
+                            self.__origin == Origin.top_right))
                         or
-                        (self.orientation == Orientation.vertically and
-                            (self.origin == Origin.bottom_left or
-                             self.origin == Origin.bottom_right)))):
+                        (self.__orientation == Orientation.vertically and
+                            (self.__origin == Origin.bottom_left or
+                             self.__origin == Origin.bottom_right)))):
                     j = (inner - 1) - current_inner_count
                 led_index = j + current_outer_count * inner
                 coordinate = (i, current_inner_count) if \
-                    self.orientation == Orientation.horizontally else \
+                    self.__orientation == Orientation.horizontally else \
                              (current_inner_count, i)
                 pixel_coord_to_led_index[coordinate] = led_index
                 current_inner_count += 1
             current_outer_count += 1
 
-        if self.color_type == ColorType.rgb:
+        if self.__color_type == ColorType.rgb:
             red, green, blue = 1, 2, 3
-        elif self.color_type == ColorType.rbg:
+        elif self.__color_type == ColorType.rbg:
             red, green, blue = 1, 3, 2
-        elif self.color_type == ColorType.grb:
+        elif self.__color_type == ColorType.grb:
             red, green, blue = 2, 1, 3
-        elif self.color_type == ColorType.gbr:
+        elif self.__color_type == ColorType.gbr:
             red, green, blue = 3, 1, 2
-        elif self.color_type == ColorType.bgr:
+        elif self.__color_type == ColorType.bgr:
             red, green, blue = 3, 2, 1
-        elif self.color_type == ColorType.brg:
+        elif self.__color_type == ColorType.brg:
             red, green, blue = 2, 3, 1
 
-        for pixel_index in range(self.height * self.width):
+        for pixel_index in range(self._height * self._width):
                 # for each pixel in buffer
                 # calulate byte indices of pixel
                 pixel_index_spread = pixel_index * 4  # room for byte led,r,g,b
@@ -161,15 +161,15 @@ class Apa102(AbstractDisplay):
                                        pixel_index_spread + blue]
 
                 # get coordinate of ith pixel
-                pixel_row = pixel_index // self.width
-                pixel_col = pixel_index - pixel_row * self.width
+                pixel_row = pixel_index // self._width
+                pixel_col = pixel_index - pixel_row * self._width
 
                 # get led index of led at pixel coordinate
                 led_index = pixel_coord_to_led_index[(pixel_row, pixel_col)]
 
                 # get coordinate of ith led
-                led_row = led_index // self.width
-                led_col = led_index - led_row * self.width
+                led_row = led_index // self._width
+                led_col = led_index - led_row * self._width
 
                 # set the transformation matrix accordingly
                 virtual_to_physical_byte_indices[(led_row, led_col)] = \
@@ -180,29 +180,29 @@ class Apa102(AbstractDisplay):
     def __str__(self):
         header = "APA102-matrix configuration: width: {} height: {} "\
                  "colortype: {} wiremode: {} origin: {} orientation {}\n"\
-                 "".format(self.width,
-                           self.height,
-                           self.color_type,
-                           self.wire_mode,
-                           self.origin,
-                           self.orientation)
+                 "".format(self._width,
+                           self._height,
+                           self.__color_type,
+                           self.__wire_mode,
+                           self.__origin,
+                           self.__orientation)
         ret = header + "-"*len(header) + "\n"
-        ret += '\t' + '\t'.join(map(str, list(range(self.width)))) + "\n"
-        for i in range(self.height):
+        ret += '\t' + '\t'.join(map(str, list(range(self._width)))) + "\n"
+        for i in range(self._height):
             ret += "{}\t".format(i)
-            for j in range(self.width):
+            for j in range(self._width):
                 ret += "{}\t".format(self.__pixel_coord_to_led_index[i, j])
             ret += "\n"
         return ret
 
-    def get_brightness_array(self):
+    def __get_brightness_array(self):
         led_frame_first_byte = \
-            (self.brightness & ~self.__led_frame_start) | self.__led_frame_start
-        ret = np.array([led_frame_first_byte] * self.num_pixels,
+            (self._brightness & ~self.__led_frame_start) | self.__led_frame_start
+        ret = np.array([led_frame_first_byte] * self._num_pixels,
                        dtype=np.uint8)
-        return ret.reshape((self.height, self.width, 1))
+        return ret.reshape((self._height, self._width, 1))
 
-    def gamma_correct_buffer(self):
+    def __gamma_correct_buffer(self):
         for x in np.nditer(self._buffer,
                            op_flags=['readwrite'],
                            flags=['external_loop', 'buffered'],
@@ -211,12 +211,12 @@ class Apa102(AbstractDisplay):
 
     def set_brightness(self, brightness):
         # set the brightness level for the LEDs
-        self.brightness = int((brightness / 100) * MAX_BRIGHTNESS)
+        self._brightness = int((brightness / 100) * MAX_BRIGHTNESS)
 
     def show(self, gamma=False):
         if gamma:
-            self.gamma_correct_buffer()
-        apa102_led_frames = np.concatenate((self.get_brightness_array(),
+            self.__gamma_correct_buffer()
+        apa102_led_frames = np.concatenate((self.__get_brightness_array(),
                                             self._buffer), axis=2)
         reindexed_frames = apa102_led_frames.take(
                                        self.__virtual_to_physical_byte_indices)
@@ -224,4 +224,4 @@ class Apa102(AbstractDisplay):
             self.__start_frame \
             + reindexed_frames.flatten().tolist() \
             + self.__end_frame
-        self.spi.writebytes(to_send)
+        self.__spi.writebytes(to_send)
