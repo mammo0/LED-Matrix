@@ -134,7 +134,7 @@ class Main(MainInterface):
         self.__reload_signal = EventWithUnsetSignal()
 
     def __load_settings(self):
-        self.config = Configuration(config_file_path=self.config_file_path, allow_no_value=True)
+        self.__config = Configuration(config_file_path=self.config_file_path, allow_no_value=True)
 
         # get [MAIN] options
         self.__conf_hardware = self.__config.get(Config.MAIN.Hardware)
@@ -266,7 +266,7 @@ class Main(MainInterface):
             self.__display_brightness = brightness
 
         # apply to the current display if it's already initialized
-        if self.__display:
+        if getattr(self, "__display", None) is not None:
             self.__display.set_brightness(brightness)
 
     def mainloop(self):
