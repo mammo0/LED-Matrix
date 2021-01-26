@@ -282,7 +282,7 @@ class Main(MainInterface):
             self.__display_brightness = brightness
 
         # apply to the current display if it's already initialized
-        if getattr(self, "__display", None) is not None:
+        if getattr(self, "_%s__display" % self.__class__.__name__, None) is not None:
             self.__display.set_brightness(brightness)
 
     def mainloop(self):
