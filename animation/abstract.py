@@ -79,18 +79,6 @@ class AbstractAnimation(ABC, Thread):
         """This is where frames are put to the frame_queue in correct time"""
 
     @property
-    def thread_id(self):
-        # returns id of the respective thread
-        if hasattr(self, '_thread_id'):
-            return self._thread_id
-        for t_id, thread in threading._active.items():
-            if thread is self:
-                return t_id
-
-        # no id found
-        return -1
-
-    @property
     @abstractmethod
     def variant_value(self):
         """Return the current variant value of this animation."""
