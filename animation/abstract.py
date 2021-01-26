@@ -180,6 +180,10 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         else:
             return None
 
+    @property
+    def is_running(self):
+        return self.__animation_running.is_set()
+
     def start_animation(self, variant=None, parameter=None, repeat=0):
         """
         Start a specific variant (see 'anmimation_variants' property above) of an animation with
