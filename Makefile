@@ -50,7 +50,7 @@ ifeq ("$(findstring Alpine,$(shell grep '^NAME' /etc/os-release))", "")
 endif
 
 install: __check_alpine
-	ln -s $(BASE_DIR) $(INSTALL_DIR)
+	-ln -s $(BASE_DIR) $(INSTALL_DIR)
 ifeq ("$(wildcard $(CONFIG_FILE))","")
 	@# create a new config file at the install point
 	$(BASE_DIR)/scripts/create_config.py $(INITD_CONFIG_FILE)
