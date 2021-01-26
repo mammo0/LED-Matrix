@@ -28,7 +28,7 @@ class GameframeAnimation(AbstractAnimation):
 
         if not self.__folder.is_dir():
             raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), self.__folder)
-        self.__name = "gameframe.{}".format(self.__folder.__name)
+        self.__name = "gameframe.{}".format(self.__folder.name)
 
         self.__background_color = self.__params.background_color.pil_tuple
 
