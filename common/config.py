@@ -78,11 +78,23 @@ class Config(Structure, StructureROMixin):
         HttpServer = ConfigValue(value_type=bool, default_value=True, description=[
             "(De-)Activate the server interfaces that control the matrix.",
             "Available servers:",
-            "    - HttpServer [Default: true]: TCP 8080",
-            "    - RestServer [Default: true]: TCP 8081",
+            "    - HttpServer [Default: true]",
+            "    - RestServer [Default: true]",
             "    - TPM2NetServer [Default: false]: UDP 65506"
         ])
+        HttpServerPort = ConfigValue(value_type=int, default_value=8080,
+                                     description="The port on which the HTTP server listens [Default: 8080].")
+        HttpServerInterfaceIP = ConfigValue(value_type=str, default_value="127.0.0.1", description=[
+            "The IP address of the interface on which the HTTP server should listen [Default: '127.0.0.1'].",
+            "Use '0.0.0.0' to listen on all available interfaces."
+        ])
         RestServer = ConfigValue(value_type=bool, default_value=True)
+        RestServerPort = ConfigValue(value_type=int, default_value=8081,
+                                     description="The port on which the REST server listens [Default: 8081].")
+        RestServerInterfaceIP = ConfigValue(value_type=str, default_value="127.0.0.1", description=[
+            "The IP address of the interface on which the REST server should listen [Default: '127.0.0.1'].",
+            "Use '0.0.0.0' to listen on all available interfaces."
+        ])
         TPM2NetServer = ConfigValue(value_type=bool, default_value=False)
 
     class __DefaultAnimation(ConfigSection):

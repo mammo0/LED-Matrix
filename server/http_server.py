@@ -51,14 +51,17 @@ class Input():
 
 
 class HttpServer(metaclass=BottleCBVMeta):
-    def __init__(self, main_app, port=8080):
+    def __init__(self, main_app):
         self.__main_app = main_app
 
         self.__js_dir = HTTP_RESOURCES_DIR / "js"
         self.__css_dir = HTTP_RESOURCES_DIR / "css"
         self.__fonts_dir = HTTP_RESOURCES_DIR / "fonts"
 
-        self.__wsgi_server = CustomWSGIRefServer(host="0.0.0.0", port=port, quiet=True)
+        port = self.__main_app.config.get(Config.MAIN.HttpServerPort)
+        host = self.__main_app.config.get(Config.MAIN.HttpServerInterfaceIP)
+
+        self.__wsgi_server = CustomWSGIRefServer(host=host, port=port, quiet=True)
 
     def start(self):
         self.__wsgi_server.start()
@@ -72,7 +75,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                         # provide the main config
                         config=self.__main_app.config,
                         # except the brightness value should be always actual
-                        current_brightness=self.__main_app.display_brightness,
+                        current_brightness=self.__main_app.get_brightness(),
                         # provide the animations
                         animations=self.__main_app.available_animations,
                         default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
@@ -117,18 +120,9 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @get("/")
     def index(self):
-        animations = self.__main_app.available_animations
-
-        current_animation_name = ""
-
-        for animmation_name in animations:
-            if self.__main_app.is_animation_running(animmation_name):
-                current_animation_name = animmation_name
-                break
-
         return template("index",
                         animations=self.__main_app.available_animations,
-                        current_animation_name=current_animation_name)
+                        current_animation_name=self.__main_app.get_current_animation_name())
 
     @post("/")
     def start_new_animation(self):

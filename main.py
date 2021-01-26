@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from abc import ABC, abstractmethod
 import argparse
 from enum import Enum
 from pathlib import Path
@@ -24,17 +25,88 @@ from server.tpm2_net import Tpm2NetServer
 # add timer that displays a textmessage from predefined list of messages
 # restructure other animations
 # make mood light animation
-class Main():
+class MainInterface(ABC):
+    @abstractmethod
+    def reload(self):
+        """
+        Call this method to reload the configuration and restart the default animation.
+        """
+
+    @abstractmethod
+    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+        """
+        Start a specific animation. See the respective animation class for which options are available.
+        @param animation_name: The name of the animation.
+        @param variant: If available, the variant to start.
+        @param parameter: If available, the parameter(s) for the animation.
+        @param repeat: If available, how many times an animation should be repeated.
+        @param blocking: If set to True, wait until the animation is running. Otherwise return immediately.
+        """
+
+    @abstractmethod
+    def stop_animation(self, animation_name=None, blocking=False):
+        """
+        Stop the current or a specific animation (if it's the current one).
+        @param animation_name: Optional, the name of the animation to stop. If it's not the current animation,
+                               nothing happens.
+                               If no name is provided, the current animation will be stopped.
+        @param blocking: If set to True, wait until the animation is stopped. Otherwise return immediately.
+                         It also waits until the default animation is started again.
+        """
+
+    @property
+    @abstractmethod
+    def available_animations(self):
+        """
+        Get a dict of the available animations.
+        @return: Key: the animation name
+                 Value: the corresponding AbstractAnimationController object
+        """
+
+    @abstractmethod
+    def get_current_animation_name(self):
+        """
+        @return: The name of the currently running animation.
+                 Empty string if no animation is running.
+        """
+
+    @abstractmethod
+    def get_brightness(self):
+        """
+        @return: The brightness value of the current display.
+        """
+
+    @abstractmethod
+    def set_brightness(self, brightness):
+        """
+        Set the brightness of the current display. It will be applied immediately.
+        @param brightness: The new brightness value.
+        """
+
+    @property
+    @abstractmethod
+    def config(self):
+        """
+        Access to the configuration object.
+        """
+
+    @property
+    @abstractmethod
+    def frame_queue(self):
+        """
+        Access to the frame queue.
+        Needed by the animation classes.
+        """
+
+
+class Main(MainInterface):
     def __init__(self, config_file_path=None):
         # catch SIGINT, SIGQUIT and SIGTERM
-        self.quit_signal = threading.Event()
+        self.__quit_signal = threading.Event()
         signal.signal(signal.SIGINT, self.__quit)
         signal.signal(signal.SIGQUIT, self.__quit)
         signal.signal(signal.SIGTERM, self.__quit)
         signal.signal(signal.SIGHUP, self.__reload)
-
-        # needed for 'set_brightness' method
-        self.display = None
 
         # load config
         if config_file_path is None:
@@ -43,185 +115,207 @@ class Main():
             self.config_file_path = config_file_path
         self.__load_settings()
 
+        # create the display object
+        self.__initialize_display()
+
         # this is the queue that holds the frames to display
-        self.frame_queue = queue.Queue(maxsize=1)
+        self.__frame_queue = queue.Queue(maxsize=1)
 
         # animation controller
         # gets initialized in mainloop method
-        self.animation_controller = None
+        self.__animation_controller = None
 
         # server interfaces
-        self.http_server = None
-        self.rest_server = None
-        self.tpm2_net_server = None
+        self.__http_server = None
+        self.__rest_server = None
+        self.__tpm2_net_server = None
 
-        self.reload_signal = EventWithUnsetSignal()
+        # this signal is set by the reload method
+        self.__reload_signal = EventWithUnsetSignal()
 
     def __load_settings(self):
         self.config = Configuration(config_file_path=self.config_file_path, allow_no_value=True)
 
         # get [MAIN] options
-        hardware = self.config.get(Config.MAIN.Hardware)
-        self.display_width = self.config.get(Config.MAIN.DisplayWidth)
-        self.display_height = self.config.get(Config.MAIN.DisplayHeight)
-        self.set_brightness(self.config.get(Config.MAIN.Brightness))
+        self.__conf_hardware = self.__config.get(Config.MAIN.Hardware)
+        self.__conf_display_width = self.__config.get(Config.MAIN.DisplayWidth)
+        self.__conf_display_height = self.__config.get(Config.MAIN.DisplayHeight)
+        self.set_brightness(self.__config.get(Config.MAIN.Brightness))
 
         # get [DEFAULTANIMATION] options
-        self.default_animation = self.config.get(Config.DEFAULTANIMATION.Animation)
-        self.default_animation_variant = self.config.get(Config.DEFAULTANIMATION.Variant)
-        self.default_animation_parameter = self.config.get(Config.DEFAULTANIMATION.Parameter)
-        self.default_animation_repeat = self.config.get(Config.DEFAULTANIMATION.Repeat)
+        self.__conf_default_animation = self.__config.get(Config.DEFAULTANIMATION.Animation)
+        self.__conf_default_animation_variant = self.__config.get(Config.DEFAULTANIMATION.Variant)
+        self.__conf_default_animation_parameter = self.__config.get(Config.DEFAULTANIMATION.Parameter)
+        self.__conf_default_animation_repeat = self.__config.get(Config.DEFAULTANIMATION.Repeat)
 
+    def __initialize_display(self):
         # load display plugins
         display_loader = Loader()
         display_loader.load_plugins((BASE_DIR / "display").resolve(), plugin_base_class=AbstractDisplay)
 
+        # create it
         try:
-            self.display = display_loader.plugins[hardware.casefold()](self.display_width,
-                                                                       self.display_height,
-                                                                       self.display_brightness,
-                                                                       config=self.config)
+            self.__display = display_loader.plugins[self.__conf_hardware.casefold()](self.__conf_display_width,
+                                                                                     self.__conf_display_height,
+                                                                                     self.__display_brightness,
+                                                                                     config=self.config)
+            self.__clear_display()
         except KeyError:
-            raise RuntimeError("Display hardware '{}' not known.".format(hardware))
+            raise RuntimeError("Display hardware '{}' not known.".format(self.__conf_hardware))
 
     def __start_servers(self):
         # HTTP server
-        if (self.config.get(Config.MAIN.HttpServer) and
+        if (self.__config.get(Config.MAIN.HttpServer) and
                 # if the variable is set, that means we're in a reload phase
                 # so the server is already started
-                self.http_server is None):
-            self.http_server = HttpServer(self)
-            self.http_server.start()
+                self.__http_server is None):
+            self.__http_server = HttpServer(self)
+            self.__http_server.start()
 
         # REST server
-        if (self.config.get(Config.MAIN.RestServer) and
+        if (self.__config.get(Config.MAIN.RestServer) and
                 # if the variable is set, that means we're in a reload phase
                 # so the server is already started
-                self.rest_server is None):
-            self.rest_server = RestServer(self)
-            self.rest_server.start()
+                self.__rest_server is None):
+            self.__rest_server = RestServer(self)
+            self.__rest_server.start()
 
         # TPM2Net server
-        if self.config.get(Config.MAIN.TPM2NetServer):
-            self.tpm2_net_server = Tpm2NetServer(self, self.display_width, self.display_height)
-            threading.Thread(target=self.tpm2_net_server.serve_forever, daemon=True).start()
+        if self.__config.get(Config.MAIN.TPM2NetServer):
+            self.__tpm2_net_server = Tpm2NetServer(self, self.__conf_display_width, self.__conf_display_height)
+            threading.Thread(target=self.__tpm2_net_server.serve_forever, daemon=True).start()
 
     def __stop_servers(self):
         # stop only the servers that are started
         # except on reload, then do not stop the HTTP and REST server
-        if not self.reload_signal.is_set():
+        if not self.__reload_signal.is_set():
             # HTTP server
-            if self.http_server:
-                self.http_server.stop()
+            if self.__http_server:
+                self.__http_server.stop()
 
             # REST server
-            if self.rest_server:
-                self.rest_server.stop()
+            if self.__rest_server:
+                self.__rest_server.stop()
 
         # TPM2Net server
-        if self.tpm2_net_server:
-            self.tpm2_net_server.shutdown()
-            self.tpm2_net_server.server_close()
+        if self.__tpm2_net_server:
+            self.__tpm2_net_server.shutdown()
+            self.__tpm2_net_server.server_close()
 
     def __clear_display(self):
-        self.display.clear_buffer()
-        self.display.show()
+        self.__display.clear_buffer()
+        self.__display.show()
 
     def __quit(self, *_):
         print("Exiting...")
-        self.quit_signal.set()
+        self.__quit_signal.set()
+
+    @property
+    def config(self):
+        return self.__config
+
+    @property
+    def frame_queue(self):
+        return self.__frame_queue
 
     def __reload(self, *_):
         print("Reloading...")
 
         # set the reload and quit signal to exit mainloop
-        self.reload_signal.set()
-        self.quit_signal.set()
+        self.__reload_signal.set()
+        self.__quit_signal.set()
 
     def reload(self):
         # start reload process
         self.__reload()
 
-        # wait until the the reload_signal is unset
-        self.reload_signal.wait_unset()
+        # wait until the the __reload_signal is unset
+        self.__reload_signal.wait_unset()
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
-        if self.animation_controller is not None:
-            self.animation_controller.start_animation(animation_name,
-                                                      variant=variant, parameter=parameter, repeat=repeat,
-                                                      blocking=blocking)
+        if self.__animation_controller is not None:
+            self.__animation_controller.start_animation(animation_name,
+                                                        variant=variant, parameter=parameter, repeat=repeat,
+                                                        blocking=blocking)
 
     def stop_animation(self, animation_name=None, blocking=False):
-        if self.animation_controller is not None:
-            self.animation_controller.stop_animation(animation_name, blocking=blocking)
+        if self.__animation_controller is not None:
+            self.__animation_controller.stop_animation(animation_name, blocking=blocking)
 
     @property
     def available_animations(self):
-        if self.animation_controller is not None:
-            return self.animation_controller.available_animations
+        if self.__animation_controller is not None:
+            return self.__animation_controller.all_animations
         else:
             return {}
 
-    def is_animation_running(self, animation_name):
-        if self.animation_controller is not None:
-            return self.animation_controller.is_animation_running(animation_name)
+    def get_current_animation_name(self):
+        if self.__animation_controller is not None:
+            return self.__animation_controller.get_current_animation_name()
         else:
-            return False
+            return ""
+
+    def get_brightness(self):
+        return self.__display_brightness
 
     def set_brightness(self, brightness):
         if not 0 <= brightness <= 100:
-            eprint("Invalid brightness value '%d'! Using default value '85'." % self.display_brightness)
-            self.display_brightness = 85
+            eprint("Invalid brightness value '%d'! Using default value '85'." % self.__display_brightness)
+            self.__display_brightness = 85
         else:
-            self.display_brightness = brightness
+            self.__display_brightness = brightness
 
         # apply to the current display if it's already initialized
-        if self.display:
-            self.display.set_brightness(brightness)
+        if self.__display:
+            self.__display.set_brightness(brightness)
 
     def mainloop(self):
         # start the animation controller
-        self.animation_controller = AnimationController(self.display_width, self.display_height, self.frame_queue,
-                                                        self.default_animation,
-                                                        self.default_animation_variant,
-                                                        self.default_animation_parameter,
-                                                        self.default_animation_repeat)
-        self.animation_controller.start()
+        self.__animation_controller = AnimationController(self.__conf_display_width, self.__conf_display_height,
+                                                          self.frame_queue,
+                                                          self.__conf_default_animation,
+                                                          self.__conf_default_animation_variant,
+                                                          self.__conf_default_animation_parameter,
+                                                          self.__conf_default_animation_repeat)
+        self.__animation_controller.start()
 
         # start the server interfaces
         self.__start_servers()
 
         first_loop = True
         # run until '__quit' method was called
-        while not self.quit_signal.is_set():
+        while not self.__quit_signal.is_set():
             # check if there is a frame that needs to be displayed
-            if not self.frame_queue.empty():
+            if not self.__frame_queue.empty():
                 # get frame and display it
-                self.display.buffer = self.frame_queue.get()
-                self.frame_queue.task_done()
-                self.display.show(gamma=True)
+                self.__display.buffer = self.__frame_queue.get()
+                self.__frame_queue.task_done()
+                self.__display.show(gamma=True)
 
                 # after the first frame is displayed, clear the reload signal
                 if first_loop:
-                    self.reload_signal.clear()
+                    self.__reload_signal.clear()
                     first_loop = False
 
             # to limit CPU usage do not go faster than 60 "fps"
-            self.quit_signal.wait(1/60)
+            self.__quit_signal.wait(1/60)
 
-        self.animation_controller.stop()
+        self.__animation_controller.stop()
         self.__clear_display()
 
         # stop the server interfaces
         self.__stop_servers()
 
-        if self.reload_signal.is_set():
+        if self.__reload_signal.is_set():
             # reload settings
             self.__load_settings()
 
+            # re-initialize the display
+            self.__initialize_display()
+
             # clear quit signal
             # the reload signal gets cleared after the first frame is displayed again
-            self.quit_signal.clear()
+            self.__quit_signal.clear()
 
             # restart mainloop
             self.mainloop()
@@ -293,9 +387,9 @@ class AnimationController(threading.Thread):
         super().__init__(daemon=True)
 
         # the display settings
-        self.display_width = display_width
-        self.display_height = display_height
-        self.display_frame_queue = display_frame_queue
+        self.__display_width = display_width
+        self.__display_height = display_height
+        self.__display_frame_queue = display_frame_queue
 
         # the default animation settings
         self.__def_a_name = default_animation_name
@@ -303,15 +397,14 @@ class AnimationController(threading.Thread):
         self.__def_a_parameter = default_animation_parameter
         self.__def_a_repeat = default_animation_repeat
 
-        self.stop_event = threading.Event()
-        self.controll_queue = AnimationController._EventQueue()
+        self.__stop_event = threading.Event()
+        self.__controll_queue = AnimationController._EventQueue()
 
         # the current running animation
-        self.current_animation = None
-        self.animation_lock = threading.RLock()
+        self.__current_animation = None
 
         # get all available animations
-        self.animations = self.__load_animations()
+        self.__all_animations = self.__load_animations()
 
     def __load_animations(self):
         animation_loader = Loader()
@@ -321,10 +414,10 @@ class AnimationController(threading.Thread):
 
         # use module names to identify the animations not the class names
         for _name, cls in animation_loader.plugins.items():
-            animations[cls.animation_name] = cls(width=self.display_width, height=self.display_height,
-                                                 frame_queue=self.display_frame_queue,
+            animations[cls.animation_name] = cls(width=self.__display_width, height=self.__display_height,
+                                                 frame_queue=self.__display_frame_queue,
                                                  resources_path=RESOURCES_DIR,
-                                                 on_finish_callable=self.animation_finished)
+                                                 on_finish_callable=self.__on_animation_finished)
 
         return animations
 
@@ -334,37 +427,35 @@ class AnimationController(threading.Thread):
                                     parameter=self.__def_a_parameter,
                                     repeat=self.__def_a_repeat)
 
-    def animation_finished(self):
+    def __on_animation_finished(self):
         # whenever an animation stops or finishes check if there are unfinished jobs
-        if not self.controll_queue.tasks_remaining:
+        if not self.__controll_queue.tasks_remaining:
             # if not, start the default animation
             self.__start_default_animation()
 
     def __start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
-        with self.animation_lock:
-            # stop any currently running animation
-            self.__stop_animation()
+        # stop any currently running animation
+        self.__stop_animation()
 
-            try:
-                # get the new animation
-                animation = self.animations[animation_name]
-            except KeyError:
-                eprint("The animation '%s' could not be found!" % animation_name)
-            else:
-                # start it
-                animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
-                self.current_animation = animation
+        try:
+            # get the new animation
+            animation = self.__all_animations[animation_name]
+        except KeyError:
+            eprint("The animation '%s' could not be found!" % animation_name)
+        else:
+            # start it
+            animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
+            self.__current_animation = animation
 
     def __stop_animation(self, animation_name=None):
-        with self.animation_lock:
-            # if there's already a running animation, stop it
-            if self.current_animation is not None:
-                # but only if not a specific animation should be stopped
-                if (animation_name is not None and
-                        self.current_animation.animation_name != animation_name):
-                    return
-                self.current_animation.stop_animation()
-                self.current_animation = None
+        # if there's already a running animation, stop it
+        if self.__current_animation is not None:
+            # but only if not a specific animation should be stopped
+            if (animation_name is not None and
+                    self.__current_animation.animation_name != animation_name):
+                return
+            self.__current_animation.stop_animation()
+            self.__current_animation = None
 
     def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
         start_event = AnimationController._Event(AnimationController._EventType.start,
@@ -374,7 +465,7 @@ class AnimationController(threading.Thread):
                                                      "parameter": parameter,
                                                      "repeat": repeat
                                                  })
-        self.controll_queue.put(start_event)
+        self.__controll_queue.put(start_event)
 
         # check blocking
         if blocking:
@@ -384,7 +475,7 @@ class AnimationController(threading.Thread):
 
     def stop_animation(self, animation_name=None, blocking=False):
         # by default the current animation should be stopped
-        animation_to_stop = self.current_animation
+        animation_to_stop = self.__current_animation
         if animation_to_stop is None:
             # nothing can be stopped
             return
@@ -397,7 +488,7 @@ class AnimationController(threading.Thread):
         # create and schedule the stop event
         stop_event = AnimationController._Event(AnimationController._EventType.stop,
                                                 animation_to_stop.animation_name)
-        self.controll_queue.put(stop_event)
+        self.__controll_queue.put(stop_event)
 
         # check blocking
         if blocking:
@@ -406,30 +497,27 @@ class AnimationController(threading.Thread):
         return stop_event
 
     @property
-    def available_animations(self):
-        return self.animations
+    def all_animations(self):
+        return self.__all_animations
 
-    def is_animation_running(self, animation_name):
-        try:
-            # get the animation
-            animation = self.animations[animation_name]
-        except KeyError:
-            eprint("The animation '%s' could not be found!" % animation_name)
-            return False
-
-        return animation.animation_running.is_set()
+    def get_current_animation_name(self):
+        cur_a = self.__current_animation
+        if cur_a:
+            return cur_a.animation_name
+        else:
+            return ""
 
     def run(self):
         # on start show default animation
         self.__start_default_animation()
 
-        while not self.stop_event.is_set():
+        while not self.__stop_event.is_set():
             # get the next event
-            event = self.controll_queue.get()
+            event = self.__controll_queue.get()
 
             # sometimes get can take a while to return, so check the stop flag again here
-            if self.stop_event.is_set():
-                self.controll_queue.task_done(event)
+            if self.__stop_event.is_set():
+                self.__controll_queue.task_done(event)
                 break
 
             # check the event type
@@ -439,7 +527,7 @@ class AnimationController(threading.Thread):
                 self.__stop_animation(event.animation_name, **event.event_parameter)
                 # special case on stop event:
                 # after the animation was stopped check if this was the last task (for now)
-                if self.controll_queue.last_task_running:
+                if self.__controll_queue.last_task_running:
                     # if so, start the default animation
                     default_start_event = self.__start_default_animation()
                     # link the new event to the old one
@@ -447,12 +535,12 @@ class AnimationController(threading.Thread):
                     event.chain(default_start_event)
 
             # the event is processed now
-            self.controll_queue.task_done(event)
+            self.__controll_queue.task_done(event)
 
     def stop(self):
-        self.stop_event.set()
+        self.__stop_event.set()
         # add a new element into the control_queue to force returning of get method in loop
-        self.controll_queue.put(None)
+        self.__controll_queue.put(None)
         self.join()
 
         # after the control thread has stopped, there could be an animation thread remaining
@@ -471,6 +559,5 @@ if __name__ == "__main__":
 
     # load the main application
     app = Main(args.config_file)
-    app.display.show()
 
     app.mainloop()
