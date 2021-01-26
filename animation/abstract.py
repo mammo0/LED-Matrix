@@ -5,7 +5,6 @@ This is the sceleton code for all animations.
 from abc import abstractmethod, ABC, ABCMeta
 import json
 from threading import Thread, Event
-import threading
 
 from simple_classproperty import ClasspropertyMeta, classproperty
 

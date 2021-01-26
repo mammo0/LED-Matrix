@@ -3,8 +3,6 @@ import functools
 
 import bottle
 
-from common import RESOURCES_DIR
-
 
 METHOD_ATTR_PREFIX = "__bottle__"
 
