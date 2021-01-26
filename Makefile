@@ -57,11 +57,10 @@ endif
 	rc-update add $(INITD_SERVICE)
 
 uninstall:
-	rc-update del $(INITD_SERVICE)
-	rm $(INITD_DIR)/$(INITD_SERVICE)
-	rm $(INITD_CONFIG_FILE)
-	rm $(INSTALL_DIR)
-	
+	-rc-update del $(INITD_SERVICE)
+	-rm $(INITD_DIR)/$(INITD_SERVICE)
+	-rm $(INITD_CONFIG_FILE)
+	-rm $(INSTALL_DIR)
 
 run:
 ifeq ("$(wildcard $(BASE_DIR)/.venv)","")
