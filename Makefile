@@ -44,7 +44,12 @@ develop: config
 production: config
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync
 
-install:
+__check_alpine:
+ifeq ("$(findstring Alpine,$(shell grep '^NAME' /etc/os-release))", "")
+	$(error This command must be executed on "Alpine Linux"!)
+endif
+
+install: __check_alpine
 	ln -s $(BASE_DIR) $(INSTALL_DIR)
 ifeq ("$(wildcard $(CONFIG_FILE))","")
 	@# create a new config file at the install point
@@ -58,7 +63,7 @@ endif
 	@# save changes to disk
 	lbu commit -d
 
-uninstall:
+uninstall: __check_alpine
 	-rc-update del $(INITD_SERVICE)
 	-rm $(INITD_DIR)/$(INITD_SERVICE)
 	-rm $(INITD_CONFIG_FILE)
