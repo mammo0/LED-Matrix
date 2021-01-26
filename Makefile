@@ -28,8 +28,15 @@ install-alpine-venv: $(ALPINE_VENV_ARCHIVE)
 
 # target alias for creating the cofig file
 config:
+ifeq ("$(wildcard $(INITD_CONFIG_FILE))","")
+	@# the installed config does not exist -> use the normal config file
+	$(eval TMP_CONFIG_FILE:=$(CONFIG_FILE))
+else
+	@# the installed config does exist -> use it as config file
+	$(eval TMP_CONFIG_FILE:=$($INITD_CONFIG_FILE))
+endif
 	@# create or update the config file if necessary
-	$(BASE_DIR)/scripts/create_config.py $(CONFIG_FILE)
+	$(BASE_DIR)/scripts/create_config.py $(TMP_CONFIG_FILE)
 
 develop: config
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync -d
