@@ -177,14 +177,38 @@ class Configuration():
 
         self.__config_file_path = config_file_path
 
-        if self.__config_file_path is not None:
+        use_default_config = False
+        # check if a path is supplied
+        if self.__config_file_path is None:
+            print("No configuration file provided. Using default configuration. Saving is not possible!")
+            use_default_config = True
+        # check if the path exists and if it's a file
+        elif self.__config_file_path.exists() and not self.__config_file_path.is_file():
+            # if not
+            eprint(("The location '%s' is not a file! "
+                    "Using default configuration. Saving is not possible!") % str(self.__config_file_path))
+            use_default_config = True
+            # prevent saving
+            self.__config_file_path = None
+        # otherwise check if the file exists
+        elif not self.__config_file_path.exists():
+            eprint(("The location '%s' is not a file! "
+                    "Using default configuration.") % str(self.__config_file_path))
+            use_default_config = True
+
+        # load the config if a file was found
+        if not use_default_config:
             with open(self.__config_file_path, "r") as f:
                 self.__config_parser.read_file(f)
 
-            for section_name, section in Config:
-                self.__config[section_name] = {}
+        for section_name, section in Config:
+            self.__config[section_name] = {}
 
-                for option_name, option in section:
+            for option_name, option in section:
+                if use_default_config:
+                    # just use the default value
+                    value = option.default_value
+                else:
                     try:
                         value = option.parse_value(self.__config_parser[section_name][option_name])
                     except KeyError:
@@ -196,7 +220,7 @@ class Configuration():
                         eprint("Using the default value '%s'." % str(option.default_value))
                         value = option.default_value
 
-                    self.__config[section_name][option_name] = value
+                self.__config[section_name][option_name] = value
 
     def get(self, option):
         return self.__config[option.parent.name][option.name]
