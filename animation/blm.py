@@ -86,7 +86,7 @@ class BlmAnimation(AbstractAnimation):
         while not self._stop_event.is_set():
             for frame in self.rendered_frames():
                 if not self._stop_event.is_set():
-                    self.frame_queue.put(frame["frame"].copy())
+                    self._frame_queue.put(frame["frame"].copy())
                 else:
                     break
                 self._stop_event.wait(timeout=frame["hold"]/1000)
@@ -117,9 +117,9 @@ class BlmAnimation(AbstractAnimation):
 
             (h, w, _b) = array.shape
 
-            diff_h = h - self.height
+            diff_h = h - self._height
 
-            diff_w = w - self.width
+            diff_w = w - self._width
 
             diff_h_top = abs(diff_h//2)
             diff_h_bottom = abs(diff_h) - diff_h_top
@@ -165,7 +165,7 @@ class BlmController(AbstractAnimationController):
     def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
         super(BlmController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
 
-        self.resources_path = self.resources_path / "animations" / "162-blms"
+        self._resources_path = self._resources_path / "animations" / "162-blms"
 
     @property
     def animation_class(self):
@@ -174,7 +174,7 @@ class BlmController(AbstractAnimationController):
     @property
     def animation_variants(self):
         blm_animations = {}
-        for animation_file in sorted(self.resources_path.glob("*.blm"), key=lambda s: s.name.lower()):
+        for animation_file in sorted(self._resources_path.glob("*.blm"), key=lambda s: s.name.lower()):
             if animation_file.is_file():
                 blm_animations[animation_file.stem] = animation_file.resolve()
 

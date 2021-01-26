@@ -176,23 +176,23 @@ class TextAnimation(AbstractAnimation):
                 return
             buf = self.render(self.text)
             height, _width, _nbytes = buf.shape
-            h_pad_0 = self.height
-            h_pad_1 = self.width + self.pixels_per_step
+            h_pad_0 = self._height
+            h_pad_1 = self._width + self.pixels_per_step
             v_pad_0 = 0
             v_pad_1 = 0
-            if height < self.height:
-                v_pad_0 = int((self.height - height)/2)
-                v_pad_1 = self.height - height - v_pad_0
+            if height < self._height:
+                v_pad_0 = int((self._height - height)/2)
+                v_pad_1 = self._height - height - v_pad_0
 
             buf = np.pad(buf, ((v_pad_0, v_pad_1), (h_pad_0, h_pad_1), (0, 0)),
                          'constant', constant_values=0)
             wait = 1.0 / self.steps_per_second
 
-            for i in range(0, buf.shape[1] - self.width, self.pixels_per_step):
+            for i in range(0, buf.shape[1] - self._width, self.pixels_per_step):
                 if self._stop_event.is_set():
                     break
-                cut = buf[0:self.height, i:i+self.width, :]
-                self.frame_queue.put(cut.copy())
+                cut = buf[0:self._height, i:i+self._width, :]
+                self._frame_queue.put(cut.copy())
                 self._stop_event.wait(timeout=wait)
 
             # check repeat

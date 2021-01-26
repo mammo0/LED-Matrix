@@ -36,7 +36,7 @@ class GameframeAnimation(AbstractAnimation):
         self.read_config()
 
         if not (self.loop or self.move_loop):
-            self.repeat = 0
+            self._repeat = 0
 
         print(self.name, self.intrinsic_duration())
 
@@ -75,9 +75,9 @@ class GameframeAnimation(AbstractAnimation):
             with open(str(path), 'rb') as f:
                 image = Image.open(f)
                 # center (crop) image
-                background_img = Image.new(mode='RGB', size=(self.width, self.height), color=self.background_color)
-                x = (self.width - image.width) / 2
-                y = (self.height - image.height) / 2
+                background_img = Image.new(mode='RGB', size=(self._width, self._height), color=self.background_color)
+                x = (self._width - image.width) / 2
+                y = (self._height - image.height) / 2
                 background_img.paste(image, (int(x), int(y)))
                 self.frames.append(np.array(background_img))
             image = None
@@ -115,8 +115,8 @@ class GameframeAnimation(AbstractAnimation):
 
         x = 0
         y = 0
-        DX = self.width
-        DY = self.height
+        DX = self._width
+        DY = self._height
 
         if end:
             while True:
@@ -179,7 +179,7 @@ class GameframeAnimation(AbstractAnimation):
         while not self._stop_event.is_set():
             for frame in self.rendered_frames():
                 if not self._stop_event.is_set():
-                    self.frame_queue.put(frame.copy())
+                    self._frame_queue.put(frame.copy())
                 else:
                     break
                 self._stop_event.wait(timeout=self.hold/1000)
@@ -195,7 +195,7 @@ class GameframeController(AbstractAnimationController):
     def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
         super(GameframeController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
 
-        self.resources_path = self.resources_path / "animations" / "gameframe"
+        self._resources_path = self._resources_path / "animations" / "gameframe"
 
     @property
     def animation_class(self):
@@ -204,7 +204,7 @@ class GameframeController(AbstractAnimationController):
     @property
     def animation_variants(self):
         gameframe_animations = {}
-        for animation_dir in sorted(self.resources_path.glob("*"), key=lambda s: s.name.lower()):
+        for animation_dir in sorted(self._resources_path.glob("*"), key=lambda s: s.name.lower()):
             if animation_dir.is_dir():
                 gameframe_animations[animation_dir.name] = animation_dir.resolve()
 

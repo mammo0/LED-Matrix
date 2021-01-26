@@ -94,7 +94,7 @@ class MoodlightAnimation(AbstractAnimation):
                     yield color
 
     def frame_generator(self, color_mode, style):
-        frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
+        frame = np.zeros((self._height, self._width, 3), dtype=np.uint8)
 
         if color_mode == _ColorMode.colorwheel:
             colors = self.color_wheel_generator(500)
@@ -106,14 +106,14 @@ class MoodlightAnimation(AbstractAnimation):
                 frame[:, :] = next(colors)
                 yield frame
             elif style == _Style.random_dot:
-                y = np.random.randint(0, self.height)
-                x = np.random.randint(0, self.width)
+                y = np.random.randint(0, self._height)
+                x = np.random.randint(0, self._width)
                 frame[y, x] = next(colors)
                 yield frame
             elif style == _Style.wish_down_up:
                 color = next(colors)
                 frame = np.concatenate((frame[1:16, :],
-                                        np.array(color * self.width).reshape(1, self.width, 3)), axis=0)
+                                        np.array(color * self._width).reshape(1, self._width, 3)), axis=0)
                 yield frame
 
     def animate(self):
@@ -129,7 +129,7 @@ class MoodlightAnimation(AbstractAnimation):
 
             for frame in generator:
                 if not self._stop_event.is_set():
-                    self.frame_queue.put(frame.copy())
+                    self._frame_queue.put(frame.copy())
                 else:
                     break
                 self._stop_event.wait(timeout=1/self.frequency)

@@ -6,7 +6,6 @@ from abc import abstractmethod, ABC, ABCMeta
 import json
 from threading import Thread, Event
 import threading
-import time
 
 from simple_classproperty import ClasspropertyMeta, classproperty
 
@@ -33,21 +32,17 @@ class AnimationParameter(Structure):
 class AbstractAnimation(ABC, Thread):
     def __init__(self, width, height, frame_queue, repeat, on_finish_callable):
         super().__init__(daemon=True)
-        self.width = width  # width of frames to produce
-        self.height = height  # height of frames to produce
-        self.frame_queue = frame_queue  # queue to put frames onto
-        self.repeat = repeat  # 0: no repeat, -1: forever, > 0: x-times
+        self._width = width  # width of frames to produce
+        self._height = height  # height of frames to produce
+        self._frame_queue = frame_queue  # queue to put frames onto
+        self._repeat = repeat  # 0: no repeat, -1: forever, > 0: x-times
         self.__remaining_repeat = repeat
-        self.on_finish_callable = on_finish_callable
+        self.__on_finish_callable = on_finish_callable
 
         self._stop_event = Event()  # query this often! exit self.animate quickly
 
     def run(self):
         """This is the run method from threading.Thread"""
-        # TODO threading.Barrier to sync with ribbapi
-        # print("Starting")
-
-        self.started = time.time()
         try:
             self.animate()
         except Exception as e:
@@ -55,7 +50,7 @@ class AbstractAnimation(ABC, Thread):
             eprint(repr(e))
         finally:
             # now the animation has stopped, so call the finish callable
-            self.on_finish_callable()
+            self.__on_finish_callable()
 
     # def start(self):
     """We do not overwrite this. It is from threading.Thread"""
@@ -66,10 +61,10 @@ class AbstractAnimation(ABC, Thread):
 
     def is_repeat(self):
         # no repeat
-        if self.repeat == 0:
+        if self._repeat == 0:
             return False
         # infinity repeat
-        elif self.repeat == -1:
+        elif self._repeat == -1:
             return True
         else:
             # check remaining repeat cycles
@@ -107,7 +102,7 @@ class AbstractAnimation(ABC, Thread):
 
     @property
     def repeat_value(self):
-        return self.repeat
+        return self._repeat
 
     # @property
     # @abstractmethod
@@ -128,15 +123,15 @@ class AbstractAnimationControllerMeta(ABCMeta, ClasspropertyMeta):
 
 class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
-        self.width = width  # width of frames to produce
-        self.height = height  # height of frames to produce
-        self.frame_queue = frame_queue  # queue to put frames onto
-        self.resources_path = resources_path  # path to the 'resources' directory
-        self.on_finish_callable = on_finish_callable  # this gets called whenever an animation stops/finishes
+        self.__width = width  # width of frames to produce
+        self.__height = height  # height of frames to produce
+        self.__frame_queue = frame_queue  # queue to put frames onto
+        self._resources_path = resources_path  # path to the 'resources' directory
+        self.__on_finish_callable = on_finish_callable  # this gets called whenever an animation stops/finishes
 
-        self.animation_thread = None  # this variable contains the animation thread
+        self.__animation_thread = None  # this variable contains the animation thread
 
-        self.animation_running = Event()
+        self.__animation_running = Event()
 
     @classproperty
     def animation_name(cls):
@@ -166,19 +161,19 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     @property
     def current_variant(self):
-        if (self.animation_running.is_set() and
-                self.animation_thread and
-                self.animation_thread.is_alive()):
-            return self.animation_variants(self.animation_thread.variant_value)
+        if (self.__animation_running.is_set() and
+                self.__animation_thread and
+                self.__animation_thread.is_alive()):
+            return self.animation_variants(self.__animation_thread.variant_value)
         else:
             return None
 
     @property
     def current_parameter(self):
-        if (self.animation_running.is_set() and
-                self.animation_thread and
-                self.animation_thread.is_alive()):
-            return self.animation_thread.parameter_instance
+        if (self.__animation_running.is_set() and
+                self.__animation_thread and
+                self.__animation_thread.is_alive()):
+            return self.__animation_thread.parameter_instance
         else:
             return None
 
@@ -191,10 +186,10 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     @property
     def current_repeat_value(self):
-        if (self.animation_running.is_set() and
-                self.animation_thread and
-                self.animation_thread.is_alive()):
-            return self.animation_thread.repeat_value
+        if (self.__animation_running.is_set() and
+                self.__animation_thread and
+                self.__animation_thread.is_alive()):
+            return self.__animation_thread.repeat_value
         else:
             return None
 
@@ -219,17 +214,17 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                     eprint("The variant '%s' does not exist!" % variant)
                     eprint("Available variants: %s" % ", ".join(self.animation_variants._member_names_))
 
-        self.animation_thread = self.animation_class(width=self.width, height=self.height,
-                                                     frame_queue=self.frame_queue,
-                                                     repeat=repeat,
-                                                     on_finish_callable=self.__animation_finished_stopped,
-                                                     **options)
+        self.__animation_thread = self.animation_class(width=self.__width, height=self.__height,
+                                                       frame_queue=self.__frame_queue,
+                                                       repeat=repeat,
+                                                       on_finish_callable=self.__animation_finished_stopped,
+                                                       **options)
 
         # mark the animation as running
-        self.animation_running.set()
+        self.__animation_running.set()
 
         # start the animation thread
-        self.animation_thread.start()
+        self.__animation_thread.start()
 
     def _validate_parameter(self, parameter):
         # if no parameter is specified
@@ -261,13 +256,13 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     def __animation_finished_stopped(self):
         # release running event
-        self.animation_running.clear()
+        self.__animation_running.clear()
 
         # call finished callable
-        self.on_finish_callable()
+        self.__on_finish_callable()
 
     def stop_animation(self):
         # stop the animation if it's currently running.
-        if (self.animation_thread and
-                self.animation_thread.is_alive()):
-            self.animation_thread.stop_and_wait()
+        if (self.__animation_thread and
+                self.__animation_thread.is_alive()):
+            self.__animation_thread.stop_and_wait()

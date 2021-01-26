@@ -145,7 +145,7 @@ class ClockAnimation(AbstractAnimation):
         char_width = (self.analog_middle_x - 1) / 2
 
         # char height: matrix height - 2 pixel space
-        char_height = self.height - 2
+        char_height = self._height - 2
 
         # draw hours
         hour_1_x = self.analog_middle_x - (2 * char_width + 1)
@@ -156,7 +156,7 @@ class ClockAnimation(AbstractAnimation):
                                 x=hour_2_x, y=1, width=char_width, height=char_height, color=self.hour_color)
 
         # draw minutes
-        minute_1_x = self.width - (2 * char_width + 1)
+        minute_1_x = self._width - (2 * char_width + 1)
         minute_2_x = minute_1_x + char_width + 1
         self.digital_draw_digit(draw, int(minute_txt[0]),
                                 x=minute_1_x, y=1, width=char_width, height=char_height, color=self.minute_color)
@@ -183,13 +183,13 @@ class ClockAnimation(AbstractAnimation):
             if self.variant == ClockVariant.analog:
                 image = self.analog_create_clock_image(local_time.tm_hour,
                                                        local_time.tm_min)
-                self.frame_queue.put(np.array(image).copy())
+                self._frame_queue.put(np.array(image).copy())
                 self._stop_event.wait(timeout=1)
             elif self.variant == ClockVariant.digital:
                 image = self.digital_create_clock_image(local_time.tm_hour,
                                                         local_time.tm_min,
                                                         local_time.tm_sec)
-                self.frame_queue.put(np.array(image).copy())
+                self._frame_queue.put(np.array(image).copy())
                 self._stop_event.wait(timeout=1/10)
 
 
