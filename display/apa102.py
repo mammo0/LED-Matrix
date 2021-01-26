@@ -2,6 +2,7 @@
 This module implements a display consisting of APA102 leds.
 """
 from enum import Enum
+import math
 
 import spidev
 
@@ -211,7 +212,8 @@ class Apa102(AbstractDisplay):
 
     def set_brightness(self, brightness):
         # set the brightness level for the LEDs
-        self._brightness = int((brightness / 100) * MAX_BRIGHTNESS)
+        logarithmic_percentage = (math.pow(10, (brightness / 100)) - 1) / 9
+        self._brightness = math.ceil(logarithmic_percentage * MAX_BRIGHTNESS)
 
     def show(self, gamma=False):
         if gamma:
