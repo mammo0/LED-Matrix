@@ -75,7 +75,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                         # provide the main config
                         config=self.__main_app.config,
                         # except the brightness value should be always actual
-                        current_brightness=self.__main_app.display_brightness,
+                        current_brightness=self.__main_app.get_brightness(),
                         # provide the animations
                         animations=self.__main_app.available_animations,
                         default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
