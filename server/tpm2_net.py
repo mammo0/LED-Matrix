@@ -10,43 +10,62 @@ import numpy as np
 class Tpm2NetServer(socketserver.UDPServer):
     def __init__(self, main_app, display_width, display_height):
         super().__init__(('', 65506), Tpm2NetHandler, bind_and_activate=True)
-        self.main_app = main_app
-        self.tmp_buffer = np.zeros((display_height, display_width, 3),
-                                   dtype=np.uint8)
-        self.tmp_buffer_index = 0
-        self.timeout = 3  # seconds
-        self.last_time_received = None
-        self.timeout_timer = None
-        # glediator is ok
-        # but pixelcontroller is counting the packets wrong.
-        # when detected that the stream is misheaving then count also wrong
-        self.misbehaving = False
+        self.__main_app = main_app
+        self.__display_width = display_width
+        self.__display_height = display_height
+
+        self.__timeout = 3  # seconds
+        self.__last_time_received = None
+        self.__timeout_timer = None
+
+    @property
+    def main_app(self):
+        return self.__main_app
+
+    @property
+    def display_width(self):
+        return self.__display_width
+
+    @property
+    def display_height(self):
+        return self.__display_height
 
     def update_time(self):
-        if not self.last_time_received:
+        if not self.__last_time_received:
             # start a timer if there is None
-            if not self.timeout_timer:
-                self.timeout_timer = Timer(0.5, self.check_for_timeout)
-                self.timeout_timer.start()
+            if not self.__timeout_timer:
+                self.__timeout_timer = Timer(0.5, self.__check_for_timeout)
+                self.__timeout_timer.start()
         # to detect timeout store current time
-        self.last_time_received = time.time()
+        self.__last_time_received = time.time()
 
-    def check_for_timeout(self):
-        if self.last_time_received:
-            if self.last_time_received + self.timeout < time.time():
+    def __check_for_timeout(self):
+        if self.__last_time_received:
+            if self.__last_time_received + self.__timeout < time.time():
                 # stop dummy animation
-                self.main_app.stop_animation("dummy")
-                self.last_time_received = None
-                self.timeout_timer = None
-                self.misbehaving = False
+                self.__main_app.stop_animation("dummy")
+                self.__last_time_received = None
+                self.__timeout_timer = None
+                self.__misbehaving = False
             else:
                 # restart a timer
-                self.timeout_timer = None
-                self.timeout_timer = Timer(0.5, self.check_for_timeout)
-                self.timeout_timer.start()
+                self.__timeout_timer = None
+                self.__timeout_timer = Timer(0.5, self.__check_for_timeout)
+                self.__timeout_timer.start()
 
 
 class Tpm2NetHandler(socketserver.BaseRequestHandler):
+    def __init__(self, request, client_address, server):
+        socketserver.BaseRequestHandler.__init__(self, request, client_address, server)
+
+        self.__tmp_buffer = np.zeros((self.server.display_height, self.server.display_width, 3),
+                                     dtype=np.uint8)
+        self.__tmp_buffer_index = 0
+        # glediator is ok
+        # but pixelcontroller is counting the packets wrong.
+        # when detected that the stream is misheaving then count also wrong
+        self.__misbehaving = False
+
     def handle(self):
         data = self.request[0].strip()
         data_length = len(data)
@@ -70,19 +89,19 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
             self.server.update_time()
 
             if packet_number == 0:
-                self.server.misbehaving = True
-            if packet_number == (1 if not self.server.misbehaving else 0):
-                self.server.tmp_buffer_index = 0
+                self.__misbehaving = True
+            if packet_number == (1 if not self.__misbehaving else 0):
+                self.__tmp_buffer_index = 0
 
-            upper = min(self.server.tmp_buffer.size,
-                        self.server.tmp_buffer_index + frame_size)
-            arange = np.arange(self.server.tmp_buffer_index,
+            upper = min(self.__tmp_buffer.size,
+                        self.__tmp_buffer_index + frame_size)
+            arange = np.arange(self.__tmp_buffer_index,
                                upper)
-            np.put(self.server.tmp_buffer, arange, list(data[6:-1]))
-            self.server.tmp_buffer_index = self.server.tmp_buffer_index + frame_size
-            if packet_number == (number_of_packets if not self.server.misbehaving else number_of_packets - 1):
-                if self.server.main_app.is_animation_running("dummy"):
-                    self.server.main_app.frame_queue.put(self.server.tmp_buffer.copy())
+            np.put(self.__tmp_buffer, arange, list(data[6:-1]))
+            self.__tmp_buffer_index = self.__tmp_buffer_index + frame_size
+            if packet_number == (number_of_packets if not self.__misbehaving else number_of_packets - 1):
+                if self.main_app.is_animation_running("dummy"):
+                    self.main_app.frame_queue.put(self.__tmp_buffer.copy())
         elif data[1] == 0xC0:  # command
             # NOT IMPLEMENTED
             return
