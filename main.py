@@ -113,13 +113,14 @@ class Main(MainInterface):
         signal.signal(signal.SIGINT, self.__quit)
         signal.signal(signal.SIGQUIT, self.__quit)
         signal.signal(signal.SIGTERM, self.__quit)
+        # catch SIGHUP and reload configuration
         signal.signal(signal.SIGHUP, self.__reload)
 
         # load config
         if config_file_path is None:
-            self.config_file_path = DEFAULT_CONFIG_FILE
+            self.__config_file_path = DEFAULT_CONFIG_FILE
         else:
-            self.config_file_path = config_file_path
+            self.__config_file_path = config_file_path
         self.__load_settings()
 
         # create the display object
@@ -141,7 +142,7 @@ class Main(MainInterface):
         self.__reload_signal = EventWithUnsetSignal()
 
     def __load_settings(self):
-        self.__config = Configuration(config_file_path=self.config_file_path, allow_no_value=True)
+        self.__config = Configuration(config_file_path=self.__config_file_path, allow_no_value=True)
 
         # get [MAIN] options
         self.__conf_hardware = self.__config.get(Config.MAIN.Hardware)

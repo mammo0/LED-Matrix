@@ -192,7 +192,7 @@ class Configuration():
             self.__config_file_path = None
         # otherwise check if the file exists
         elif not self.__config_file_path.exists():
-            eprint(("The location '%s' is not a file! "
+            eprint(("The location '%s' does not exist! "
                     "Using default configuration.") % str(self.__config_file_path))
             use_default_config = True
 
