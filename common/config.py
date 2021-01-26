@@ -111,8 +111,8 @@ class Config(Structure, StructureROMixin):
                                                                             '"background_color": [0, 0, 0],',
                                                                             '"divider_color": [255, 255, 255],',
                                                                             '"hour_color": [255, 0, 0],',
-                                                                            '"minute_color": [255, 255, 255]',
-                                                                            '"blinking_seconds": True',
+                                                                            '"minute_color": [255, 255, 255],',
+                                                                            '"blinking_seconds": true',
                                                                             "}"
                                                                         ]),
                                 description=[
