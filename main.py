@@ -44,6 +44,14 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
+    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+        """
+        Schedule an animation.
+        @param cron_schedule: A cron like string that defines when to run a certain animation.
+        @param *: The rest of the parameters are equal to the start_animation method.
+        """
+
+    @abstractmethod
     def stop_animation(self, animation_name=None, blocking=False):
         """
         Stop the current or a specific animation (if it's the current one).
@@ -54,12 +62,29 @@ class MainInterface(ABC):
                          It also waits until the default animation is started again.
         """
 
+    @abstractmethod
+    def remove_scheduled_animation(self, schedule_id):
+        """
+        Remove an animation from the schedule table.
+        @param schedule_id: The id for the scheduled animation.
+                            Possible values can be observed with the scheduled_animations property.
+        """
+
     @property
     @abstractmethod
     def available_animations(self):
         """
         Get a dict of the available animations.
         @return: Key: the animation name
+                 Value: the corresponding AbstractAnimationController object
+        """
+
+    @property
+    @abstractmethod
+    def scheduled_animations(self):
+        """
+        Get a dict of scheduled animations.
+        @return: Key: the schedule ID
                  Value: the corresponding AbstractAnimationController object
         """
 
@@ -248,9 +273,17 @@ class Main(MainInterface):
                                                         variant=variant, parameter=parameter, repeat=repeat,
                                                         blocking=blocking)
 
+    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+        # TODO: implement
+        pass
+
     def stop_animation(self, animation_name=None, blocking=False):
         if self.__animation_controller is not None:
             self.__animation_controller.stop_animation(animation_name, blocking=blocking)
+
+    def remove_scheduled_animation(self, schedule_id):
+        # TODO: implement
+        pass
 
     @property
     def available_animations(self):
@@ -258,6 +291,11 @@ class Main(MainInterface):
             return self.__animation_controller.all_animations
         else:
             return {}
+
+    @property
+    def scheduled_animations(self):
+        # TODO: implement
+        return {}
 
     def is_animation_running(self, animation_name):
         if self.__animation_controller is not None:
