@@ -192,6 +192,22 @@ class Main(MainInterface):
         # create the scheduler
         scheduler = BackgroundScheduler()
 
+        # load saved jobs
+        saved_jobs = self.config.get(Config.SCHEDULEDANIMATIONS.ScheduleTable)
+        for job in saved_jobs:
+            entry = ScheduleEntry(**job)
+            scheduler.add_job(func=self.start_animation,
+                              trigger=CronTrigger(year=entry.CRON_STRUCTURE.YEAR,
+                                                  month=entry.CRON_STRUCTURE.MONTH,
+                                                  day=entry.CRON_STRUCTURE.DAY,
+                                                  week=entry.CRON_STRUCTURE.WEEK,
+                                                  day_of_week=entry.CRON_STRUCTURE.DAY_OF_WEEK,
+                                                  hour=entry.CRON_STRUCTURE.HOUR,
+                                                  minute=entry.CRON_STRUCTURE.MINUTE,
+                                                  second=entry.CRON_STRUCTURE.SECOND),
+                              args=(entry.ANIMATION_SETTINGS,),
+                              id=entry.JOB_ID)
+
         return scheduler
 
     def __initialize_display(self):
