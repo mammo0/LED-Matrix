@@ -47,10 +47,19 @@ class ConfigValue(ConfigSection):
     def parse_value(self, value):
         if isinstance(value, self.value_type):
             return value
-        elif (isinstance(value, dict) and
+        elif (isinstance(value, (dict, list)) and
                 self.value_type == str):
-            # convert the dict to a JSON string
+            # convert it to a JSON string
             return json.dumps(value)
+        elif (isinstance(value, str) and
+                self.value_type in (dict, list)):
+            # load it from JSON string
+            try:
+                parsed_v = json.loads(value)
+            except ValueError:
+                eprint("Parameter '%s' could not be parsed! Is it valid JSON?" % self.name)
+                parsed_v = self.value_type()
+            return parsed_v
         elif self.value_type == bool:
             return bool(strtobool(value))
         else:
@@ -165,7 +174,7 @@ class Config(Structure, StructureROMixin):
                               description="Size of the square that represents a (virtual) LED on the matrix.")
 
     class __ScheduledAnimations(ConfigSection):
-        ScheduleTable = ConfigValue(value_type=str,
+        ScheduleTable = ConfigValue(value_type=list, default_value=[],
                                     description=["This parameter contains the schedule table for animations.",
                                                  "It is encoded in a JSON string.",
                                                  "This value must not be edited by hand!"])
@@ -266,6 +275,9 @@ class Configuration():
                     if value == configparser._UNSET:
                         print("{} =".format(option_name), file=output)
                     else:
+                        # dicts and lists must be converted to JSON
+                        if isinstance(value, (dict, list)):
+                            value = json.dumps(value)
                         # preserve multiline strings -> starting from the second line indention is needed
                         if (option.value_type == str and
                                 "\n" in value):
