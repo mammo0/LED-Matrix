@@ -128,18 +128,29 @@ class InitializableStructure(Structure):
         instance = super(InitializableStructure, cls).__new__(cls)
 
         # safe the default types
-        cls.__default_types = {
-            k: type(v) for k, v in cls._params_map_.items()
-        }
+        cls.__default_types = {}
+        for k, v in cls._params_map_.items():
+            if v is None:
+                cls.__default_types[k] = None
+            else:
+                cls.__default_types[k] = type(v)
 
         # overwrite values in the instance
         for k, v in kwargs.items():
             if k in cls.names:
-                # try to cast values to the default type
-                # because not all types are supported by JSON
-                if issubclass(cls.__default_types[k], type(None)):
+                # check for None
+                if cls.__default_types[k] is None:
                     instance._params_map_[k] = v
+                # maybe the default type is also an InitializableStructure class
+                elif issubclass(cls.__default_types[k], InitializableStructure):
+                    # check if it's already an instance
+                    if isinstance(v, cls.__default_types[k]):
+                        instance._params_map_[k] = v
+                    else:
+                        # otherwise create a new instance
+                        instance._params_map_[k] = cls.__default_types[k](**v)
                 else:
+                    # try to cast values to the default type
                     instance._params_map_[k] = cls.__default_types[k](v)
 
         return instance
