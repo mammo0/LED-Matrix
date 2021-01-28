@@ -164,10 +164,17 @@ class Config(Structure, StructureROMixin):
         LEDSize = ConfigValue(value_type=int, default_value=30,
                               description="Size of the square that represents a (virtual) LED on the matrix.")
 
+    class __ScheduledAnimations(ConfigSection):
+        ScheduleTable = ConfigValue(value_type=str,
+                                    description=["This parameter contains the schedule table for animations.",
+                                                 "It is encoded in a JSON string.",
+                                                 "This value must not be edited by hand!"])
+
     MAIN = __Main()
     DEFAULTANIMATION = __DefaultAnimation("Default animation that is displayed on start/idle")
     APA102 = __Apa102("This section contains variables that describe how the LED matrix is built up.")
     COMPUTER = __Computer("This section contains variables for the computer display.")
+    SCHEDULEDANIMATIONS = __ScheduledAnimations()
 
 
 class Configuration():
