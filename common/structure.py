@@ -41,12 +41,13 @@ class _StructureMeta(type):
                 cls._params_map_)
 
     def _check_get(cls, name):
-        if name not in cls._params_map_:
-            raise AttributeError(name) from None
+        return name in cls._params_map_
 
     def __getattr__(cls, name):
-        cls._check_get(name)
-        return cls._params_map_[name]
+        if cls._check_get(name):
+            return cls._params_map_[name]
+        else:
+            return super().__getattr__(name)
 
     def __getitem__(cls, name):
         return cls.__getattr__(name)
@@ -77,9 +78,25 @@ class _StructureMeta(type):
 
 
 class Structure(metaclass=_StructureMeta):
+    def __init__(self):
+        # create a copy of the map in the instance
+        # so changing values only affects the instance
+        self.__dict__["_params_map_"] = type(self)._params_map_.copy()
+
     def __getattr__(self, name):
-        _StructureMeta._check_get(type(self), name)
-        return self._params_map_[name]
+        if _StructureMeta._check_get(type(self), name):
+            return self._params_map_[name]
+        else:
+            return super().__getattr__(name)
+
+    def __setattr__(self, name, value):
+        if isinstance(self, StructureROMixin):
+            StructureROMixin.__setattr__(self, name, value)
+        else:
+            if _StructureMeta._check_get(type(self), name):
+                self._params_map_[name] = value
+            else:
+                super().__setattr__(name, value)
 
     def __getitem__(self, name):
         return self.__getattr__(name)

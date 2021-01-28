@@ -26,11 +26,12 @@ class AnimationSettingsStructure(Structure):
 
 class AnimationParameter(Structure):
     def __init__(self, **params):
+        Structure.__init__(self)
+
         # safe the default types
         self.__default_types = {
-            k: type(v) for k, v in self._params_map_.items()
+            k: type(v) for k, v in type(self)._params_map_.items()
         }
-        self._params_map_ = self._params_map_.copy()
 
         # overwrite values in the instance
         for k, v in params.items():
