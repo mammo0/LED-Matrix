@@ -44,7 +44,7 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0):
         """
         Schedule an animation.
         @param cron_schedule: A cron like string that defines when to run a certain animation.
@@ -273,7 +273,7 @@ class Main(MainInterface):
                                                         variant=variant, parameter=parameter, repeat=repeat,
                                                         blocking=blocking)
 
-    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0):
         # TODO: implement
         pass
 
