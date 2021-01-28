@@ -12,6 +12,18 @@ from common import eprint
 from common.structure import Structure
 
 
+class AnimationSettingsStructure(Structure):
+    # The name of the animation.
+    animation_name = None
+    # If available, the variant.
+    variant = None
+    # If available, the parameter(s) for the animation.
+    parameter = None
+    # If available, how many times an animation should be repeated.
+    # 0: no repeat, -1: forever, > 0: x-times
+    repeat = 0
+
+
 class AnimationParameter(Structure):
     def __init__(self, **params):
         # safe the default types
