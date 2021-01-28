@@ -9,10 +9,10 @@ from threading import Thread, Event
 from simple_classproperty import ClasspropertyMeta, classproperty
 
 from common import eprint
-from common.structure import Structure
+from common.structure import InitializableStructure
 
 
-class AnimationSettingsStructure(Structure):
+class AnimationSettingsStructure(InitializableStructure):
     # The name of the animation.
     animation_name = None
     # If available, the variant.
@@ -24,21 +24,8 @@ class AnimationSettingsStructure(Structure):
     repeat = 0
 
 
-class AnimationParameter(Structure):
-    def __init__(self, **params):
-        Structure.__init__(self)
-
-        # safe the default types
-        self.__default_types = {
-            k: type(v) for k, v in type(self)._params_map_.items()
-        }
-
-        # overwrite values in the instance
-        for k, v in params.items():
-            if k in self.names:
-                # try to cast values to the default type
-                # because not all types are supported by JSON
-                self._params_map_[k] = self.__default_types[k](v)
+class AnimationParameter(InitializableStructure):
+    pass
 
 
 class AbstractAnimation(ABC, Thread):

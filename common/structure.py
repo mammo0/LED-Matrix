@@ -31,7 +31,7 @@ class _StructureMeta(type):
 
         # maybe some members of the new class are NestedStructures
         # so set the name property of them
-        if cls not in ("Structure", "NestedStructure"):
+        if cls not in ("Structure", "InitializableStructure", "NestedStructure"):
             _NestedStructureMeta._add_names(metacls, new_cls)
 
         return new_cls
@@ -78,10 +78,14 @@ class _StructureMeta(type):
 
 
 class Structure(metaclass=_StructureMeta):
-    def __init__(self):
+    def __new__(cls):
+        instance = super(Structure, cls).__new__(cls)
+
         # create a copy of the map in the instance
         # so changing values only affects the instance
-        self.__dict__["_params_map_"] = type(self)._params_map_.copy()
+        instance.__dict__["_params_map_"] = cls._params_map_.copy()
+
+        return instance
 
     def __getattr__(self, name):
         if _StructureMeta._check_get(type(self), name):
@@ -117,6 +121,28 @@ class StructureROMixin():
     def __delattr__(self, attr):
         _StructureMeta._check_del(type(self), attr)
         super().__delattr__(attr)
+
+
+class InitializableStructure(Structure):
+    def __new__(cls, *_, **kwargs):
+        instance = super(InitializableStructure, cls).__new__(cls)
+
+        # safe the default types
+        cls.__default_types = {
+            k: type(v) for k, v in cls._params_map_.items()
+        }
+
+        # overwrite values in the instance
+        for k, v in kwargs.items():
+            if k in cls.names:
+                # try to cast values to the default type
+                # because not all types are supported by JSON
+                if issubclass(cls.__default_types[k], type(None)):
+                    instance._params_map_[k] = v
+                else:
+                    instance._params_map_[k] = cls.__default_types[k](v)
+
+        return instance
 
 
 class _NestedStructureMeta(_StructureMeta):
