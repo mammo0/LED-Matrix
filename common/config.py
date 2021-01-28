@@ -220,7 +220,11 @@ class Configuration():
                             option_name,
                             str(self.__config_file_path)
                         ))
-                        eprint("Using the default value '%s'." % str(option.default_value))
+                        if option.default_value == configparser._UNSET:
+                            def_val = ""
+                        else:
+                            def_val = str(option.default_value)
+                        eprint("Using the default value '%s'." % def_val)
                         value = option.default_value
 
                 self.__config[section_name][option_name] = value
@@ -250,11 +254,17 @@ class Configuration():
 
                     # option value
                     value = self.get(option)
-                    # preserve multiline strings -> starting from the second line indention is needed
-                    if (option.value_type == str and
-                            "\n" in value):
-                        value = "\n    ".join(value.split("\n"))
-                    print("{} = {}".format(option_name, value), file=output)
+
+                    # check for a unset value
+                    if value == configparser._UNSET:
+                        print("{} =".format(option_name), file=output)
+                    else:
+                        # preserve multiline strings -> starting from the second line indention is needed
+                        if (option.value_type == str and
+                                "\n" in value):
+                            value = "\n    ".join(value.split("\n"))
+                        print("{} = {}".format(option_name, value), file=output)
+
                     print(file=output)
 
                 print(file=output)
