@@ -10,6 +10,7 @@ import sys
 import threading
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from simple_plugin_loader import Loader
 
 from animation.abstract import AbstractAnimationController, \
@@ -17,7 +18,7 @@ from animation.abstract import AbstractAnimationController, \
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
 from common.event import EventWithUnsetSignal
-from common.schedule import CronStructure
+from common.schedule import ScheduleEntry, CronStructure
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
 from server.rest_server import RestServer
@@ -283,8 +284,29 @@ class Main(MainInterface):
                                                         blocking=blocking)
 
     def schedule_animation(self, cron_structure, animation_settings):
-        # TODO: implement
-        pass
+        job = self.__animation_scheduler.add_job(func=self.start_animation,
+                                                 trigger=CronTrigger(year=cron_structure.YEAR,
+                                                                     month=cron_structure.MONTH,
+                                                                     day=cron_structure.DAY,
+                                                                     week=cron_structure.WEEK,
+                                                                     day_of_week=cron_structure.DAY_OF_WEEK,
+                                                                     hour=cron_structure.HOUR,
+                                                                     minute=cron_structure.MINUTE,
+                                                                     second=cron_structure.SECOND),
+                                                 args=(animation_settings,))
+
+        # create an entry for the schedule table
+        schedule_entry = ScheduleEntry()
+        schedule_entry.JOB_ID = job.id
+        # convert to dict for easy saving
+        schedule_entry.CRON_STRUCTURE = dict(cron_structure)
+        schedule_entry.ANIMATION_SETTINGS = dict(animation_settings)
+
+        # save the new entry
+        table = self.config.get(Config.SCHEDULEDANIMATIONS.ScheduleTable)
+        table.append(dict(schedule_entry))
+        self.config.set(Config.SCHEDULEDANIMATIONS.ScheduleTable, table)
+        self.config.save()
 
     def stop_animation(self, animation_name=None, blocking=False):
         if self.__animation_controller is not None:
