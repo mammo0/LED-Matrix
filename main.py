@@ -11,7 +11,8 @@ import threading
 
 from simple_plugin_loader import Loader
 
-from animation.abstract import AbstractAnimationController
+from animation.abstract import AbstractAnimationController, \
+    AnimationSettingsStructure
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
 from common.event import EventWithUnsetSignal
@@ -33,13 +34,10 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+    def start_animation(self, animation_settings, blocking=False):
         """
         Start a specific animation. See the respective animation class for which options are available.
-        @param animation_name: The name of the animation.
-        @param variant: If available, the variant to start.
-        @param parameter: If available, the parameter(s) for the animation.
-        @param repeat: If available, how many times an animation should be repeated.
+        @param animation_settings: Instance of AnimationSettingsStructure.
         @param blocking: If set to True, wait until the animation is running. Otherwise return immediately.
         """
 
@@ -178,10 +176,11 @@ class Main(MainInterface):
         self.set_brightness(self.__config.get(Config.MAIN.Brightness))
 
         # get [DEFAULTANIMATION] options
-        self.__conf_default_animation = self.__config.get(Config.DEFAULTANIMATION.Animation)
-        self.__conf_default_animation_variant = self.__config.get(Config.DEFAULTANIMATION.Variant)
-        self.__conf_default_animation_parameter = self.__config.get(Config.DEFAULTANIMATION.Parameter)
-        self.__conf_default_animation_repeat = self.__config.get(Config.DEFAULTANIMATION.Repeat)
+        self.__default_animation_settings = AnimationSettingsStructure()
+        self.__default_animation_settings.animation_name = self.__config.get(Config.DEFAULTANIMATION.Animation)
+        self.__default_animation_settings.variant = self.__config.get(Config.DEFAULTANIMATION.Variant)
+        self.__default_animation_settings.parameter = self.__config.get(Config.DEFAULTANIMATION.Parameter)
+        self.__default_animation_settings.repeat = self.__config.get(Config.DEFAULTANIMATION.Repeat)
 
     def __initialize_display(self):
         # load display plugins
@@ -267,10 +266,9 @@ class Main(MainInterface):
         # wait until the the __reload_signal is unset
         self.__reload_signal.wait_unset()
 
-    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+    def start_animation(self, animation_settings, blocking=False):
         if self.__animation_controller is not None:
-            self.__animation_controller.start_animation(animation_name,
-                                                        variant=variant, parameter=parameter, repeat=repeat,
+            self.__animation_controller.start_animation(animation_settings=animation_settings,
                                                         blocking=blocking)
 
     def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0):
@@ -327,10 +325,7 @@ class Main(MainInterface):
         # start the animation controller
         self.__animation_controller = AnimationController(self.__conf_display_width, self.__conf_display_height,
                                                           self.frame_queue,
-                                                          self.__conf_default_animation,
-                                                          self.__conf_default_animation_variant,
-                                                          self.__conf_default_animation_parameter,
-                                                          self.__conf_default_animation_repeat)
+                                                          self.__default_animation_settings)
         self.__animation_controller.start()
 
         # start the server interfaces
@@ -377,10 +372,9 @@ class Main(MainInterface):
 
 class AnimationController(threading.Thread):
     class _Event():
-        def __init__(self, event_type, animation_name, parameter={}):
+        def __init__(self, event_type, animation_settings):
             self.event_type = event_type
-            self.animation_name = animation_name
-            self.event_parameter = parameter
+            self.animation_settings = animation_settings
 
             self.next_event = None
             self.event_lock = threading.Event()
@@ -434,10 +428,7 @@ class AnimationController(threading.Thread):
                 return self._qsize() == 0 and self.unfinished_tasks <= 1
 
     def __init__(self, display_width, display_height, display_frame_queue,
-                 default_animation_name,
-                 default_animation_variant,
-                 default_animation_parameter,
-                 default_animation_repeat):
+                 default_animation_settings):
         super().__init__(daemon=True)
 
         # the display settings
@@ -446,10 +437,7 @@ class AnimationController(threading.Thread):
         self.__display_frame_queue = display_frame_queue
 
         # the default animation settings
-        self.__def_a_name = default_animation_name
-        self.__def_a_variant = default_animation_variant
-        self.__def_a_parameter = default_animation_parameter
-        self.__def_a_repeat = default_animation_repeat
+        self.__default_animation_settings = default_animation_settings
 
         self.__stop_event = threading.Event()
         self.__controll_queue = AnimationController._EventQueue()
@@ -476,10 +464,7 @@ class AnimationController(threading.Thread):
         return animations
 
     def __start_default_animation(self):
-        return self.start_animation(self.__def_a_name,
-                                    variant=self.__def_a_variant,
-                                    parameter=self.__def_a_parameter,
-                                    repeat=self.__def_a_repeat)
+        return self.start_animation(self.__default_animation_settings)
 
     def __on_animation_finished(self):
         # whenever an animation stops or finishes check if there are unfinished jobs
@@ -487,18 +472,18 @@ class AnimationController(threading.Thread):
             # if not, start the default animation
             self.__start_default_animation()
 
-    def __start_animation(self, animation_name, variant=None, parameter=None, repeat=0):
+    def __start_animation(self, animation_settings):
         # stop any currently running animation
         self.__stop_animation()
 
         try:
             # get the new animation
-            animation = self.__all_animations[animation_name]
+            animation = self.__all_animations[animation_settings.animation_name]
         except KeyError:
-            eprint("The animation '%s' could not be found!" % animation_name)
+            eprint("The animation '%s' could not be found!" % animation_settings.animation_name)
         else:
             # start it
-            animation.start_animation(variant=variant, parameter=parameter, repeat=repeat)
+            animation.start_animation(animation_settings)
             self.__current_animation = animation
 
     def __stop_animation(self, animation_name=None):
@@ -511,14 +496,9 @@ class AnimationController(threading.Thread):
             self.__current_animation.stop_animation()
             self.__current_animation = None
 
-    def start_animation(self, animation_name, variant=None, parameter=None, repeat=0, blocking=False):
+    def start_animation(self, animation_settings, blocking=False):
         start_event = AnimationController._Event(AnimationController._EventType.start,
-                                                 animation_name,
-                                                 {
-                                                     "variant": variant,
-                                                     "parameter": parameter,
-                                                     "repeat": repeat
-                                                 })
+                                                 animation_settings)
         self.__controll_queue.put(start_event)
 
         # check blocking
@@ -540,8 +520,10 @@ class AnimationController(threading.Thread):
             return
 
         # create and schedule the stop event
+        settings = AnimationSettingsStructure()
+        settings.animation_name = animation_to_stop.animation_name
         stop_event = AnimationController._Event(AnimationController._EventType.stop,
-                                                animation_to_stop.animation_name)
+                                                settings)
         self.__controll_queue.put(stop_event)
 
         # check blocking
@@ -586,9 +568,9 @@ class AnimationController(threading.Thread):
 
             # check the event type
             if event.event_type == AnimationController._EventType.start:
-                self.__start_animation(event.animation_name, **event.event_parameter)
+                self.__start_animation(event.animation_settings)
             elif event.event_type == AnimationController._EventType.stop:
-                self.__stop_animation(event.animation_name, **event.event_parameter)
+                self.__stop_animation(event.animation_settings)
                 # special case on stop event:
                 # after the animation was stopped check if this was the last task (for now)
                 if self.__controll_queue.last_task_running:

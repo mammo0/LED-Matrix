@@ -3,11 +3,12 @@ from enum import Enum
 from bottle import template, static_file, request, redirect
 import bottle
 
+from animation.abstract import AnimationSettingsStructure
 from common import RESOURCES_DIR
 from common.bottle import BottleCBVMeta, get, post
+from common.color import Color
 from common.config import Config
 from common.wsgi import CustomWSGIRefServer
-from common.color import Color
 
 
 # change bottle template path
@@ -81,42 +82,43 @@ class HttpServer(metaclass=BottleCBVMeta):
                         default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
 
     def __parse_animation_form(self, form):
-        new_default_animation_name = form.get("selected_animation_name")
+        animation_name = form.get("selected_animation_name")
 
-        new_default_animation = self.__main_app.available_animations[new_default_animation_name]
+        animation_obj = self.__main_app.available_animations[animation_name]
 
-        animation_settings = {}
+        animation_settings = AnimationSettingsStructure()
+        animation_settings.animation_name = animation_name
 
         # variant
-        if new_default_animation.animation_variants is not None:
-            new_default_animation_variant = form.get(new_default_animation_name + "_variant_value")
-            animation_settings["variant"] = new_default_animation_variant
+        if animation_obj.animation_variants is not None:
+            new_default_animation_variant = form.get(animation_name + "_variant_value")
+            animation_settings.variant = new_default_animation_variant
 
         # parameter
-        if new_default_animation.animation_parameters is not None:
+        if animation_obj.animation_parameters is not None:
             new_parameter = {}
-            for p_name, parameter in new_default_animation.animation_parameters:
+            for p_name, parameter in animation_obj.animation_parameters:
                 # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
                 if isinstance(parameter, bool):
-                    new_parameter[p_name] = form.get(new_default_animation_name +
+                    new_parameter[p_name] = form.get(animation_name +
                                                      "_parameter_" +
                                                      p_name +
                                                      "_value",
                                                      default=False, type=bool)
                 else:
-                    new_parameter[p_name] = form.get(new_default_animation_name +
+                    new_parameter[p_name] = form.get(animation_name +
                                                      "_parameter_" +
                                                      p_name +
                                                      "_value")
 
-            animation_settings["parameter"] = new_parameter
+            animation_settings.parameter = new_parameter
 
         # repeat
-        if new_default_animation.is_repeat_supported:
-            new_default_animation_repeat = form.get(new_default_animation_name + "_repeat_value")
-            animation_settings["repeat"] = int(new_default_animation_repeat)
+        if animation_obj.is_repeat_supported:
+            new_default_animation_repeat = form.get(animation_name + "_repeat_value")
+            animation_settings.repeat = int(new_default_animation_repeat)
 
-        return (new_default_animation_name, animation_settings)
+        return animation_settings
 
     @get("/")
     def index(self):
@@ -126,9 +128,8 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @post("/")
     def start_new_animation(self):
-        new_animation_name, new_animation_settings = self.__parse_animation_form(request.forms)
-        self.__main_app.start_animation(new_animation_name,
-                                        **new_animation_settings,
+        new_animation_settings = self.__parse_animation_form(request.forms)
+        self.__main_app.start_animation(animation_settings=new_animation_settings,
                                         # wait until the new animation runs
                                         blocking=True)
 
@@ -160,22 +161,22 @@ class HttpServer(metaclass=BottleCBVMeta):
             self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
             self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
         elif SettingsTabs(tab) == SettingsTabs.default_animation:
-            new_default_animation_name, new_default_animation_settings = self.__parse_animation_form(request.forms)
+            new_default_animation_settings = self.__parse_animation_form(request.forms)
 
-            self.__main_app.config.set(Config.DEFAULTANIMATION.Animation, new_default_animation_name)
+            self.__main_app.config.set(Config.DEFAULTANIMATION.Animation, new_default_animation_settings.animation_name)
 
             # variant
             if "variant" in new_default_animation_settings:
-                self.__main_app.config.set(Config.DEFAULTANIMATION.Variant, new_default_animation_settings["variant"])
+                self.__main_app.config.set(Config.DEFAULTANIMATION.Variant, new_default_animation_settings.variant)
 
             # parameter
             if "parameter" in new_default_animation_settings:
                 self.__main_app.config.set(Config.DEFAULTANIMATION.Parameter,
-                                           new_default_animation_settings["parameter"])
+                                           new_default_animation_settings.parameter)
 
             # repeat
             if "repeat" in new_default_animation_settings:
-                self.__main_app.config.set(Config.DEFAULTANIMATION.Repeat, new_default_animation_settings["repeat"])
+                self.__main_app.config.set(Config.DEFAULTANIMATION.Repeat, new_default_animation_settings.repeat)
 
         self.__main_app.config.save()
 

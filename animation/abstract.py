@@ -196,30 +196,26 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     def is_running(self):
         return self.__animation_running.is_set()
 
-    def start_animation(self, variant=None, parameter=None, repeat=0):
+    def start_animation(self, animation_settings):
         """
-        Start a specific variant (see 'anmimation_variants' property above) of an animation with
-        an optional parameter.
-        @param repeat:   0: no repeat
-                        -1: forever
-                       > 0: x-times
+        For settings see AnimationSettingsStructure.
         """
         # parse the parameters
-        options = self._validate_parameter(parameter)
+        options = self._validate_parameter(animation_settings.parameter)
 
-        if variant and self.animation_variants is not None:
-            if isinstance(variant, self.animation_variants):
-                options["variant"] = variant
+        if animation_settings.variant and self.animation_variants is not None:
+            if isinstance(animation_settings.variant, self.animation_variants):
+                options["variant"] = animation_settings.variant
             else:
                 try:
-                    options["variant"] = self.animation_variants[variant]
+                    options["variant"] = self.animation_variants[animation_settings.variant]
                 except KeyError:
-                    eprint("The variant '%s' does not exist!" % variant)
+                    eprint("The variant '%s' does not exist!" % animation_settings.variant)
                     eprint("Available variants: %s" % ", ".join(self.animation_variants._member_names_))
 
         self.__animation_thread = self.animation_class(width=self.__width, height=self.__height,
                                                        frame_queue=self.__frame_queue,
-                                                       repeat=repeat,
+                                                       repeat=animation_settings.repeat,
                                                        on_finish_callable=self.__animation_finished_stopped,
                                                        **options)
 
