@@ -16,6 +16,7 @@ from animation.abstract import AbstractAnimationController, \
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
 from common.event import EventWithUnsetSignal
+from common.schedule import CronStructure
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
 from server.rest_server import RestServer
@@ -42,10 +43,10 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0):
+    def schedule_animation(self, cron_structure, animation_settings):
         """
         Schedule an animation.
-        @param cron_schedule: A cron like string that defines when to run a certain animation.
+        @param cron_structure: An instance of CronStructure that defines when to run a certain animation.
         @param *: The rest of the parameters are equal to the start_animation method.
         """
 
@@ -271,7 +272,7 @@ class Main(MainInterface):
             self.__animation_controller.start_animation(animation_settings=animation_settings,
                                                         blocking=blocking)
 
-    def schedule_animation(self, cron_schedule, animation_name, variant=None, parameter=None, repeat=0):
+    def schedule_animation(self, cron_structure, animation_settings):
         # TODO: implement
         pass
 
