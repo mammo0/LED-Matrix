@@ -9,6 +9,7 @@ import signal
 import sys
 import threading
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from simple_plugin_loader import Loader
 
 from animation.abstract import AbstractAnimationController, \
@@ -158,6 +159,9 @@ class Main(MainInterface):
         # gets initialized in mainloop method
         self.__animation_controller = None
 
+        # the animation scheduler
+        self.__animation_scheduler = self.__create_scheduler()
+
         # server interfaces
         self.__http_server = None
         self.__rest_server = None
@@ -182,6 +186,12 @@ class Main(MainInterface):
         self.__default_animation_settings.variant = self.__config.get(Config.DEFAULTANIMATION.Variant)
         self.__default_animation_settings.parameter = self.__config.get(Config.DEFAULTANIMATION.Parameter)
         self.__default_animation_settings.repeat = self.__config.get(Config.DEFAULTANIMATION.Repeat)
+
+    def __create_scheduler(self):
+        # create the scheduler
+        scheduler = BackgroundScheduler()
+
+        return scheduler
 
     def __initialize_display(self):
         # load display plugins
@@ -329,6 +339,9 @@ class Main(MainInterface):
                                                           self.__default_animation_settings)
         self.__animation_controller.start()
 
+        # start the animation scheduler
+        self.__animation_scheduler.start()
+
         # start the server interfaces
         self.__start_servers()
 
@@ -350,6 +363,7 @@ class Main(MainInterface):
             # to limit CPU usage do not go faster than 60 "fps"
             self.__quit_signal.wait(1/60)
 
+        self.__animation_scheduler.shutdown()
         self.__animation_controller.stop()
         self.__clear_display()
 
@@ -359,6 +373,9 @@ class Main(MainInterface):
         if self.__reload_signal.is_set():
             # reload settings
             self.__load_settings()
+
+            # recreate the scheduler
+            self.__animation_scheduler = self.__create_scheduler()
 
             # re-initialize the display
             self.__initialize_display()
