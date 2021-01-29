@@ -19,6 +19,7 @@ bottle.TEMPLATE_PATH = [(HTTP_RESOURCES_DIR / "templates").resolve()]
 class SettingsTabs(Enum):
     main = "main"
     default_animation = "default_animation"
+    schedule_table = "schedule_table"
 
 
 class Input():

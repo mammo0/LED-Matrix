@@ -23,6 +23,11 @@
                     Default Animation
                 </a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{"active" if active_tab == SettingsTabs.schedule_table else ""}}" id="tab_schedule_table" data-toggle="tab" href="#tab_pane_schedule_table" role="tab" aria-controls="tab_pane_schedule_table">
+                    Scheduled Animations
+                </a>
+            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane {{"active" if active_tab == SettingsTabs.main else ""}}" id="tab_pane_main" role="tabpanel" aria-labelledby="tab_main">
@@ -84,6 +89,13 @@
                     </div>
                 </div>
             </div>
+            <div class="tab-pane {{"active" if active_tab == SettingsTabs.schedule_table else ""}}" id="tab_pane_schedule_table" role="tabpanel" aria-labelledby="tab_schedule_table">
+                <div class="card border-0">
+                    <div class="card-body border-left border-right border-bottom rounded-bottom">
+                        empty
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -125,6 +137,9 @@
         }
         tab_default_animation.onclick = function(){
             window.history.replaceState("", "{{page_title}}", "/settings/{{SettingsTabs.default_animation.value}}");
+        }
+        tab_schedule_table.onclick = function(){
+            window.history.replaceState("", "{{page_title}}", "/settings/{{SettingsTabs.schedule_table.value}}");
         }
     });
 </script>
