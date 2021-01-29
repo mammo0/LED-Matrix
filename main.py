@@ -314,13 +314,12 @@ class Main(MainInterface):
         # create an entry for the schedule table
         schedule_entry = ScheduleEntry()
         schedule_entry.JOB_ID = job.id
-        # convert to dict for easy saving
-        schedule_entry.CRON_STRUCTURE = dict(cron_structure)
-        schedule_entry.ANIMATION_SETTINGS = dict(animation_settings)
+        schedule_entry.CRON_STRUCTURE = cron_structure
+        schedule_entry.ANIMATION_SETTINGS = animation_settings
 
-        # save the new entry
+        # save the new entry in the config
         table = self.config.get(Config.SCHEDULEDANIMATIONS.ScheduleTable)
-        table.append(dict(schedule_entry))
+        table.append(ScheduleEntry.as_recursive_dict(schedule_entry))
         self.config.set(Config.SCHEDULEDANIMATIONS.ScheduleTable, table)
         self.config.save()
 

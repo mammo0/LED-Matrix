@@ -15,7 +15,7 @@ class _StructureMeta(type):
             params = {k: v for k, v in classdict.items() if not (
                 k.startswith("_") or
                 _is_function(v) or
-                isinstance(v, property)
+                isinstance(v, (property, classmethod, staticmethod))
             )}
 
             # and remove them from the normal class dictionary
