@@ -9,20 +9,26 @@ def _is_function(x):
 
 class _StructureMeta(type):
     def __new__(metacls, cls, bases, classdict):
+        params = {}
+
         # do not do this when initializing the main class
-        if cls not in ("Structure", "NestedStructure"):
+        if cls not in ("Structure", "InitializableStructure", "NestedStructure"):
+            # allow attribute inheritance
+            for base in bases:
+                if isinstance(base, metacls):
+                    params.update(base._params_map_)
+
             # get all static defined variables
-            params = {k: v for k, v in classdict.items() if not (
+            params.update({k: v for k, v in classdict.items() if not (
                 k.startswith("_") or
                 _is_function(v) or
                 isinstance(v, (property, classmethod, staticmethod))
-            )}
+            )})
 
             # and remove them from the normal class dictionary
             for key in params.keys():
-                classdict.pop(key)
-        else:
-            params = {}
+                if key in classdict:
+                    classdict.pop(key)
 
         # add new attributes
         new_cls = super().__new__(metacls, cls, bases, classdict)
