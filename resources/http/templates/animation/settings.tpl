@@ -13,7 +13,7 @@
             <select id="{{animation_settings.animation_name}}_variant" class="custom-select" name="{{animation_settings.animation_name}}_variant_value" autocomplete="off">
                 %   for variant in animation_obj.animation_variants:
                 %       if variant == animation_settings.variant:
-                            <option value="{{variant.name}}" selected>{{variant.name.title()}} (Current)</option>
+                            <option value="{{variant.name}}" selected>{{variant.name.title()}}</option>
                 %       else:
                             <option value="{{variant.name}}">{{variant.name.title()}}</option>
                 %       end
