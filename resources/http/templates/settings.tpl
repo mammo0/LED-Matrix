@@ -94,7 +94,7 @@
             <div class="tab-pane {{"active" if active_tab == SettingsTabs.schedule_table else ""}}" id="tab_pane_schedule_table" role="tabpanel" aria-labelledby="tab_schedule_table">
                 <div class="card border-0">
                     <div class="card-body border-left border-right border-bottom rounded-bottom">
-                        empty
+                        % include("schedule/table.tpl")
                     </div>
                 </div>
             </div>
