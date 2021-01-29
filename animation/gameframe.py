@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
-    AbstractAnimationController
+    AbstractAnimationController, AnimationSettingsStructure
 from common.color import Color
 import numpy as np
 
@@ -17,20 +17,21 @@ class GameframeParameter(AnimationParameter):
     background_color = Color(0, 0, 0)
 
 
+class GameframeSettings(AnimationSettingsStructure):
+    parameter = GameframeParameter
+
+
 class GameframeAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
-                 **kwargs):
-        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
+    def __init__(self, width, height, frame_queue, settings, on_finish_callable):
+        super().__init__(width, height, frame_queue, settings, on_finish_callable)
 
-        self.__folder = Path(kwargs.pop("variant").value)
-
-        self.__params = GameframeParameter(**kwargs)
+        self.__folder = Path(self._settings.variant.value)
 
         if not self.__folder.is_dir():
             raise __builtins__.NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), self.__folder)
         self.__name = "gameframe.{}".format(self.__folder.name)
 
-        self.__background_color = self.__params.background_color.pil_tuple
+        self.__background_color = self._settings.parameter.background_color.pil_tuple
 
         self.__load_frames()
         self.__read_config()
@@ -39,14 +40,6 @@ class GameframeAnimation(AbstractAnimation):
             self._repeat = 0
 
         print(self.__name, self.intrinsic_duration())
-
-    @property
-    def variant_value(self):
-        return self.__folder
-
-    @property
-    def parameter_instance(self):
-        return self.__params
 
     def intrinsic_duration(self):
         return sum(1 for _ in self.__rendered_frames()) * self.__hold/1000
@@ -217,6 +210,10 @@ class GameframeController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return GameframeParameter
+
+    @property
+    def _default_animation_settings(self):
+        return GameframeSettings
 
     @property
     def is_repeat_supported(self):

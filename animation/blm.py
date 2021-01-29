@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
-    AbstractAnimationController
+    AbstractAnimationController, AnimationSettingsStructure
 from common.color import Color
 import numpy as np
 
@@ -15,33 +15,26 @@ class BlmParameter(AnimationParameter):
     padding_color = Color(60, 60, 60)
 
 
+class BlmSettings(AnimationSettingsStructure):
+    parameter = BlmParameter
+
+
 class BlmAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
-                 **kwargs):
-        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
+    def __init__(self, width, height, frame_queue, settings, on_finish_callable):
+        super().__init__(width, height, frame_queue, settings, on_finish_callable)
 
-        self.__path = Path(kwargs.pop("variant").value)
-
-        self.__params = BlmParameter(**kwargs)
+        self.__path = Path(self._settings.variant.value)
 
         if not self.__path.is_file():
             raise __builtins__.FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.__path)
 
         self.__load_frames()
 
-        self.__foregound_color = self.__params.foregound_color.pil_tuple
-        self.__background_color = self.__params.background_color.pil_tuple
-        self.__padding_color = self.__params.padding_color.pil_tuple
+        self.__foregound_color = self._settings.parameter.foregound_color.pil_tuple
+        self.__background_color = self._settings.parameter.background_color.pil_tuple
+        self.__padding_color = self._settings.parameter.padding_color.pil_tuple
 
         print(self)
-
-    @property
-    def variant_value(self):
-        return self.__path
-
-    @property
-    def parameter_instance(self):
-        return self.__params
 
     def intrinsic_duration(self):
         ret = 0
@@ -186,6 +179,10 @@ class BlmController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return BlmParameter
+
+    @property
+    def _default_animation_settings(self):
+        return BlmSettings
 
     @property
     def is_repeat_supported(self):

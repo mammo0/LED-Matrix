@@ -1,7 +1,8 @@
 import colorsys
 from enum import Enum
 
-from animation.abstract import AbstractAnimation, AbstractAnimationController
+from animation.abstract import AbstractAnimation, AbstractAnimationController,\
+    AnimationSettingsStructure
 import numpy as np
 
 
@@ -22,25 +23,20 @@ class _Style(Enum):
     wish_down_up = 3
 
 
+class MoodlightSettings(AnimationSettingsStructure):
+    variant = MoodlightVariant.wish_down_up
+
+
 class MoodlightAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
-                 variant=MoodlightVariant.wish_down_up):
-        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
-        self.__variant = variant
+    def __init__(self, width, height, frame_queue, settings, on_finish_callable):
+        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+
         self.__colors = [(255, 0, 0), (255, 255, 0), (0, 255, 255), (0, 0, 255)]  # if empty choose random colors
         # TODO: implement hold and transition_duration
         self.__hold = 10  # seconds to hold colors
         self.__transition_duration = 10  # seconds to change from one to other
         self.__frequency = 60  # frames per second
         print("MoodlightAnimation created")
-
-    @property
-    def variant_value(self):
-        return self.__variant
-
-    @property
-    def parameter_instance(self):
-        return None
 
     def __hsv_to_rgb(self, h, s, v):
         # h is in degrees
@@ -118,13 +114,13 @@ class MoodlightAnimation(AbstractAnimation):
 
     def animate(self):
         while not self._stop_event.is_set():
-            if self.__variant == MoodlightVariant.colorwheel:
+            if self._settings.variant == MoodlightVariant.colorwheel:
                 generator = self.__frame_generator(_ColorMode.colorwheel, _Style.fill)
 
-            elif self.__variant == MoodlightVariant.cyclecolors:
+            elif self._settings.variant == MoodlightVariant.cyclecolors:
                 generator = self.__frame_generator(_ColorMode.cyclecolors, _Style.random_dot)
 
-            elif self.__variant == MoodlightVariant.wish_down_up:
+            elif self._settings.variant == MoodlightVariant.wish_down_up:
                 generator = self.__frame_generator(_ColorMode.colorwheel, _Style.wish_down_up)
 
             for frame in generator:
@@ -151,6 +147,10 @@ class MoodlightController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return None
+
+    @property
+    def _default_animation_settings(self):
+        return MoodlightSettings
 
     @property
     def is_repeat_supported(self):

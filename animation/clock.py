@@ -5,7 +5,7 @@ import time
 from PIL import Image, ImageDraw
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
-    AbstractAnimationController
+    AbstractAnimationController, AnimationSettingsStructure
 from common.color import Color
 import numpy as np
 
@@ -24,19 +24,21 @@ class ClockParameter(AnimationParameter):
     blinking_seconds = True
 
 
-class ClockAnimation(AbstractAnimation):
-    def __init__(self, width, height, frame_queue, repeat, on_finish_callable,
-                 variant=ClockVariant.analog,
-                 **kwargs):
-        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
-        self.__variant = variant
+class ClockSettings(AnimationSettingsStructure):
+    # default settings
+    variant = ClockVariant.analog
+    parameter = ClockParameter
 
-        self.__params = ClockParameter(**kwargs)
-        background_color = self.__params.background_color.pil_tuple
-        self.__divider_color = self.__params.divider_color.pil_tuple
-        self.__hour_color = self.__params.hour_color.pil_tuple
-        self.__minute_color = self.__params.minute_color.pil_tuple
-        self.__blinking_seconds = self.__params.blinking_seconds
+
+class ClockAnimation(AbstractAnimation):
+    def __init__(self, width, height, frame_queue, settings, on_finish_callable):
+        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+
+        background_color = self._settings.parameter.background_color.pil_tuple
+        self.__divider_color = self._settings.parameter.divider_color.pil_tuple
+        self.__hour_color = self._settings.parameter.hour_color.pil_tuple
+        self.__minute_color = self._settings.parameter.minute_color.pil_tuple
+        self.__blinking_seconds = self._settings.parameter.blinking_seconds
 
         self.__background_image = Image.new("RGB", (width, height), background_color)
 
@@ -44,14 +46,6 @@ class ClockAnimation(AbstractAnimation):
         self.__analog_middle_y = self.__middle_calculation(height)
         self.__analog_max_hand_length = min([self.__analog_middle_x + 1,
                                              self.__analog_middle_y + 1])
-
-    @property
-    def variant_value(self):
-        return self.__variant
-
-    @property
-    def parameter_instance(self):
-        return self.__params
 
     def __middle_calculation(self, value):
         value /= 2
@@ -179,12 +173,12 @@ class ClockAnimation(AbstractAnimation):
         while not self._stop_event.is_set():
             local_time = time.localtime()
 
-            if self.__variant == ClockVariant.analog:
+            if self._settings.variant == ClockVariant.analog:
                 image = self.__analog_create_clock_image(local_time.tm_hour,
                                                          local_time.tm_min)
                 self._frame_queue.put(np.array(image).copy())
                 self._stop_event.wait(timeout=1)
-            elif self.__variant == ClockVariant.digital:
+            elif self._settings.variant == ClockVariant.digital:
                 image = self.__digital_create_clock_image(local_time.tm_hour,
                                                           local_time.tm_min,
                                                           local_time.tm_sec)
@@ -204,6 +198,10 @@ class ClockController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return ClockParameter
+
+    @property
+    def _default_animation_settings(self):
+        return ClockSettings
 
     @property
     def is_repeat_supported(self):

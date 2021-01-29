@@ -4,7 +4,7 @@ from PIL import Image
 import freetype
 
 from animation.abstract import AbstractAnimation, AnimationParameter,\
-    AbstractAnimationController
+    AbstractAnimationController, AnimationSettingsStructure
 import numpy as np
 
 
@@ -15,18 +15,19 @@ class TextParameter(AnimationParameter):
     pixels_per_step = 1
 
 
+class TextSettings(AnimationSettingsStructure):
+    parameter = TextParameter
+
+
 class TextAnimation(AbstractAnimation):
-    def __init__(self,  width, height, frame_queue, repeat, on_finish_callable,
-                 **kwargs):
-        super().__init__(width, height, frame_queue, repeat, on_finish_callable)
+    def __init__(self,  width, height, frame_queue, settings, on_finish_callable):
+        super().__init__(width, height, frame_queue, settings, on_finish_callable)
 
-        self.__params = TextParameter(**kwargs)
-
-        self.__text = self.__params.text
-        self.__text_size = self.__params.text_size
+        self.__text = self._settings.parameter.text
+        self.__text_size = self._settings.parameter.text_size
         emoji_size = 109
-        self.__steps_per_second = self.__params.steps_per_second
-        self.__pixels_per_step = self.__params.pixels_per_step
+        self.__steps_per_second = self._settings.parameter.steps_per_second
+        self.__pixels_per_step = self._settings.parameter.pixels_per_step
 
         self.__text_face = freetype.Face("resources/fonts/LiberationSans-Regular_2.1.2.ttf")
         self.__emoji_face = freetype.Face("resources/fonts/joypixels-android_6.0.0.ttf")
@@ -38,14 +39,6 @@ class TextAnimation(AbstractAnimation):
     def __del__(self):
         del self.__text_face
         del self.__emoji_face
-
-    @property
-    def variant_value(self):
-        return None
-
-    @property
-    def parameter_instance(self):
-        return self.__params
 
     def __render(self, text):
         xmin, xmax = 0, 0
@@ -101,8 +94,8 @@ class TextAnimation(AbstractAnimation):
         for c in text:
             if self.__text_face.get_char_index(c):
                 self.__text_face.load_char(c,
-                                         freetype.FT_LOAD_RENDER |
-                                         freetype.FT_LOAD_TARGET_MONO)
+                                           freetype.FT_LOAD_RENDER |
+                                           freetype.FT_LOAD_TARGET_MONO)
                 kerning = self.__text_face.get_kerning(previous, c)
                 previous = c
                 bitmap = self.__text_face.glyph.bitmap
@@ -211,6 +204,10 @@ class TextController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return TextParameter
+
+    @property
+    def _default_animation_settings(self):
+        return TextSettings
 
     @property
     def is_repeat_supported(self):

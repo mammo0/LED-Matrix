@@ -1,15 +1,12 @@
-from animation.abstract import AbstractAnimation, AbstractAnimationController
+from animation.abstract import AbstractAnimation, AbstractAnimationController,\
+    AnimationSettingsStructure
+
+
+class DummySettings(AnimationSettingsStructure):
+    pass
 
 
 class DummyAnimation(AbstractAnimation):
-    @property
-    def variant_value(self):
-        return None
-
-    @property
-    def parameter_instance(self):
-        return None
-
     def animate(self):
         # do nothing and wait until the animation is stopped
         self._stop_event.wait()
@@ -32,6 +29,10 @@ class DummyController(AbstractAnimationController):
     @property
     def animation_parameters(self):
         return None
+
+    @property
+    def _default_animation_settings(self):
+        return DummySettings
 
     @property
     def is_repeat_supported(self):

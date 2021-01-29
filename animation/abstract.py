@@ -3,17 +3,28 @@ This is the sceleton code for all animations.
 """
 
 from abc import abstractmethod, ABC, ABCMeta
-import json
 from threading import Thread, Event
 
 from simple_classproperty import ClasspropertyMeta, classproperty
 
 from common import eprint
-from common.structure import InitializableStructure
+from common.structure import InitializableStructure, Structure
 
 
-class AnimationSettingsStructure(InitializableStructure):
+class _AnimationSettingsStructureMeta(type(Structure)):
+    def __new__(metacls, cls, bases, classdict):
+        new_cls = type(Structure).__new__(metacls, cls, bases, classdict)
+
+        # programmatically change the animation_name attribute
+        if cls != "AnimationSettingsStructure":
+            new_cls._params_map_["animation_name"] = new_cls.__module__.rpartition(".")[-1]
+
+        return new_cls
+
+
+class AnimationSettingsStructure(InitializableStructure, metaclass=_AnimationSettingsStructureMeta):
     # The name of the animation.
+    # do not change this manually, it gets set by the metaclass
     animation_name = None
     # If available, the variant.
     variant = None
@@ -29,13 +40,14 @@ class AnimationParameter(InitializableStructure):
 
 
 class AbstractAnimation(ABC, Thread):
-    def __init__(self, width, height, frame_queue, repeat, on_finish_callable):
+    def __init__(self, width, height, frame_queue, settings, on_finish_callable):
         super().__init__(daemon=True)
         self._width = width  # width of frames to produce
         self._height = height  # height of frames to produce
         self._frame_queue = frame_queue  # queue to put frames onto
-        self._repeat = repeat  # 0: no repeat, -1: forever, > 0: x-times
-        self.__remaining_repeat = repeat - 1
+        self._settings = settings
+        self._repeat = self._settings.repeat
+        self.__remaining_repeat = self._repeat - 1
         self.__on_finish_callable = on_finish_callable
 
         self._stop_event = Event()  # query this often! exit self.animate quickly
@@ -78,18 +90,8 @@ class AbstractAnimation(ABC, Thread):
         """This is where frames are put to the frame_queue in correct time"""
 
     @property
-    @abstractmethod
-    def variant_value(self):
-        """Return the current variant value of this animation."""
-
-    @property
-    @abstractmethod
-    def parameter_instance(self):
-        """Return the current parameter of this animation."""
-
-    @property
-    def repeat_value(self):
-        return self._repeat
+    def settings(self):
+        return self._settings
 
     # @property
     # @abstractmethod
@@ -147,22 +149,20 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         """
 
     @property
-    def current_variant(self):
-        if (self.__animation_running.is_set() and
-                self.__animation_thread and
-                self.__animation_thread.is_alive()):
-            return self.animation_variants(self.__animation_thread.variant_value)
-        else:
-            return None
+    @abstractmethod
+    def _default_animation_settings(self):
+        """
+        @return: A subclass AnimationSettingsStructure that holds the default settings for the underlying animation.
+        """
 
     @property
-    def current_parameter(self):
+    def animation_settings(self):
         if (self.__animation_running.is_set() and
                 self.__animation_thread and
                 self.__animation_thread.is_alive()):
-            return self.__animation_thread.parameter_instance
+            return self.__animation_thread.settings
         else:
-            return None
+            return self._default_animation_settings()
 
     @property
     @abstractmethod
@@ -189,23 +189,12 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         For settings see AnimationSettingsStructure.
         """
         # parse the parameters
-        options = self._validate_parameter(animation_settings.parameter)
-
-        if animation_settings.variant and self.animation_variants is not None:
-            if isinstance(animation_settings.variant, self.animation_variants):
-                options["variant"] = animation_settings.variant
-            else:
-                try:
-                    options["variant"] = self.animation_variants[animation_settings.variant]
-                except KeyError:
-                    eprint("The variant '%s' does not exist!" % animation_settings.variant)
-                    eprint("Available variants: %s" % ", ".join(self.animation_variants._member_names_))
+        self._validate_animation_settings(animation_settings)
 
         self.__animation_thread = self.animation_class(width=self.__width, height=self.__height,
                                                        frame_queue=self.__frame_queue,
-                                                       repeat=animation_settings.repeat,
-                                                       on_finish_callable=self.__animation_finished_stopped,
-                                                       **options)
+                                                       settings=animation_settings,
+                                                       on_finish_callable=self.__animation_finished_stopped)
 
         # mark the animation as running
         self.__animation_running.set()
@@ -213,33 +202,14 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         # start the animation thread
         self.__animation_thread.start()
 
-    def _validate_parameter(self, parameter):
-        # if no parameter is specified
-        if (not parameter or
-                self.animation_parameters is None):
-            return {}
+    def _validate_animation_settings(self, animation_settings):
+        # variant
+        if not isinstance(animation_settings.variant, self.animation_variants):
+            animation_settings.variant = self.animation_variants[animation_settings.variant]
 
-        # an instance of AnimationParameter could also be supplied
-        if isinstance(parameter, AnimationParameter):
-            # convert it to a dictionary
-            return dict(parameter)
-
-        # if it's already a dictionary, just return it
-        if isinstance(parameter, dict):
-            return parameter
-
-        if len(self.animation_parameters.names) == 1:
-            # this is the only possible parameter, so pass it as it is
-            return {self.animation_parameters.names[0]: parameter}
-
-        # otherwise there are multiple parameters coded in a JSON string
-        try:
-            parsed_p = json.loads(parameter)
-        except ValueError:
-            eprint("[%s] Parameter could not be parsed! Is it valid JSON?" % self.animation_name)
-            return {}
-
-        return parsed_p
+        # parameter
+        if isinstance(animation_settings.parameter, dict):
+            animation_settings.parameter = self.animation_parameters(**animation_settings.parameter)
 
     def __animation_finished_stopped(self):
         # release running event
