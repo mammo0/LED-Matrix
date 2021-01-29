@@ -18,7 +18,7 @@ from animation.abstract import AbstractAnimationController, \
     AnimationSettingsStructure
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
-from common.schedule import ScheduleEntry, CronStructure
+from common.schedule import ScheduleEntry
 from common.threading import EventWithUnsetSignal
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
@@ -70,6 +70,15 @@ class MainInterface(ABC):
         Remove an animation from the schedule table.
         @param schedule_id: The id for the scheduled animation.
                             Possible values can be observed with the scheduled_animations property.
+        """
+
+    @abstractmethod
+    def modify_scheduled_animation(self, schedule_entry):
+        """
+        Modify a scheduled animation.
+        @param schedule_entry: A instance of ScheduleEntry that contains the new settings.
+                               The JOB_ID variable must match an existing scheduled job. Otherwise this method
+                               will do nothing.
         """
 
     @property
@@ -353,6 +362,32 @@ class Main(MainInterface):
 
             if not job_found:
                 eprint("No scheduled animation with ID '%' found!" % str(schedule_id))
+            else:
+                # save the modified table
+                self.__save_schedule_table()
+
+    def modify_scheduled_animation(self, schedule_entry):
+        with self.__schedule_lock:
+            job_found = False
+            for entry in self.__schedule_table:
+                if entry.JOB_ID == schedule_entry.JOB_ID:
+                    job_found = True
+                    self.__animation_scheduler.modify_job(
+                        schedule_entry.JOB_ID,
+                        trigger=CronTrigger(year=schedule_entry.CRON_STRUCTURE.YEAR,
+                                            month=schedule_entry.CRON_STRUCTURE.MONTH,
+                                            day=schedule_entry.CRON_STRUCTURE.DAY,
+                                            week=schedule_entry.CRON_STRUCTURE.WEEK,
+                                            day_of_week=schedule_entry.CRON_STRUCTURE.DAY_OF_WEEK,
+                                            hour=schedule_entry.CRON_STRUCTURE.HOUR,
+                                            minute=schedule_entry.CRON_STRUCTURE.MINUTE,
+                                            second=schedule_entry.CRON_STRUCTURE.SECOND),
+                        args=(schedule_entry.ANIMATION_SETTINGS,)
+                    )
+                    break
+
+            if not job_found:
+                eprint("No scheduled animation with ID '%' found!" % str(schedule_entry.JOB_ID))
             else:
                 # save the modified table
                 self.__save_schedule_table()
