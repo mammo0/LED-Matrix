@@ -3,7 +3,6 @@ from enum import Enum
 from bottle import template, static_file, request, redirect
 import bottle
 
-from animation.abstract import AnimationSettingsStructure
 from common import RESOURCES_DIR
 from common.bottle import BottleCBVMeta, get, post
 from common.color import Color
