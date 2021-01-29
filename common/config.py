@@ -117,15 +117,13 @@ class Config(Structure, StructureROMixin):
             "The possible variants can be checked in the Python module of the corresponding animation.",
             "Default for animation 'clock' is variant 'digital'."
         ])
-        Parameter = ConfigValue(value_type=str, default_value="\n".join([
-                                                                            "{",
-                                                                            '"background_color": [0, 0, 0],',
-                                                                            '"divider_color": [255, 255, 255],',
-                                                                            '"hour_color": [255, 0, 0],',
-                                                                            '"minute_color": [255, 255, 255],',
-                                                                            '"blinking_seconds": true',
-                                                                            "}"
-                                                                        ]),
+        Parameter = ConfigValue(value_type=dict, default_value={
+                                                                   "background_color": [0, 0, 0],
+                                                                   "divider_color": [255, 255, 255],
+                                                                   "hour_color": [255, 0, 0],
+                                                                   "minute_color": [255, 255, 255],
+                                                                   "blinking_seconds": True
+                                                                },
                                 description=[
             "Sometimes a variant needs a parameter.",
             "If multiple parameters are needed, a JSON-like dictionary can be entered after the equal sign.",
