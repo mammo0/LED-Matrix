@@ -17,7 +17,7 @@ from animation.abstract import AbstractAnimationController, \
     AnimationSettingsStructure
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
-from common.event import EventWithUnsetSignal
+from common.threading import EventWithUnsetSignal
 from common.schedule import ScheduleEntry, CronStructure
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
