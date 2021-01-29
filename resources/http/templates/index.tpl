@@ -15,7 +15,7 @@
     </div>
     <div class="card-body">
         <%
-            include("animation_settings.tpl", animations=animations,
+            include("animation/selector.tpl", animations=animations,
                                               current_animation_name=current_animation_name)
         %>
     </div>

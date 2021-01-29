@@ -74,7 +74,7 @@
                 <div class="card border-0">
                     <div class="card-body border-left border-right">
                         <%
-                            include("animation_settings.tpl", animations=animations,
+                            include("animation/selector.tpl", animations=animations,
                                                               current_animation_name=default_animation_name)
                         %>
                     </div>
