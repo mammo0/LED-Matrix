@@ -343,8 +343,19 @@ class Main(MainInterface):
             self.__animation_controller.stop_animation(animation_name, blocking=blocking)
 
     def remove_scheduled_animation(self, schedule_id):
-        # TODO: implement
-        pass
+        with self.__schedule_lock:
+            job_found = False
+            for entry in self.__schedule_table:
+                if entry.JOB_ID == schedule_id:
+                    job_found = True
+                    self.__animation_scheduler.remove_job(schedule_id)
+                    break
+
+            if not job_found:
+                eprint("No scheduled animation with ID '%' found!" % str(schedule_id))
+            else:
+                # save the modified table
+                self.__save_schedule_table()
 
     @property
     def available_animations(self):
@@ -355,8 +366,7 @@ class Main(MainInterface):
 
     @property
     def scheduled_animations(self):
-        # TODO: implement
-        return []
+        return self.__schedule_table
 
     def is_animation_running(self, animation_name):
         if self.__animation_controller is not None:
