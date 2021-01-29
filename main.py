@@ -84,9 +84,7 @@ class MainInterface(ABC):
     @abstractmethod
     def scheduled_animations(self):
         """
-        Get a dict of scheduled animations.
-        @return: Key: the schedule ID
-                 Value: the corresponding AbstractAnimationController object
+        @return: A list of ScheduleEntry instances.
         """
 
     @abstractmethod
@@ -341,7 +339,7 @@ class Main(MainInterface):
     @property
     def scheduled_animations(self):
         # TODO: implement
-        return {}
+        return []
 
     def is_animation_running(self, animation_name):
         if self.__animation_controller is not None:
