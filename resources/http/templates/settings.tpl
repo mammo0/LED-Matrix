@@ -13,27 +13,29 @@
 <div class="main_settings row justify-content-center">
     <div class="col">
         <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link {{"active" if active_tab == SettingsTabs.main else ""}}" id="tab_main" data-toggle="tab" href="#tab_pane_main" role="tab" aria-controls="tab_pane_main">
-                    Main
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link {{"active" if active_tab == SettingsTabs.default_animation else ""}}" id="tab_default_animation" data-toggle="tab" href="#tab_pane_default_animation" role="tab" aria-controls="tab_pane_default_animation">
-                    Default Animation
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link {{"active" if active_tab == SettingsTabs.schedule_table else ""}}" id="tab_schedule_table" data-toggle="tab" href="#tab_pane_schedule_table" role="tab" aria-controls="tab_pane_schedule_table">
-                    Scheduled Animations
-                </a>
+            % for tab in SettingsTabs:
+                <li class="nav-item d-none d-sm-inline" id="nav_{{tab.name}}">
+                    <a class="nav-link {{"active" if active_tab == tab else ""}}" id="tab_{{tab.name}}" data-toggle="tab" href="#tab_pane_{{tab.name}}" role="tab" aria-controls="tab_pane_{{tab.name}}">
+                        {{tab.value}}
+                    </a>
+                </li>
+            % end
+            <li class="nav-item dropdown d-inline d-sm-none" id="nav_drop">
+                <a class="nav-link dropdown-toggle border rounded-top" style="border-bottom-color: white !important;" id="tab_drop" data-toggle="dropdown" href="#" aria-haspopup="true" aria-expanded="false">{{active_tab.value}}</a>
+                <div class="dropdown-menu" aria-labelledby="tab_drop">
+                    % for tab in SettingsTabs:
+                        <a class="dropdown-item {{"d-none" if tab == active_tab else ""}}" id="tab_drop_{{tab.name}}" href="#">
+                            {{tab.value}}
+                        </a>
+                    % end
+                </div>
             </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane {{"active" if active_tab == SettingsTabs.main else ""}}" id="tab_pane_main" role="tabpanel" aria-labelledby="tab_main">
                 <div class="card border-0">
                     <div class="card-body border-left border-right">
-                        <form id="main_settings_form" method="post" action="/settings/{{SettingsTabs.main.value}}" autocomplete="off">
+                        <form id="main_settings_form" method="post" action="/settings/{{SettingsTabs.main.name}}" autocomplete="off">
                             <div class="form-group">
                                 <label for="setting_brightness_container">Brightness</label>
                                 <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
@@ -71,7 +73,7 @@
                     </div>
                     <div class="card-footer border rounded-bottom">
                         <button type="submit" class="btn btn-primary float-right ml-2" form="main_settings_form">Save</button>
-                        <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.main.value}}">Reset</a>
+                        <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.main.name}}">Reset</a>
                     </div>
                 </div>
             </div>
@@ -85,7 +87,7 @@
                     </div>
                     <div class="card-footer border rounded-bottom">
                         <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right ml-2">Save</button>
-                        <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.default_animation.value}}">Reset</a>
+                        <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.default_animation.name}}">Reset</a>
                     </div>
                 </div>
             </div>
@@ -126,20 +128,37 @@
             animation_form.appendChild(hiddenField);
 
             // submit the form
-            animation_form.action = "/settings/{{SettingsTabs.default_animation.value}}"
+            animation_form.action = "/settings/{{SettingsTabs.default_animation.name}}"
             animation_form.submit();
         }
 
-        // change the browser address bar to the current selected settings tab
-        // so on page reload the same tab is displayed
-        tab_main.onclick = function(){
-            window.history.replaceState("", "{{page_title}}", "/settings/{{SettingsTabs.main.value}}");
+        // keep the dropdown tab selection in sync with the real tabs
+        var previos_selected_tab = "{{active_tab.name}}";
+        function update_tab_environment(selected_dropdown_item, new_dropdown_content, new_tab){
+            // hide the selected item
+            selected_dropdown_item.classList.add("d-none");
+
+            // show the previous hidden item again
+            document.getElementById("tab_drop_" + previos_selected_tab).classList.remove("d-none");
+
+            // update environment
+            tab_drop.innerHTML = new_dropdown_content;
+            previos_selected_tab = new_tab;
+
+            // change the browser address bar to the current selected settings tab
+            // so on page reload the same tab is displayed
+            window.history.replaceState("", "{{page_title}}", "/settings/" + new_tab);
         }
-        tab_default_animation.onclick = function(){
-            window.history.replaceState("", "{{page_title}}", "/settings/{{SettingsTabs.default_animation.value}}");
-        }
-        tab_schedule_table.onclick = function(){
-            window.history.replaceState("", "{{page_title}}", "/settings/{{SettingsTabs.schedule_table.value}}");
-        }
+        % for tab in SettingsTabs:
+            tab_{{tab.name}}.onclick = function(){
+                update_tab_environment(tab_drop_{{tab.name}}, "{{tab.value}}", "{{tab.name}}");
+            }
+            tab_drop_{{tab.name}}.onclick = function(){
+                update_tab_environment(this, "{{tab.value}}", "{{tab.name}}");
+
+                // show the tab
+                tab_{{tab.name}}.Tab.show()
+            }
+        % end
     });
 </script>

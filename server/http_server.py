@@ -17,9 +17,9 @@ bottle.TEMPLATE_PATH = [(HTTP_RESOURCES_DIR / "templates").resolve()]
 
 
 class SettingsTabs(Enum):
-    main = "main"
-    default_animation = "default_animation"
-    schedule_table = "schedule_table"
+    main = "Main"
+    default_animation = "Default Animation"
+    schedule_table = "Schedule Table"
 
 
 class Input():
@@ -147,11 +147,11 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @get("/settings/<tab>")
     def settings_with_pane(self, tab):
-        return self.__show_settings(SettingsTabs(tab))
+        return self.__show_settings(SettingsTabs[tab])
 
     @post("/settings/<tab>")
     def save_settings(self, tab):
-        if SettingsTabs(tab) == SettingsTabs.main:
+        if SettingsTabs[tab] == SettingsTabs.main:
             brightness = request.forms.get("brightness_value")
             # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
             enable_rest = request.forms.get("enable_rest", default=False, type=bool)
@@ -161,7 +161,7 @@ class HttpServer(metaclass=BottleCBVMeta):
             self.__main_app.config.set(Config.MAIN.Brightness, brightness)
             self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
             self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
-        elif SettingsTabs(tab) == SettingsTabs.default_animation:
+        elif SettingsTabs[tab] == SettingsTabs.default_animation:
             new_default_animation_settings = self.__parse_animation_form(request.forms)
 
             self.__main_app.config.set(Config.DEFAULTANIMATION.Animation, new_default_animation_settings.animation_name)
