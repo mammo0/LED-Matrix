@@ -86,7 +86,7 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         animation_obj = self.__main_app.available_animations[animation_name]
 
-        animation_settings = AnimationSettingsStructure()
+        animation_settings = animation_obj.animation_settings
         animation_settings.animation_name = animation_name
 
         # variant
@@ -166,17 +166,14 @@ class HttpServer(metaclass=BottleCBVMeta):
             self.__main_app.config.set(Config.DEFAULTANIMATION.Animation, new_default_animation_settings.animation_name)
 
             # variant
-            if "variant" in new_default_animation_settings:
-                self.__main_app.config.set(Config.DEFAULTANIMATION.Variant, new_default_animation_settings.variant)
+            self.__main_app.config.set(Config.DEFAULTANIMATION.Variant, new_default_animation_settings.variant)
 
             # parameter
-            if "parameter" in new_default_animation_settings:
-                self.__main_app.config.set(Config.DEFAULTANIMATION.Parameter,
-                                           new_default_animation_settings.parameter)
+            self.__main_app.config.set(Config.DEFAULTANIMATION.Parameter,
+                                       new_default_animation_settings.parameter)
 
             # repeat
-            if "repeat" in new_default_animation_settings:
-                self.__main_app.config.set(Config.DEFAULTANIMATION.Repeat, new_default_animation_settings.repeat)
+            self.__main_app.config.set(Config.DEFAULTANIMATION.Repeat, new_default_animation_settings.repeat)
 
         self.__main_app.config.save()
 

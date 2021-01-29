@@ -10,7 +10,7 @@
             </label>
             <select id="{{animation.animation_name}}_variant" class="custom-select" name="{{animation.animation_name}}_variant_value" autocomplete="off">
                 %   for variant in animation.animation_variants:
-                %       if variant == animation.current_variant:
+                %       if variant == animation.animation_settings.variant:
                             <option value="{{variant.name}}" selected>{{variant.name.title()}} (Current)</option>
                 %       else:
                             <option value="{{variant.name}}">{{variant.name.title()}}</option>
@@ -26,12 +26,7 @@
         </label>
         <ul id="parameter_container_{{animation.animation_name}}" class="list-group bullet-list">
             <%
-                parameters = animation.current_parameter
-                if parameters is None:
-                    parameters = animation.animation_parameters
-                end
-
-                for p_name, p_value in parameters:
+                for p_name, p_value in animation.animation_settings.parameter:
                     input = Input(p_value)
             %>
                     <li class="list-group-item bi-caret-right-fill m-0 p-0 border-0 pl-5">
@@ -61,7 +56,7 @@
                 <span class="icon bi-arrow-repeat"></span>
                 <span>Repeat</span>
             </label>
-            <input id="{{animation.animation_name}}_repeat" type="number" class="form-control" name="{{animation.animation_name}}_repeat_value" min="-1" value="{{animation.current_repeat_value if animation.current_repeat_value is not None else "0"}}">
+            <input id="{{animation.animation_name}}_repeat" type="number" class="form-control" name="{{animation.animation_name}}_repeat_value" min="-1" value="{{animation.animation_settings.repeat}}">
         </div>
     % end
 </form>
