@@ -7,6 +7,7 @@ from pathlib import Path
 import queue
 import signal
 import sys
+from threading import Lock
 import threading
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -17,8 +18,8 @@ from animation.abstract import AbstractAnimationController, \
     AnimationSettingsStructure
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
-from common.threading import EventWithUnsetSignal
 from common.schedule import ScheduleEntry, CronStructure
+from common.threading import EventWithUnsetSignal
 from display.abstract import AbstractDisplay
 from server.http_server import HttpServer
 from server.rest_server import RestServer
@@ -160,6 +161,8 @@ class Main(MainInterface):
 
         # the animation scheduler
         self.__animation_scheduler = self.__create_scheduler()
+        self.__schedule_lock = Lock()
+        self.__schedule_table = []
 
         # server interfaces
         self.__http_server = None
@@ -205,6 +208,10 @@ class Main(MainInterface):
                                                   second=entry.CRON_STRUCTURE.SECOND),
                               args=(entry.ANIMATION_SETTINGS,),
                               id=entry.JOB_ID)
+
+            # add it to the internal schedule table
+            # no lock is needed here, because when this method is called only the main thread is running
+            self.__schedule_table.append(entry)
 
         return scheduler
 
@@ -262,6 +269,17 @@ class Main(MainInterface):
             self.__tpm2_net_server.shutdown()
             self.__tpm2_net_server.server_close()
 
+    def __save_schedule_table(self):
+        # this method should be surrounded by a lock
+        # convert the ScheduleEntry instances to dicts (needed for file saving)
+        table = []
+        for entry in self.__schedule_table:
+            table.append(ScheduleEntry.as_recursive_dict(entry))
+
+        # save the table in the config
+        self.config.set(Config.SCHEDULEDANIMATIONS.ScheduleTable, table)
+        self.config.save()
+
     def __clear_display(self):
         self.__display.clear_buffer()
         self.__display.show()
@@ -298,28 +316,27 @@ class Main(MainInterface):
                                                         blocking=blocking)
 
     def schedule_animation(self, cron_structure, animation_settings):
-        job = self.__animation_scheduler.add_job(func=self.start_animation,
-                                                 trigger=CronTrigger(year=cron_structure.YEAR,
-                                                                     month=cron_structure.MONTH,
-                                                                     day=cron_structure.DAY,
-                                                                     week=cron_structure.WEEK,
-                                                                     day_of_week=cron_structure.DAY_OF_WEEK,
-                                                                     hour=cron_structure.HOUR,
-                                                                     minute=cron_structure.MINUTE,
-                                                                     second=cron_structure.SECOND),
-                                                 args=(animation_settings,))
+        with self.__schedule_lock:
+            job = self.__animation_scheduler.add_job(func=self.start_animation,
+                                                     trigger=CronTrigger(year=cron_structure.YEAR,
+                                                                         month=cron_structure.MONTH,
+                                                                         day=cron_structure.DAY,
+                                                                         week=cron_structure.WEEK,
+                                                                         day_of_week=cron_structure.DAY_OF_WEEK,
+                                                                         hour=cron_structure.HOUR,
+                                                                         minute=cron_structure.MINUTE,
+                                                                         second=cron_structure.SECOND),
+                                                     args=(animation_settings,))
 
-        # create an entry for the schedule table
-        schedule_entry = ScheduleEntry()
-        schedule_entry.JOB_ID = job.id
-        schedule_entry.CRON_STRUCTURE = cron_structure
-        schedule_entry.ANIMATION_SETTINGS = animation_settings
+            # create an entry for the schedule table
+            schedule_entry = ScheduleEntry()
+            schedule_entry.JOB_ID = job.id
+            schedule_entry.CRON_STRUCTURE = cron_structure
+            schedule_entry.ANIMATION_SETTINGS = animation_settings
+            self.__schedule_table.append(schedule_entry)
 
-        # save the new entry in the config
-        table = self.config.get(Config.SCHEDULEDANIMATIONS.ScheduleTable)
-        table.append(ScheduleEntry.as_recursive_dict(schedule_entry))
-        self.config.set(Config.SCHEDULEDANIMATIONS.ScheduleTable, table)
-        self.config.save()
+            # save the new entry in the config
+            self.__save_schedule_table()
 
     def stop_animation(self, animation_name=None, blocking=False):
         if self.__animation_controller is not None:
