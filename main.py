@@ -351,10 +351,13 @@ class Main(MainInterface):
     def remove_scheduled_animation(self, schedule_id):
         with self.__schedule_lock:
             job_found = False
-            for entry in self.__schedule_table:
-                if entry.JOB_ID == schedule_id:
+            for i in range(0, len(self.__schedule_table)):
+                if self.__schedule_table[i].JOB_ID == schedule_id:
                     job_found = True
                     self.__animation_scheduler.remove_job(schedule_id)
+
+                    # remove the entry from the table
+                    del self.__schedule_table[i]
                     break
 
             if not job_found:
@@ -366,8 +369,8 @@ class Main(MainInterface):
     def modify_scheduled_animation(self, schedule_entry):
         with self.__schedule_lock:
             job_found = False
-            for entry in self.__schedule_table:
-                if entry.JOB_ID == schedule_entry.JOB_ID:
+            for i in range(0, len(self.__schedule_table)):
+                if self.__schedule_table[i].JOB_ID == schedule_entry.JOB_ID:
                     job_found = True
                     self.__animation_scheduler.modify_job(
                         schedule_entry.JOB_ID,
@@ -381,6 +384,9 @@ class Main(MainInterface):
                                             second=schedule_entry.CRON_STRUCTURE.SECOND),
                         args=(schedule_entry.ANIMATION_SETTINGS,)
                     )
+
+                    # replace the schedule table entry
+                    self.__schedule_table[i] = schedule_entry
                     break
 
             if not job_found:
