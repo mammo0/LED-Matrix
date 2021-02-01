@@ -8,6 +8,7 @@ from threading import Thread, Event
 from simple_classproperty import ClasspropertyMeta, classproperty
 
 from common import eprint
+from common.color import Color
 from common.structure import TypedStructure
 
 
@@ -34,9 +35,25 @@ class _AnimationSettingsStructure(TypedStructure, metaclass=_AnimationSettingsSt
     # 0: no repeat, -1: forever, > 0: x-times
     repeat = 0
 
+    def as_raw_dict(self):
+        raw_dict = TypedStructure.as_raw_dict(self)
+        for k, v in raw_dict.items():
+            if k == "variant":
+                # use enum name of variant (not the value)
+                raw_dict[k] = v.name
+
+        return raw_dict
+
 
 class AnimationParameter(TypedStructure):
-    pass
+    def as_raw_dict(self):
+        raw_dict = TypedStructure.as_raw_dict(self)
+        for k, v in raw_dict.items():
+            if isinstance(v, Color):
+                # get hex value for raw
+                raw_dict[k] = v.hex_value
+
+        return raw_dict
 
 
 class AbstractAnimation(ABC, Thread):

@@ -275,7 +275,7 @@ class Main(MainInterface):
         # convert the ScheduleEntry instances to dicts (needed for file saving)
         table = []
         for entry in self.__schedule_table:
-            table.append(ScheduleEntry.as_recursive_dict(entry))
+            table.append(entry.as_raw_dict())
 
         # save the table in the config
         self.config.set(Config.SCHEDULEDANIMATIONS.ScheduleTable, table)

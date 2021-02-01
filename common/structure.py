@@ -79,6 +79,14 @@ class _StructureMeta(type):
     def __iter__(cls):
         return iter(cls._params_map_.items())
 
+    def as_raw_dict(cls):
+        raw_dict = cls._params_map_.copy()
+        for k, v in raw_dict.items():
+            if isinstance(v, Structure):
+                raw_dict[k] = v.as_raw_dict()
+
+        return raw_dict
+
     @property
     def names(cls):
         return cls._params_names_
@@ -114,6 +122,14 @@ class Structure(metaclass=_StructureMeta):
 
     def __iter__(self):
         return iter(self._params_map_.items())
+
+    def as_raw_dict(self):
+        raw_dict = self._params_map_.copy()
+        for k, v in raw_dict.items():
+            if isinstance(v, Structure):
+                raw_dict[k] = v.as_raw_dict()
+
+        return raw_dict
 
     @property
     def names(self):
