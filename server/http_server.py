@@ -1,3 +1,5 @@
+import calendar
+from datetime import datetime
 from enum import Enum
 
 from bottle import template, static_file, request, redirect
@@ -7,12 +9,49 @@ from common import RESOURCES_DIR
 from common.bottle import BottleCBVMeta, get, post
 from common.color import Color
 from common.config import Config
+from common.schedule import ScheduleEntry, CronStructure
 from common.wsgi import CustomWSGIRefServer
 
 
 # change bottle template path
 HTTP_RESOURCES_DIR = RESOURCES_DIR / "http"
 bottle.TEMPLATE_PATH = [(HTTP_RESOURCES_DIR / "templates").resolve()]
+
+
+CRON_DICT = {
+    "year": [
+                {"value": i,
+                 "text": i} for i in range(datetime.now().year, datetime.now().year + 11)
+            ],
+    "month": [
+                {"value": i,
+                 "text": calendar.month_name[i]} for i in range(1, 13)
+             ],
+    "day": [
+                {"value": i,
+                 "text": i} for i in range(1, 32)
+           ],
+    "week": [
+                {"value": i,
+                 "text": i} for i in range(1, 53)
+            ],
+    "day_of_week": [
+                        {"value": i,
+                         "text": calendar.day_name[i]} for i in range(0, 7)
+                    ],
+    "hour": [
+                {"value": i,
+                 "text": i} for i in range(0, 24)
+            ],
+    "minute": [
+                {"value": i,
+                 "text": i} for i in range(0, 60)
+              ],
+    "second": [
+                {"value": i,
+                 "text": i} for i in range(0, 60)
+              ],
+}
 
 
 class SettingsTabs(Enum):
@@ -79,14 +118,17 @@ class HttpServer(metaclass=BottleCBVMeta):
                         current_brightness=self.__main_app.get_brightness(),
                         # provide the animations
                         animations=self.__main_app.available_animations,
-                        default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
+                        default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation),
+                        # the scheduled ones
+                        schedule_table=self.__main_app.scheduled_animations)
 
     def __parse_animation_form(self, form):
         animation_name = form.get("selected_animation_name")
 
         animation_obj = self.__main_app.available_animations[animation_name]
 
-        animation_settings = animation_obj.animation_settings
+        # create new instance of the animation settings
+        animation_settings = animation_obj.default_animation_settings()
         animation_settings.animation_name = animation_name
 
         # variant
@@ -120,6 +162,19 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         return animation_settings
 
+    def __parse_cron_form(self, form):
+        cron_structure = CronStructure()
+        for category in CRON_DICT.keys():
+            value = form.get("cron_%s_value" % category)
+            if value != "*":
+                setattr(cron_structure, category.upper(), int(value))
+
+        entry = ScheduleEntry()
+        entry.CRON_STRUCTURE = cron_structure
+        entry.ANIMATION_SETTINGS = self.__parse_animation_form(form)
+
+        return entry
+
     @get("/")
     def index(self):
         return template("index",
@@ -134,6 +189,54 @@ class HttpServer(metaclass=BottleCBVMeta):
                                         blocking=True)
 
         redirect("/")
+
+    @post("/schedule/new")
+    def new_schedule_entry(self):
+        temp_schedule_entry = ScheduleEntry()
+        temp_schedule_entry.ANIMATION_SETTINGS = self.__parse_animation_form(request.forms)
+
+        return template("schedule/entry",
+                        animations=self.__main_app.available_animations,
+                        entry=temp_schedule_entry)
+
+    @post("/schedule/create")
+    def create_schedule_entry(self):
+        schedule_entry = self.__parse_cron_form(request.forms)
+
+        # schedule the animation
+        self.__main_app.schedule_animation(schedule_entry.CRON_STRUCTURE,
+                                           schedule_entry.ANIMATION_SETTINGS)
+
+        redirect("/settings/" + SettingsTabs.schedule_table.name)
+
+    @get("/schedule/edit/<job_id>")
+    def edit_schedule_entry(self, job_id):
+        table = self.__main_app.scheduled_animations
+        for row in table:
+            if row.JOB_ID == job_id:
+                return template("schedule/entry",
+                                animations=self.__main_app.available_animations,
+                                entry=row,
+                                is_modify=True)
+
+        # show table if no corresponding job could be found
+        redirect("/settings/" + SettingsTabs.schedule_table.name)
+
+    @post("/schedule/edit/<job_id>")
+    def modify_schedule_entry(self, job_id):
+        schedule_entry = self.__parse_cron_form(request.forms)
+        schedule_entry.JOB_ID = job_id
+
+        self.__main_app.modify_scheduled_animation(schedule_entry)
+
+        redirect("/settings/" + SettingsTabs.schedule_table.name)
+
+    @get("/schedule/delete/<job_id>")
+    def delete_schedule_entry(self, job_id):
+        self.__main_app.remove_scheduled_animation(job_id)
+
+        # redirect back to the schedule table
+        redirect("/settings/" + SettingsTabs.schedule_table.name)
 
     @get("/stop-animation")
     def stop_current_animation(self):
