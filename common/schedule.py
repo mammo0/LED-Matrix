@@ -1,8 +1,8 @@
 from animation.abstract import AnimationSettingsStructure
-from common.structure import InitializableStructure, Structure
+from common.structure import TypedStructure, Structure
 
 
-class CronStructure(InitializableStructure):
+class CronStructure(TypedStructure):
     YEAR = None
     MONTH = None
     DAY = None
@@ -13,7 +13,7 @@ class CronStructure(InitializableStructure):
     SECOND = None
 
 
-class ScheduleEntry(InitializableStructure):
+class ScheduleEntry(TypedStructure):
     JOB_ID = None
     CRON_STRUCTURE = CronStructure()
     ANIMATION_SETTINGS = AnimationSettingsStructure()

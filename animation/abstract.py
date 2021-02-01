@@ -8,12 +8,12 @@ from threading import Thread, Event
 from simple_classproperty import ClasspropertyMeta, classproperty
 
 from common import eprint
-from common.structure import InitializableStructure, Structure
+from common.structure import TypedStructure
 
 
-class _AnimationSettingsStructureMeta(type(Structure)):
+class _AnimationSettingsStructureMeta(type(TypedStructure)):
     def __new__(metacls, cls, bases, classdict):
-        new_cls = type(Structure).__new__(metacls, cls, bases, classdict)
+        new_cls = type(TypedStructure).__new__(metacls, cls, bases, classdict)
 
         # programmatically change the animation_name attribute
         if cls != "AnimationSettingsStructure":
@@ -22,7 +22,7 @@ class _AnimationSettingsStructureMeta(type(Structure)):
         return new_cls
 
 
-class AnimationSettingsStructure(InitializableStructure, metaclass=_AnimationSettingsStructureMeta):
+class AnimationSettingsStructure(TypedStructure, metaclass=_AnimationSettingsStructureMeta):
     # The name of the animation.
     # do not change this manually, it gets set by the metaclass
     animation_name = None
@@ -35,7 +35,7 @@ class AnimationSettingsStructure(InitializableStructure, metaclass=_AnimationSet
     repeat = 0
 
 
-class AnimationParameter(InitializableStructure):
+class AnimationParameter(TypedStructure):
     pass
 
 

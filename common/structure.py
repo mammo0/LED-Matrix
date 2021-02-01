@@ -1,3 +1,4 @@
+from enum import Enum
 from inspect import isclass
 import types
 
@@ -12,7 +13,7 @@ class _StructureMeta(type):
         params = {}
 
         # do not do this when initializing the main class
-        if cls not in ("Structure", "InitializableStructure", "NestedStructure"):
+        if cls not in ("Structure", "TypedStructure", "NestedStructure"):
             # allow attribute inheritance
             for base in bases:
                 if isinstance(base, metacls):
@@ -37,7 +38,7 @@ class _StructureMeta(type):
 
         # maybe some members of the new class are NestedStructures
         # so set the name property of them
-        if cls not in ("Structure", "InitializableStructure", "NestedStructure"):
+        if cls not in ("Structure", "TypedStructure", "NestedStructure"):
             _NestedStructureMeta._add_names(metacls, new_cls)
 
         return new_cls
@@ -129,37 +130,64 @@ class StructureROMixin():
         super().__delattr__(attr)
 
 
-class InitializableStructure(Structure):
-    def __new__(cls, *_, **kwargs):
-        instance = super(InitializableStructure, cls).__new__(cls)
+class _TypedStructureMeta(_StructureMeta):
+    def __new__(metacls, cls, bases, classdict):
+        new_cls = _StructureMeta.__new__(metacls, cls, bases, classdict)
 
-        # safe the default types
-        cls.__default_types = {}
-        for k, v in cls._params_map_.items():
-            if v is None:
-                cls.__default_types[k] = None
-            else:
-                cls.__default_types[k] = type(v)
+        if cls != "TypedStructure":
+            # safe the default types
+            new_cls._default_types_ = {}
+            for k, v in new_cls._params_map_.items():
+                if v is None:
+                    new_cls._default_types_[k] = None
+                elif isclass(v):
+                    new_cls._default_types_[k] = v
+                else:
+                    new_cls._default_types_[k] = type(v)
+
+        return new_cls
+
+
+class TypedStructure(Structure, metaclass=_TypedStructureMeta):
+    def __new__(cls, *_, **kwargs):
+        instance = super(TypedStructure, cls).__new__(cls)
 
         # overwrite values in the instance
         for k, v in kwargs.items():
             if k in cls.names:
-                # check for None
-                if cls.__default_types[k] is None:
-                    instance._params_map_[k] = v
-                # maybe the default type is also an InitializableStructure class
-                elif issubclass(cls.__default_types[k], InitializableStructure):
-                    # check if it's already an instance
-                    if isinstance(v, cls.__default_types[k]):
-                        instance._params_map_[k] = v
-                    else:
-                        # otherwise create a new instance
-                        instance._params_map_[k] = cls.__default_types[k](**v)
-                else:
-                    # try to cast values to the default type
-                    instance._params_map_[k] = cls.__default_types[k](v)
+                instance.__set_value(k, v)
 
         return instance
+
+    def __set_value(self, name, value):
+        # check for None
+        if self._default_types_[name] is None:
+            self._params_map_[name] = value
+        # maybe the default type is also an TypedStructure class
+        elif issubclass(self._default_types_[name], TypedStructure):
+            # check if it's already an instance
+            if isinstance(value, self._default_types_[name]):
+                self._params_map_[name] = value
+            else:
+                # otherwise create a new instance
+                self._params_map_[name] = self._default_types_[name](**value)
+        # special case Enum
+        elif issubclass(self._default_types_[name], Enum):
+            try:
+                # first try to get the enum by value
+                self._params_map_[name] = self._default_types_[name](value)
+            except ValueError:
+                # then by name
+                self._params_map_[name] = self._default_types_[name][value]
+        else:
+            # try to cast values to the default type
+            self._params_map_[name] = self._default_types_[name](value)
+
+    def __setattr__(self, name, value):
+        if _StructureMeta._check_get(type(self), name):
+            self.__set_value(name, value)
+        else:
+            Structure.__setattr__(self, name, value)
 
 
 class _NestedStructureMeta(_StructureMeta):
