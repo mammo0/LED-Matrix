@@ -70,7 +70,7 @@
                         </form>
                     </div>
                     <div class="card-footer border rounded-bottom">
-                        <button type="submit" class="btn btn-primary float-right ml-2" form="main_settings_form">Save</button>
+                        <button type="submit" class="btn btn-primary float-right ml-3" form="main_settings_form">Save</button>
                         <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.main.name}}">Reset</a>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
                         %>
                     </div>
                     <div class="card-footer border rounded-bottom">
-                        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right ml-2">Save</button>
+                        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right ml-3">Save</button>
                         <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.default_animation.name}}">Reset</a>
                     </div>
                 </div>
