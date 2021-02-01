@@ -165,7 +165,7 @@ class Main(MainInterface):
 
         # animation controller
         # gets initialized in mainloop method
-        self.__animation_controller = None
+        self.__animation_controller = AnimationController(self.config, self.frame_queue)
 
         # the animation scheduler
         self.__schedule_table = []
@@ -312,9 +312,8 @@ class Main(MainInterface):
         self.__reload_signal.wait_unset()
 
     def start_animation(self, animation_settings, blocking=False):
-        if self.__animation_controller is not None:
-            self.__animation_controller.start_animation(animation_settings=animation_settings,
-                                                        blocking=blocking)
+        self.__animation_controller.start_animation(animation_settings=animation_settings,
+                                                    blocking=blocking)
 
     def schedule_animation(self, cron_structure, animation_settings):
         with self.__schedule_lock:
@@ -340,8 +339,7 @@ class Main(MainInterface):
             self.__save_schedule_table()
 
     def stop_animation(self, animation_name=None, blocking=False):
-        if self.__animation_controller is not None:
-            self.__animation_controller.stop_animation(animation_name, blocking=blocking)
+        self.__animation_controller.stop_animation(animation_name, blocking=blocking)
 
     def remove_scheduled_animation(self, schedule_id):
         with self.__schedule_lock:
@@ -386,10 +384,7 @@ class Main(MainInterface):
 
     @property
     def available_animations(self):
-        if self.__animation_controller is not None:
-            return self.__animation_controller.all_animations
-        else:
-            return {}
+        return self.__animation_controller.all_animations
 
     @property
     def scheduled_animations(self):
@@ -402,16 +397,10 @@ class Main(MainInterface):
         return self.__schedule_table
 
     def is_animation_running(self, animation_name):
-        if self.__animation_controller is not None:
-            return self.__animation_controller.is_animation_running(animation_name)
-        else:
-            return False
+        return self.__animation_controller.is_animation_running(animation_name)
 
     def get_current_animation_name(self):
-        if self.__animation_controller is not None:
-            return self.__animation_controller.get_current_animation_name()
-        else:
-            return ""
+        return self.__animation_controller.get_current_animation_name()
 
     def get_brightness(self):
         return self.__display_brightness
@@ -429,7 +418,6 @@ class Main(MainInterface):
 
     def mainloop(self):
         # start the animation controller
-        self.__animation_controller = AnimationController(self.config, self.frame_queue)
         self.__animation_controller.start()
 
         # start the animation scheduler
@@ -466,6 +454,9 @@ class Main(MainInterface):
         if self.__reload_signal.is_set():
             # reload settings
             self.__load_settings()
+
+            # recreate the controller
+            self.__animation_controller = AnimationController(self.config, self.frame_queue)
 
             # recreate the scheduler
             self.__animation_scheduler = self.__create_scheduler()
