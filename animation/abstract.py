@@ -150,7 +150,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     @property
     @abstractmethod
-    def _default_animation_settings(self):
+    def default_animation_settings(self):
         """
         @return: A subclass _AnimationSettingsStructure that holds the default settings for the underlying animation.
         """
@@ -162,7 +162,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                 self.__animation_thread.is_alive()):
             return self.__animation_thread.settings
         else:
-            return self._default_animation_settings()
+            return self.default_animation_settings()
 
     @property
     @abstractmethod

@@ -200,7 +200,7 @@ class ClockController(AbstractAnimationController):
         return ClockParameter
 
     @property
-    def _default_animation_settings(self):
+    def default_animation_settings(self):
         return ClockSettings
 
     @property

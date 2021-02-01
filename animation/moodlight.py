@@ -149,7 +149,7 @@ class MoodlightController(AbstractAnimationController):
         return None
 
     @property
-    def _default_animation_settings(self):
+    def default_animation_settings(self):
         return MoodlightSettings
 
     @property

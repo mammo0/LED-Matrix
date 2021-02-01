@@ -212,7 +212,7 @@ class GameframeController(AbstractAnimationController):
         return GameframeParameter
 
     @property
-    def _default_animation_settings(self):
+    def default_animation_settings(self):
         return GameframeSettings
 
     @property
