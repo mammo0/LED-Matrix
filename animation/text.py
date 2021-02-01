@@ -4,7 +4,7 @@ from PIL import Image
 import freetype
 
 from animation.abstract import AbstractAnimation, AnimationParameter,\
-    AbstractAnimationController, AnimationSettingsStructure
+    AbstractAnimationController, _AnimationSettingsStructure
 import numpy as np
 
 
@@ -15,7 +15,7 @@ class TextParameter(AnimationParameter):
     pixels_per_step = 1
 
 
-class TextSettings(AnimationSettingsStructure):
+class TextSettings(_AnimationSettingsStructure):
     parameter = TextParameter
 
 

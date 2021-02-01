@@ -1,8 +1,8 @@
 from animation.abstract import AbstractAnimation, AbstractAnimationController,\
-    AnimationSettingsStructure
+    _AnimationSettingsStructure
 
 
-class DummySettings(AnimationSettingsStructure):
+class DummySettings(_AnimationSettingsStructure):
     pass
 
 

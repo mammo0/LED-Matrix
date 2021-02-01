@@ -2,7 +2,7 @@ import colorsys
 from enum import Enum
 
 from animation.abstract import AbstractAnimation, AbstractAnimationController,\
-    AnimationSettingsStructure
+    _AnimationSettingsStructure
 import numpy as np
 
 
@@ -23,7 +23,7 @@ class _Style(Enum):
     wish_down_up = 3
 
 
-class MoodlightSettings(AnimationSettingsStructure):
+class MoodlightSettings(_AnimationSettingsStructure):
     variant = MoodlightVariant.wish_down_up
 
 

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
-    AbstractAnimationController, AnimationSettingsStructure
+    AbstractAnimationController, _AnimationSettingsStructure
 from common.color import Color
 import numpy as np
 
@@ -15,7 +15,7 @@ class BlmParameter(AnimationParameter):
     padding_color = Color(60, 60, 60)
 
 
-class BlmSettings(AnimationSettingsStructure):
+class BlmSettings(_AnimationSettingsStructure):
     parameter = BlmParameter
 
 

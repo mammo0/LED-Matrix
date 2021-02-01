@@ -5,7 +5,7 @@ import time
 from PIL import Image, ImageDraw
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
-    AbstractAnimationController, AnimationSettingsStructure
+    AbstractAnimationController, _AnimationSettingsStructure
 from common.color import Color
 import numpy as np
 
@@ -24,7 +24,7 @@ class ClockParameter(AnimationParameter):
     blinking_seconds = True
 
 
-class ClockSettings(AnimationSettingsStructure):
+class ClockSettings(_AnimationSettingsStructure):
     # default settings
     variant = ClockVariant.analog
     parameter = ClockParameter

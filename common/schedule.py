@@ -1,4 +1,4 @@
-from animation.abstract import AnimationSettingsStructure
+from animation.abstract import _AnimationSettingsStructure
 from common.structure import TypedStructure, Structure
 
 
@@ -16,7 +16,7 @@ class CronStructure(TypedStructure):
 class ScheduleEntry(TypedStructure):
     JOB_ID = None
     CRON_STRUCTURE = CronStructure()
-    ANIMATION_SETTINGS = AnimationSettingsStructure()
+    ANIMATION_SETTINGS = _AnimationSettingsStructure()
 
     @staticmethod
     def as_recursive_dict(self_obj):

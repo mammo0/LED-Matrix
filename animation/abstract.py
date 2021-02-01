@@ -16,13 +16,13 @@ class _AnimationSettingsStructureMeta(type(TypedStructure)):
         new_cls = type(TypedStructure).__new__(metacls, cls, bases, classdict)
 
         # programmatically change the animation_name attribute
-        if cls != "AnimationSettingsStructure":
+        if cls != "_AnimationSettingsStructure":
             new_cls._params_map_["animation_name"] = new_cls.__module__.rpartition(".")[-1]
 
         return new_cls
 
 
-class AnimationSettingsStructure(TypedStructure, metaclass=_AnimationSettingsStructureMeta):
+class _AnimationSettingsStructure(TypedStructure, metaclass=_AnimationSettingsStructureMeta):
     # The name of the animation.
     # do not change this manually, it gets set by the metaclass
     animation_name = None
@@ -152,7 +152,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     @abstractmethod
     def _default_animation_settings(self):
         """
-        @return: A subclass AnimationSettingsStructure that holds the default settings for the underlying animation.
+        @return: A subclass _AnimationSettingsStructure that holds the default settings for the underlying animation.
         """
 
     @property
@@ -186,7 +186,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     def start_animation(self, animation_settings):
         """
-        For settings see AnimationSettingsStructure.
+        For settings see _AnimationSettingsStructure.
         """
         # parse the parameters
         self._validate_animation_settings(animation_settings)

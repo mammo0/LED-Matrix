@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
-    AbstractAnimationController, AnimationSettingsStructure
+    AbstractAnimationController, _AnimationSettingsStructure
 from common.color import Color
 import numpy as np
 
@@ -17,7 +17,7 @@ class GameframeParameter(AnimationParameter):
     background_color = Color(0, 0, 0)
 
 
-class GameframeSettings(AnimationSettingsStructure):
+class GameframeSettings(_AnimationSettingsStructure):
     parameter = GameframeParameter
 
 

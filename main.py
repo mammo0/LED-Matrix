@@ -14,8 +14,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from simple_plugin_loader import Loader
 
-from animation.abstract import AbstractAnimationController, \
-    AnimationSettingsStructure
+from animation.abstract import AbstractAnimationController
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
 from common.schedule import ScheduleEntry
@@ -41,7 +40,7 @@ class MainInterface(ABC):
     def start_animation(self, animation_settings, blocking=False):
         """
         Start a specific animation. See the respective animation class for which options are available.
-        @param animation_settings: Instance of AnimationSettingsStructure.
+        @param animation_settings: Instance of _AnimationSettingsStructure.
         @param blocking: If set to True, wait until the animation is running. Otherwise return immediately.
         """
 
@@ -190,13 +189,6 @@ class Main(MainInterface):
         self.__conf_display_width = self.__config.get(Config.MAIN.DisplayWidth)
         self.__conf_display_height = self.__config.get(Config.MAIN.DisplayHeight)
         self.set_brightness(self.__config.get(Config.MAIN.Brightness))
-
-        # get [DEFAULTANIMATION] options
-        self.__default_animation_settings = AnimationSettingsStructure()
-        self.__default_animation_settings.animation_name = self.__config.get(Config.DEFAULTANIMATION.Animation)
-        self.__default_animation_settings.variant = self.__config.get(Config.DEFAULTANIMATION.Variant)
-        self.__default_animation_settings.parameter = self.__config.get(Config.DEFAULTANIMATION.Parameter)
-        self.__default_animation_settings.repeat = self.__config.get(Config.DEFAULTANIMATION.Repeat)
 
     def __create_scheduler(self):
         # create the scheduler
@@ -431,9 +423,7 @@ class Main(MainInterface):
 
     def mainloop(self):
         # start the animation controller
-        self.__animation_controller = AnimationController(self.__conf_display_width, self.__conf_display_height,
-                                                          self.frame_queue,
-                                                          self.__default_animation_settings)
+        self.__animation_controller = AnimationController(self.config, self.frame_queue)
         self.__animation_controller.start()
 
         # start the animation scheduler
@@ -542,17 +532,13 @@ class AnimationController(threading.Thread):
             with self.mutex:
                 return self._qsize() == 0 and self.unfinished_tasks <= 1
 
-    def __init__(self, display_width, display_height, display_frame_queue,
-                 default_animation_settings):
+    def __init__(self, config, display_frame_queue):
         super().__init__(daemon=True)
 
         # the display settings
-        self.__display_width = display_width
-        self.__display_height = display_height
+        self.__display_width = config.get(Config.MAIN.DisplayWidth)
+        self.__display_height = config.get(Config.MAIN.DisplayHeight)
         self.__display_frame_queue = display_frame_queue
-
-        # the default animation settings
-        self.__default_animation_settings = default_animation_settings
 
         self.__stop_event = threading.Event()
         self.__controll_queue = AnimationController._EventQueue()
@@ -562,6 +548,13 @@ class AnimationController(threading.Thread):
 
         # get all available animations
         self.__all_animations = self.__load_animations()
+
+        # load the default animation
+        def_animation_name = config.get(Config.DEFAULTANIMATION.Animation)
+        self.__default_animation_settings = self.__all_animations[def_animation_name].animation_settings
+        self.__default_animation_settings.variant = config.get(Config.DEFAULTANIMATION.Variant)
+        self.__default_animation_settings.parameter = config.get(Config.DEFAULTANIMATION.Parameter)
+        self.__default_animation_settings.repeat = config.get(Config.DEFAULTANIMATION.Repeat)
 
     def __load_animations(self):
         animation_loader = Loader()
@@ -635,10 +628,8 @@ class AnimationController(threading.Thread):
             return
 
         # create and schedule the stop event
-        settings = AnimationSettingsStructure()
-        settings.animation_name = animation_to_stop.animation_name
         stop_event = AnimationController._Event(AnimationController._EventType.stop,
-                                                settings)
+                                                animation_to_stop.animation_settings)
         self.__controll_queue.put(stop_event)
 
         # check blocking
