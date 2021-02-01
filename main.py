@@ -393,6 +393,12 @@ class Main(MainInterface):
 
     @property
     def scheduled_animations(self):
+        # during load of the saved scheduled animations, the ANIMATION_SETTINGS attribute is a dict
+        # it must be converted to the respective class instead
+        for row in self.__schedule_table:
+            if isinstance(row.ANIMATION_SETTINGS, dict):
+                animation = self.available_animations[row.ANIMATION_SETTINGS["animation_name"]]
+                row.ANIMATION_SETTINGS = animation.default_animation_settings(**row.ANIMATION_SETTINGS)
         return self.__schedule_table
 
     def is_animation_running(self, animation_name):

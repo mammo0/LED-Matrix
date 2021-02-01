@@ -1,4 +1,3 @@
-from animation.abstract import _AnimationSettingsStructure
 from common.structure import TypedStructure
 
 
@@ -15,5 +14,5 @@ class CronStructure(TypedStructure):
 
 class ScheduleEntry(TypedStructure):
     JOB_ID = None
-    CRON_STRUCTURE = CronStructure()
-    ANIMATION_SETTINGS = _AnimationSettingsStructure()
+    CRON_STRUCTURE = CronStructure
+    ANIMATION_SETTINGS = None
