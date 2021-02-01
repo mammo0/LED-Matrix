@@ -1,3 +1,7 @@
+% setdefault("animations", {})
+% setdefault("current_animation_name", "")
+
+
 <label for="animation_selector">
     <b>Animation</b>
 </label>

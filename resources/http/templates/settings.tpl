@@ -1,16 +1,14 @@
 % from common.config import Config
 % from server.http_server import SettingsTabs
 
-
 % setdefault('page_title', 'Settings')
-% rebase("base.tpl", title=page_title)
+% setdefault("animations", {})
+% setdefault("default_animation_name", "")
 
-<h1>
-    {{page_title}}
-    <hr/>
-</h1>
+% rebase("base.tpl", page_title=page_title)
 
-<div class="main_settings row justify-content-center">
+
+<div class="row">
     <div class="col">
         <ul class="nav nav-tabs" role="tablist">
             % for tab in SettingsTabs:

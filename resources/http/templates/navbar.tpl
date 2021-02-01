@@ -1,6 +1,14 @@
+% setdefault("brand_title", "LED-Matrix")
+% setdefault("page_title", "Home")
+
+
 <nav class="navbar navbar-expand navbar-dark bg-dark">
     <div class="container">
-        <span class="navbar-brand mb-0 h1">LED-Matrix</span>
+        <span class="navbar-brand mb-0 h1">
+            <span style="font-variant: small-caps !important;">{{brand_title}}</span>
+            <span class="font-weight-light">></span>
+            <strong>{{page_title}}</strong>
+        </span>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item active">

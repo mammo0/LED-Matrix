@@ -1,3 +1,6 @@
+% setdefault("page_title", "LED-Matrix")
+
+
 <!DOCTYPE html>
 <html>
 
@@ -5,7 +8,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>{{title}}</title>
+    <title>{{page_title}}</title>
 
     <meta name="author" content="">
     <meta name="description" content="">
@@ -17,9 +20,9 @@
 
 <body>
 
-    % include("navbar.tpl", title=title)
+    % include("navbar.tpl", page_title=page_title)
 
-    <div class="container pt-3">
+    <div class="container py-3">
         {{!base}}
     </div>
 
