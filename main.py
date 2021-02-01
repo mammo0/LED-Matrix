@@ -168,9 +168,9 @@ class Main(MainInterface):
         self.__animation_controller = None
 
         # the animation scheduler
+        self.__schedule_table = []
         self.__animation_scheduler = self.__create_scheduler()
         self.__schedule_lock = Lock()
-        self.__schedule_table = []
 
         # server interfaces
         self.__http_server = None
