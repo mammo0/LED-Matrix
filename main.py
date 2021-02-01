@@ -198,6 +198,13 @@ class Main(MainInterface):
         saved_jobs = self.config.get(Config.SCHEDULEDANIMATIONS.ScheduleTable)
         for job in saved_jobs:
             entry = ScheduleEntry(**job)
+
+            # during load of the saved scheduled animations, the ANIMATION_SETTINGS attribute is a dict
+            # it must be converted to the respective class instead
+            animation = self.available_animations[entry.ANIMATION_SETTINGS["animation_name"]]
+            entry.ANIMATION_SETTINGS = animation.default_animation_settings(**entry.ANIMATION_SETTINGS)
+
+            # add job to the scheduler
             scheduler.add_job(func=self.start_animation,
                               trigger=CronTrigger(year=entry.CRON_STRUCTURE.YEAR,
                                                   month=entry.CRON_STRUCTURE.MONTH,
@@ -388,12 +395,6 @@ class Main(MainInterface):
 
     @property
     def scheduled_animations(self):
-        # during load of the saved scheduled animations, the ANIMATION_SETTINGS attribute is a dict
-        # it must be converted to the respective class instead
-        for row in self.__schedule_table:
-            if isinstance(row.ANIMATION_SETTINGS, dict):
-                animation = self.available_animations[row.ANIMATION_SETTINGS["animation_name"]]
-                row.ANIMATION_SETTINGS = animation.default_animation_settings(**row.ANIMATION_SETTINGS)
         return self.__schedule_table
 
     def is_animation_running(self, animation_name):
