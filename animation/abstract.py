@@ -38,7 +38,8 @@ class _AnimationSettingsStructure(TypedStructure, metaclass=_AnimationSettingsSt
     def as_raw_dict(self):
         raw_dict = TypedStructure.as_raw_dict(self)
         for k, v in raw_dict.items():
-            if k == "variant":
+            if (k == "variant" and
+                    v is not None):
                 # use enum name of variant (not the value)
                 raw_dict[k] = v.name
 
@@ -221,11 +222,13 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     def _validate_animation_settings(self, animation_settings):
         # variant
-        if not isinstance(animation_settings.variant, self.animation_variants):
+        if (self.animation_variants is not None and
+                not isinstance(animation_settings.variant, self.animation_variants)):
             animation_settings.variant = self.animation_variants[animation_settings.variant]
 
         # parameter
-        if isinstance(animation_settings.parameter, dict):
+        if (self.animation_parameters is not None and
+                isinstance(animation_settings.parameter, dict)):
             animation_settings.parameter = self.animation_parameters(**animation_settings.parameter)
 
     def __animation_finished_stopped(self):
