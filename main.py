@@ -372,7 +372,12 @@ class Main(MainInterface):
             for i in range(0, len(self.__schedule_table)):
                 if self.__schedule_table[i].JOB_ID == schedule_entry.JOB_ID:
                     job_found = True
-                    self.__animation_scheduler.modify_job(
+                    # modify the arguments
+                    self.__animation_scheduler.modify_job(schedule_entry.JOB_ID,
+                                                          args=(schedule_entry.ANIMATION_SETTINGS,))
+
+                    # and also reschedule it
+                    self.__animation_scheduler.reschedule_job(
                         schedule_entry.JOB_ID,
                         trigger=CronTrigger(year=schedule_entry.CRON_STRUCTURE.YEAR,
                                             month=schedule_entry.CRON_STRUCTURE.MONTH,
@@ -381,8 +386,7 @@ class Main(MainInterface):
                                             day_of_week=schedule_entry.CRON_STRUCTURE.DAY_OF_WEEK,
                                             hour=schedule_entry.CRON_STRUCTURE.HOUR,
                                             minute=schedule_entry.CRON_STRUCTURE.MINUTE,
-                                            second=schedule_entry.CRON_STRUCTURE.SECOND),
-                        args=(schedule_entry.ANIMATION_SETTINGS,)
+                                            second=schedule_entry.CRON_STRUCTURE.SECOND)
                     )
 
                     # replace the schedule table entry
