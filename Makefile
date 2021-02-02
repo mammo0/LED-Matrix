@@ -82,5 +82,5 @@ ifeq ("$(wildcard $(INITD_CONFIG_FILE))","")
 	$(PYTHON) main.py
 else
 	@# use global config file if it exists
-	$(PYTHON) main.py -c $(INITD_CONFIG_FILE)
+	$(PYTHON) main.py -f $(INITD_CONFIG_FILE)
 endif
