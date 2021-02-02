@@ -33,7 +33,7 @@ ifeq ("$(wildcard $(INITD_CONFIG_FILE))","")
 	$(eval TMP_CONFIG_FILE:=$(CONFIG_FILE))
 else
 	@# the installed config does exist -> use it as config file
-	$(eval TMP_CONFIG_FILE:=$($INITD_CONFIG_FILE))
+	$(eval TMP_CONFIG_FILE:=$(INITD_CONFIG_FILE))
 endif
 	@# create or update the config file if necessary
 	$(BASE_DIR)/scripts/create_config.py $(TMP_CONFIG_FILE)
