@@ -86,8 +86,8 @@ class Config(Structure, StructureROMixin):
             "Set the brightness in percent [Default: 85]",
             "Possible values: 0 < = x <= 100"
         ])
-        NightBrightness = ConfigValue(value_type=int, default_value=50, description=[
-            "Set a brightness value that gets set on night times [Default: 50]",
+        NightBrightness = ConfigValue(value_type=int, default_value=-1, description=[
+            "Set a brightness value that gets set on night times [Default: -1]",
             "Possible values: 0 < = x <= 100",
             "                 -1: disable"
         ])
