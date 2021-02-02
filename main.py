@@ -183,7 +183,6 @@ class Main(MainInterface):
         self.__animation_controller = AnimationController(self.config, self.frame_queue)
 
         # the animation scheduler
-        self.__schedule_table = []
         self.__animation_scheduler = self.__create_scheduler()
         self.__schedule_lock = Lock()
 
@@ -223,6 +222,9 @@ class Main(MainInterface):
         self.__night_brightness = self.__config.get(Config.MAIN.NightBrightness)
 
     def __create_scheduler(self):
+        # start with an empty table
+        self.__schedule_table = []
+
         # create the scheduler
         scheduler = BackgroundScheduler()
 
