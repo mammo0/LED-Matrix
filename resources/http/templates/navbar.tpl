@@ -4,10 +4,16 @@
 
 <nav class="navbar navbar-expand navbar-dark bg-dark">
     <div class="container">
-        <span class="navbar-brand mb-0 h1">
-            <span style="font-variant: small-caps !important;">{{brand_title}}</span>
-            <span class="font-weight-light">></span>
-            <strong>{{page_title}}</strong>
+        <span class="navbar-brand h1 py-0 my-n1">
+            <div class="row m-0">
+                <span style="font-variant: small-caps !important;">{{brand_title}}</span>
+            </div>
+            <div class="row m-0 mt-n2">
+                <small>
+                    <span class="font-weight-light">></span>
+                    <strong>{{page_title}}</strong>
+                </small>
+            </div>
         </span>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
