@@ -18,6 +18,14 @@
                     </a>
                 </li>
             </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/schedule">
+                        <span class="icon bi-clock-fill"></span>
+                        <span class="d-none d-sm-inline">Schedule Table</span>
+                    </a>
+                </li>
+            </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="/settings">

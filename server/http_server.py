@@ -57,7 +57,6 @@ CRON_DICT = {
 class SettingsTabs(Enum):
     main = "Main"
     default_animation = "Default Animation"
-    schedule_table = "Schedule Table"
 
 
 class Input():
@@ -118,9 +117,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                         current_brightness=self.__main_app.get_brightness(),
                         # provide the animations
                         animations=self.__main_app.available_animations,
-                        default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation),
-                        # the scheduled ones
-                        schedule_table=self.__main_app.scheduled_animations)
+                        default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
 
     def __parse_animation_form(self, form):
         animation_name = form.get("selected_animation_name")
@@ -196,6 +193,11 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         redirect("/")
 
+    @get("/schedule")
+    def schedule_table(self):
+        return template("schedule/table",
+                        schedule_table=self.__main_app.scheduled_animations)
+
     @post("/schedule/new")
     def new_schedule_entry(self):
         temp_schedule_entry = ScheduleEntry()
@@ -213,7 +215,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         self.__main_app.schedule_animation(schedule_entry.CRON_STRUCTURE,
                                            schedule_entry.ANIMATION_SETTINGS)
 
-        redirect("/settings/" + SettingsTabs.schedule_table.name)
+        redirect("/schedule")
 
     @get("/schedule/edit/<job_id>")
     def edit_schedule_entry(self, job_id):
@@ -226,7 +228,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                                 is_modify=True)
 
         # show table if no corresponding job could be found
-        redirect("/settings/" + SettingsTabs.schedule_table.name)
+        redirect("/schedule")
 
     @post("/schedule/edit/<job_id>")
     def modify_schedule_entry(self, job_id):
@@ -235,14 +237,14 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         self.__main_app.modify_scheduled_animation(schedule_entry)
 
-        redirect("/settings/" + SettingsTabs.schedule_table.name)
+        redirect("/schedule")
 
     @get("/schedule/delete/<job_id>")
     def delete_schedule_entry(self, job_id):
         self.__main_app.remove_scheduled_animation(job_id)
 
         # redirect back to the schedule table
-        redirect("/settings/" + SettingsTabs.schedule_table.name)
+        redirect("/schedule")
 
     @get("/stop-animation")
     def stop_current_animation(self):

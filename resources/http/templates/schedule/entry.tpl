@@ -97,7 +97,7 @@
                         <span>Schedule</span>
                     % end
                 </button>
-                <a class="btn btn-danger float-right" href="{{"/settings/" + SettingsTabs.schedule_table.name if is_modify else "/"}}">
+                <a class="btn btn-danger float-right" href="{{"/schedule" if is_modify else "/"}}">
                     Cancel
                 </a>
             </div>
