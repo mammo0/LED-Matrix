@@ -16,7 +16,7 @@ ENV BUILD_GID=$BUILD_GID
 # these dependencies are part of the alpine community repository
 # so install them through apk, not pip
 # this reduces the build time
-ARG ALPINE_PY_DEPS="numpy,pillow,bottle"
+ARG ALPINE_PY_DEPS="numpy,pillow,bottle,six"
 # this is a temporary file created by pipenv to install the remaining dependencies via pip
 ARG VENV_REQ_FILE=$BUILD_DIR/resources/requirements.pip
 
