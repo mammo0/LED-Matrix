@@ -33,7 +33,7 @@ CRON_DICT = {
            ],
     "week": [
                 {"value": i,
-                 "text": i} for i in range(1, 53)
+                 "text": i} for i in range(1, 54)
             ],
     "day_of_week": [
                         {"value": i,
