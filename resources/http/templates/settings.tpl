@@ -4,6 +4,8 @@
 % setdefault('page_title', 'Settings')
 % setdefault("animations", {})
 % setdefault("default_animation_name", "")
+% setdefault("day_brightness", 85)
+% setdefault("night_brightness", -1)
 
 % rebase("base.tpl", page_title=page_title)
 
@@ -35,18 +37,40 @@
                     <div class="card-body border-left border-right">
                         <form id="main_settings_form" method="post" action="/settings/{{SettingsTabs.main.name}}" autocomplete="off">
                             <div class="form-group">
-                                <label for="setting_brightness_container">Brightness</label>
-                                <div id="setting_brightness_container" class="slider_container d-flex align-items-center">
-                                    <input id="setting_brightness_slider"
+                                <label for="setting_day_brightness_container">Day Brightness</label>
+                                <div id="setting_day_brightness_container" class="slider_container d-flex align-items-center">
+                                    <input id="setting_day_brightness_slider"
                                            class="custom-range slider flex-grow-1 mr-2"
                                            style="width:1px"
-                                           name="brightness_value"
+                                           name="day_brightness_value"
                                            type="range"
-                                           min="0" max="100" value="{{current_brightness}}">
+                                           min="0" max="100" value="{{day_brightness}}">
                                     <span class="pr-2">
                                         <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
                                     </span>
-                                    <a id="setting_brightness_preview_btn" class="btn btn-success">Preview</a>
+                                    <a id="setting_day_brightness_preview_btn" class="btn btn-success">Preview</a>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="setting_night_brightness_enabled" name="setting_night_brightness_enabled_value" {{"checked" if night_brightness != -1 else ""}}>
+                                    <label class="form-check-label" for="setting_night_brightness_enabled">
+                                        Night Brightness
+                                    </label>
+                                </div>
+                                <div id="setting_night_brightness_container" class="{{"d-none" if night_brightness == -1 else ""}}">
+                                    <div class="slider_container d-flex align-items-center">
+                                        <input id="setting_night_brightness_slider"
+                                               class="custom-range slider flex-grow-1 mr-2"
+                                               style="width:1px"
+                                               name="night_brightness_value"
+                                               type="range"
+                                               min="0" max="100" value="{{night_brightness}}">
+                                        <span class="pr-2">
+                                            <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
+                                        </span>
+                                        <a id="setting_night_brightness_preview_btn" class="btn btn-success">Preview</a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -97,13 +121,27 @@
 <script src="/js/post_request.js"></script>
 <script>
     window.addEventListener("load", function(){
-        setting_brightness_preview_btn.onclick = function(){
+        setting_day_brightness_preview_btn.onclick = function(){
             // create a dynamic form object, that contains only the new brightness value
             let form_data = new FormData();
-            form_data.append(setting_brightness_slider.name, setting_brightness_slider.value);
+            form_data.append("preview_brightness_value", setting_day_brightness_slider.value);
 
             // send the request
             post_request("/settings/preview_brightness", form_data);
+        }
+        setting_night_brightness_preview_btn.onclick = function(){
+            // create a dynamic form object, that contains only the new brightness value
+            let form_data = new FormData();
+            form_data.append("preview_brightness_value", setting_night_brightness_slider.value);
+
+            // send the request
+            post_request("/settings/preview_brightness", form_data);
+        }
+        setting_night_brightness_enabled.onchange = function() {
+            if(this.checked)
+                setting_night_brightness_container.classList.remove("d-none");
+            else
+                setting_night_brightness_container.classList.add("d-none");
         }
 
         btn_save_default_animation.onclick = function(){

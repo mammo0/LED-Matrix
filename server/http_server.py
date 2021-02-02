@@ -113,8 +113,9 @@ class HttpServer(metaclass=BottleCBVMeta):
                         active_tab=tab,
                         # provide the main config
                         config=self.__main_app.config,
-                        # except the brightness value should be always actual
-                        current_brightness=self.__main_app.get_day_brightness(),
+                        # except the brightness values should be always actual
+                        day_brightness=self.__main_app.get_day_brightness(),
+                        night_brightness=self.__main_app.get_night_brightness(),
                         # provide the animations
                         animations=self.__main_app.available_animations,
                         default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
@@ -262,13 +263,22 @@ class HttpServer(metaclass=BottleCBVMeta):
     @post("/settings/<tab>")
     def save_settings(self, tab):
         if SettingsTabs[tab] == SettingsTabs.main:
-            brightness = request.forms.get("brightness_value")
+            # get the day and night brightness value
+            day_brightness = request.forms.get("day_brightness_value", type=int)
+            if request.forms.get("setting_night_brightness_enabled_value", default=False, type=bool):
+                night_brightness = request.forms.get("night_brightness_value", type=int)
+            else:
+                night_brightness = -1
+            # apply it
+            self.__main_app.apply_brightness(day_brightness, night_brightness)
+
             # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
             enable_rest = request.forms.get("enable_rest", default=False, type=bool)
             enable_tpm2net = request.forms.get("enable_tpm2net", default=False, type=bool)
 
             # save the settings
-            self.__main_app.config.set(Config.MAIN.DayBrightness, brightness)
+            self.__main_app.config.set(Config.MAIN.DayBrightness, day_brightness)
+            self.__main_app.config.set(Config.MAIN.NightBrightness, night_brightness)
             self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
             self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
         elif SettingsTabs[tab] == SettingsTabs.default_animation:
@@ -297,15 +307,15 @@ class HttpServer(metaclass=BottleCBVMeta):
     @get("/settings/reset/<tab>")
     def reset_settings(self, tab):
         # reset the brightness value
-        self.__main_app.set_brightness(self.__main_app.config.get(Config.MAIN.DayBrightness))
+        self.__main_app.apply_brightness()
 
         # for all other values a simple reload should be sufficient
         redirect("/settings/" + tab)
 
     @post("/settings/preview_brightness")
     def set_brightness(self):
-        value = request.forms.get("brightness_value")
-        self.__main_app.set_brightness(int(value))
+        value = request.forms.get("preview_brightness_value")
+        self.__main_app.preview_brightness(int(value))
 
     @get("/js/<file_name:path>")
     def load_js(self, file_name):
