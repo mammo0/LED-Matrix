@@ -114,7 +114,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                         # provide the main config
                         config=self.__main_app.config,
                         # except the brightness value should be always actual
-                        current_brightness=self.__main_app.get_brightness(),
+                        current_brightness=self.__main_app.get_day_brightness(),
                         # provide the animations
                         animations=self.__main_app.available_animations,
                         default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
@@ -268,7 +268,7 @@ class HttpServer(metaclass=BottleCBVMeta):
             enable_tpm2net = request.forms.get("enable_tpm2net", default=False, type=bool)
 
             # save the settings
-            self.__main_app.config.set(Config.MAIN.Brightness, brightness)
+            self.__main_app.config.set(Config.MAIN.DayBrightness, brightness)
             self.__main_app.config.set(Config.MAIN.RestServer, enable_rest)
             self.__main_app.config.set(Config.MAIN.TPM2NetServer, enable_tpm2net)
         elif SettingsTabs[tab] == SettingsTabs.default_animation:
@@ -297,7 +297,7 @@ class HttpServer(metaclass=BottleCBVMeta):
     @get("/settings/reset/<tab>")
     def reset_settings(self, tab):
         # reset the brightness value
-        self.__main_app.set_brightness(self.__main_app.config.get(Config.MAIN.Brightness))
+        self.__main_app.set_brightness(self.__main_app.config.get(Config.MAIN.DayBrightness))
 
         # for all other values a simple reload should be sufficient
         redirect("/settings/" + tab)

@@ -111,9 +111,9 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def get_brightness(self):
+    def get_day_brightness(self):
         """
-        @return: The brightness value of the current display.
+        @return: The brightness value for day times.
         """
 
     @abstractmethod
@@ -188,7 +188,7 @@ class Main(MainInterface):
         self.__conf_hardware = self.__config.get(Config.MAIN.Hardware)
         self.__conf_display_width = self.__config.get(Config.MAIN.DisplayWidth)
         self.__conf_display_height = self.__config.get(Config.MAIN.DisplayHeight)
-        self.set_brightness(self.__config.get(Config.MAIN.Brightness))
+        self.set_brightness(self.__config.get(Config.MAIN.DayBrightness))
 
     def __create_scheduler(self):
         # create the scheduler
@@ -413,7 +413,7 @@ class Main(MainInterface):
     def get_current_animation_name(self):
         return self.__animation_controller.get_current_animation_name()
 
-    def get_brightness(self):
+    def get_day_brightness(self):
         return self.__display_brightness
 
     def set_brightness(self, brightness):

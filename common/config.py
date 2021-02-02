@@ -82,7 +82,7 @@ class Config(Structure, StructureROMixin):
         DisplayWidth = ConfigValue(value_type=int, default_value=15,
                                    description="Set the number of LEDs for width and height of your matrix")
         DisplayHeight = ConfigValue(value_type=int, default_value=12)
-        Brightness = ConfigValue(value_type=int, default_value=85, description=[
+        DayBrightness = ConfigValue(value_type=int, default_value=85, description=[
             "Set the brightness in percent [Default: 85]",
             "Possible values: 0 < = x <= 100"
         ])
