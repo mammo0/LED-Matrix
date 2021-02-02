@@ -165,9 +165,15 @@ class HttpServer(metaclass=BottleCBVMeta):
     def __parse_cron_form(self, form):
         cron_structure = CronStructure()
         for category in CRON_DICT.keys():
-            value = form.get("cron_%s_value" % category)
-            if value != "*":
-                setattr(cron_structure, category.upper(), int(value))
+            selected_values = form.get("cron_%s_select_value" % category)
+
+            # validate values
+            try:
+                [int(val) for val in selected_values.split(",")]
+            except Exception:
+                continue
+
+            setattr(cron_structure, category.upper(), selected_values)
 
         entry = ScheduleEntry()
         entry.CRON_STRUCTURE = cron_structure

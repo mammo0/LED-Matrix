@@ -9,6 +9,13 @@
 % rebase("base.tpl", page_title="Schedule")
 
 
+<%
+    def xstr(s):
+        return '' if s is None else str(s)
+    end
+%>
+
+
 <div class="row">
     <div class="col">
         <div class="card">
@@ -34,22 +41,52 @@
             </div>
             <div class="card-body">
                 <form id="cron_form" method="post" autocomplete="off">
-                    % for category, items in CRON_DICT.items():
+                    % for category in CRON_DICT.keys():
                         <div class="form-group">
-                            <label for="cron_{{category}}">
+                            <label for="cron_{{category}}_select_text_container">
                                 {{category.title().replace("_", " ")}}
                             </label>
-                            <select id="cron_{{category}}" class="form-control" name="cron_{{category}}_value">
-                                <option value="*" {{"selected" if getattr(entry.CRON_STRUCTURE, category.upper()) is None else ""}}>Any</option>
-                                % for item in items:
-                                    <option value="{{item["value"]}}" {{"selected" if getattr(entry.CRON_STRUCTURE, category.upper()) == item["value"] else ""}}>
-                                        {{item["text"]}}
-                                    </option>
-                                % end
-                            </select>
+                            <div id="cron_{{category}}_select_text_container" class="input-group">
+                                <input id="cron_{{category}}_select_text" type="text" class="form-control" name="cron_{{category}}_select_value" placeholder="Any" value="{{xstr(getattr(entry.CRON_STRUCTURE, category.upper()))}}" aria-describedby="cron_{{category}}_select_btn">
+                                <div class="input-group-append">
+                                    <button id="cron_{{category}}_select_btn" type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="modal" data-target="#cron_{{category}}_modal">
+                                        Select
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     % end
                 </form>
+                % for category, items in CRON_DICT.items():
+                    <form id="cron_{{category}}_modal_form" autocomplete="off">
+                        <div class="modal fade" id="cron_{{category}}_modal" tabindex="-1" aria-labelledby="cron_{{category}}_modal_label" aria-hidden="true">
+                            <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="cron_{{category}}_modal_label">{{category.title().replace("_", " ")}}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        % for item in items:
+                                            <div class="form-check">
+                                                <input id="cron_{{category}}_modal_check_{{item["value"]}}" class="form-check-input" type="checkbox" name="{{item["value"]}}">
+                                                <label class="form-check-label" for="cron_{{category}}_modal_check_{{item["value"]}}">
+                                                    {{item["text"]}}
+                                                </label>
+                                            </div>
+                                        % end
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <button id="cron_{{category}}_modal_apply" type="button" class="btn btn-primary" data-dismiss="modal">Set</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                % end
             </div>
             <div class="card-footer">
                 <button id="btn_schedule_animation" type="submit" class="btn btn-primary float-right ml-3" formaction="{{request.url if is_modify else "/schedule/create"}}">
@@ -70,34 +107,74 @@
 
 <script>
     window.addEventListener("load", function(){
+        var category_names = [{{!",".join(["'%s'" % category for category in CRON_DICT.keys()])}}];
+        var categories = {};
+
+        // get the elements
+        for(let name of category_names){
+            categories[name] = {
+                "form": document.getElementById("cron_" + name + "_modal_form"),
+                "modal": document.getElementById("cron_" + name + "_modal"),
+                "text": document.getElementById("cron_" + name + "_select_text"),
+                "btn_apply": document.getElementById("cron_" + name + "_modal_apply")
+            };
+        }
+
+        // add an event listener to each modal
+        for(let cat in categories){
+            categories[cat].modal.addEventListener('show.bs.modal', function(event){
+                for(let val of categories[cat].text.value.split(",")){
+                    document.getElementById("cron_" + cat + "_modal_check_" + val).checked = true;
+                }
+            }, false);
+            categories[cat].modal.addEventListener('hide.bs.modal', function(event){
+                if(event.explicitOriginalTarget == categories[cat].btn_apply){
+                    // save values only if the apply button of the modal was clicked
+                    let selected_values = [];
+                    for(let form_item of categories[cat].form.elements){
+                        if(form_item.type == "checkbox" && form_item.checked)
+                            selected_values.push(form_item.name);
+                    }
+                    categories[cat].text.value = selected_values.join(",");
+                }
+            }, false);
+            categories[cat].modal.addEventListener('hidden.bs.modal', function(event){
+                // reset form if modal isn't visible anymore
+                categories[cat].form.reset();
+            }, false);
+        }
+
+        // main apply button
         btn_schedule_animation.onclick = function() {
+            let form_data = {};
+
             // add a hidden field that contains the selected animation name
-            let hiddenField = document.createElement('input');
-            hiddenField.type = 'hidden';
-            hiddenField.name = "selected_animation_name";
-            hiddenField.value = "{{entry.ANIMATION_SETTINGS.animation_name}}";
-            cron_form.appendChild(hiddenField);
+            form_data["selected_animation_name"] = "{{entry.ANIMATION_SETTINGS.animation_name}}";
 
             // this selector and form is defined by 'animation/settings.tpl'
             let animation_form = document.getElementById("animation_settings_form_{{entry.ANIMATION_SETTINGS.animation_name}}");
             // copy the field values from the animation form
-            for(form_item of animation_form.elements){
-                hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.name = form_item.name;
+            for(let form_item of animation_form.elements){
+                let value = "";
                 // special case checkbox
                 if(form_item.type == "checkbox"){
                     if(form_item.checked)
-                        hiddenField.value = form_item.value;
-                    else
-                        hiddenField.value = "";
+                        value = form_item.value;
                 } else {
-                    hiddenField.value = form_item.value;
+                    value = form_item.value;
                 }
-                cron_form.appendChild(hiddenField);
+                form_data[form_item.name] = value;
             }
 
-            // submit the form
+            // add the data to the main form
+            for(form_item_name in form_data){
+                let hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = form_item_name;
+                hiddenField.value = form_data[form_item_name];
+                cron_form.appendChild(hiddenField);
+            }
+            // submit it
             cron_form.action = this.formAction;
             cron_form.submit();
         }
