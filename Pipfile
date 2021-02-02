@@ -13,6 +13,7 @@ freetype-py = {editable = false, git = "https://github.com/mammo0/freetype-py.gi
 simple-plugin-loader = "*"
 apscheduler = "*"
 astral = "*"
+tzlocal = "*"
 
 [dev-packages]
 pygame = "*"
