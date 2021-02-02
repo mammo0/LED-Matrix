@@ -12,6 +12,8 @@ imageio = "*"
 freetype-py = {editable = false, git = "https://github.com/mammo0/freetype-py.git@a67acdd4d2784457c1a98d5514b310846a1672ef"}
 simple-plugin-loader = "*"
 apscheduler = "*"
+astral = "*"
+tzlocal = "*"
 
 [dev-packages]
 pygame = "*"

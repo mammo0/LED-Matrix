@@ -82,9 +82,14 @@ class Config(Structure, StructureROMixin):
         DisplayWidth = ConfigValue(value_type=int, default_value=15,
                                    description="Set the number of LEDs for width and height of your matrix")
         DisplayHeight = ConfigValue(value_type=int, default_value=12)
-        Brightness = ConfigValue(value_type=int, default_value=85, description=[
+        DayBrightness = ConfigValue(value_type=int, default_value=85, description=[
             "Set the brightness in percent [Default: 85]",
             "Possible values: 0 < = x <= 100"
+        ])
+        NightBrightness = ConfigValue(value_type=int, default_value=-1, description=[
+            "Set a brightness value that gets set on night times [Default: -1]",
+            "Possible values: 0 < = x <= 100",
+            "                 -1: disable"
         ])
         HttpServer = ConfigValue(value_type=bool, default_value=True, description=[
             "(De-)Activate the server interfaces that control the matrix.",

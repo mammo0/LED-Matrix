@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 import argparse
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 import queue
@@ -12,7 +13,11 @@ import threading
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+from astral.geocoder import lookup, database
+from astral.sun import sun
 from simple_plugin_loader import Loader
+import tzlocal
 
 from animation.abstract import AbstractAnimationController
 from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
@@ -111,16 +116,29 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def get_brightness(self):
+    def get_day_brightness(self):
         """
-        @return: The brightness value of the current display.
+        @return: The brightness value for day times.
         """
 
     @abstractmethod
-    def set_brightness(self, brightness):
+    def get_night_brightness(self):
         """
-        Set the brightness of the current display. It will be applied immediately.
-        @param brightness: The new brightness value.
+        @return: The brightness value for night times.
+        """
+
+    @abstractmethod
+    def apply_brightness(self, new_day_brightness=None, new_night_brightness=None):
+        """
+        Applies the brightness based on the current time.
+        @param new_day_brightness: If set, use it as the new day brightness value.
+        @param new_night_brightness: If set, use it as the new night brightness value.
+        """
+
+    @abstractmethod
+    def preview_brightness(self, brightness):
+        """
+        Directly apply the given brightness value on the current display.
         """
 
     @property
@@ -157,9 +175,6 @@ class Main(MainInterface):
         self.__commit_changes = commit_changes
         self.__load_settings()
 
-        # create the display object
-        self.__initialize_display()
-
         # this is the queue that holds the frames to display
         self.__frame_queue = queue.Queue(maxsize=1)
 
@@ -170,6 +185,22 @@ class Main(MainInterface):
         # the animation scheduler
         self.__animation_scheduler = self.__create_scheduler()
         self.__schedule_lock = Lock()
+
+        # the nighttime scheduler
+        self.__location = lookup(tzlocal.get_localzone().zone.split("/")[1], database())
+        self.__nighttime_scheduler = BackgroundScheduler()
+        self.__sunrise_job = self.__nighttime_scheduler.add_job(func=self.apply_brightness)
+        self.__sunset_job = self.__nighttime_scheduler.add_job(func=self.apply_brightness)
+        self.__nighttime_scheduler.add_job(func=self.__calculate_nighttimes,
+                                           trigger=CronTrigger(hour="0,12",
+                                                               minute=0,
+                                                               second=0))
+        self.__calculate_nighttimes()
+        self.apply_brightness()
+        self.__nighttime_scheduler.start()
+
+        # create the display object
+        self.__initialize_display()
 
         # server interfaces
         self.__http_server = None
@@ -187,7 +218,8 @@ class Main(MainInterface):
         self.__conf_hardware = self.__config.get(Config.MAIN.Hardware)
         self.__conf_display_width = self.__config.get(Config.MAIN.DisplayWidth)
         self.__conf_display_height = self.__config.get(Config.MAIN.DisplayHeight)
-        self.set_brightness(self.__config.get(Config.MAIN.Brightness))
+        self.__day_brightness = self.__config.get(Config.MAIN.DayBrightness)
+        self.__night_brightness = self.__config.get(Config.MAIN.NightBrightness)
 
     def __create_scheduler(self):
         # start with an empty table
@@ -239,6 +271,17 @@ class Main(MainInterface):
             self.__clear_display()
         except KeyError:
             raise RuntimeError("Display hardware '{}' not known.".format(self.__conf_hardware))
+
+    def __calculate_nighttimes(self):
+        s = sun(self.__location.observer, date=datetime.now().date())
+        if s["sunset"] < datetime.now(tz=tzlocal.get_localzone()):
+            # calling after sunset, so calculate for the next day
+            s = sun(self.__location.observer, date=datetime.now().date() + timedelta(days=1))
+        self.__sunrise = s["sunrise"]
+        self.__sunset = s["sunset"]
+
+        self.__sunrise_job.reschedule(trigger=DateTrigger(run_date=self.__sunrise))
+        self.__sunset_job.reschedule(trigger=DateTrigger(run_date=self.__sunset))
 
     def __start_servers(self):
         # HTTP server
@@ -415,16 +458,27 @@ class Main(MainInterface):
     def get_current_animation_name(self):
         return self.__animation_controller.get_current_animation_name()
 
-    def get_brightness(self):
-        return self.__display_brightness
+    def get_day_brightness(self):
+        return self.__day_brightness
 
-    def set_brightness(self, brightness):
-        if not 0 <= brightness <= 100:
-            eprint("Invalid brightness value '%d'! Using default value '85'." % self.__display_brightness)
-            self.__display_brightness = 85
+    def get_night_brightness(self):
+        return self.__night_brightness
+
+    def apply_brightness(self, new_day_brightness=None, new_night_brightness=None):
+        if new_day_brightness is not None:
+            self.__day_brightness = new_day_brightness
+        if new_night_brightness is not None:
+            self.__night_brightness = new_night_brightness
+
+        if (self.__night_brightness == -1 or
+                self.__sunrise <= datetime.now(tz=tzlocal.get_localzone()) <= self.__sunset):
+            self.__display_brightness = self.__day_brightness
         else:
-            self.__display_brightness = brightness
+            self.__display_brightness = self.__night_brightness
 
+        self.preview_brightness(self.__display_brightness)
+
+    def preview_brightness(self, brightness):
         # apply to the current display if it's already initialized
         if getattr(self, "_%s__display" % self.__class__.__name__, None) is not None:
             self.__display.set_brightness(brightness)
