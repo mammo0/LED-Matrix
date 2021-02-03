@@ -573,7 +573,7 @@ class AnimationController(threading.Thread):
             for event in self.queue:
                 # compare event type and the animation name
                 if (event.event_type == item.event_type and
-                        event.animation_name == item.animation_name):
+                        event.animation_settings.animation_name == item.animation_settings.animation_name):
                     return
 
             queue.Queue._put(self, item)
@@ -658,12 +658,12 @@ class AnimationController(threading.Thread):
             animation.start_animation(animation_settings)
             self.__current_animation = animation
 
-    def __stop_animation(self, animation_name=None):
+    def __stop_animation(self, animation_settings=None):
         # if there's already a running animation, stop it
         if self.__current_animation is not None:
             # but only if not a specific animation should be stopped
-            if (animation_name is not None and
-                    self.__current_animation.animation_name != animation_name):
+            if (animation_settings is not None and
+                    self.__current_animation.animation_name != animation_settings.animation_name):
                 return
             self.__current_animation.stop_animation()
             self.__current_animation = None
@@ -687,7 +687,7 @@ class AnimationController(threading.Thread):
             return
         # check if the current animation is the one that should be stopped
         if (animation_name is not None and
-                animation_to_stop.animation_name != animation_name):
+                animation_to_stop.animation_settings.animation_name != animation_name):
             # otherwise do nothing
             return
 
