@@ -43,10 +43,12 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def start_animation(self, animation_settings, blocking=False):
+    def start_animation(self, animation_settings, pause_current_animation=False, blocking=False):
         """
         Start a specific animation. See the respective animation class for which options are available.
         @param animation_settings: Instance of _AnimationSettingsStructure.
+        @param pause_current_animation: If set to True, just pause the current animation and resume
+                                          after the new animation finishes.
         @param blocking: If set to True, wait until the animation is running. Otherwise return immediately.
         """
 
@@ -364,8 +366,9 @@ class Main(MainInterface):
         # wait until the the __reload_signal is unset
         self.__reload_signal.wait_unset()
 
-    def start_animation(self, animation_settings, blocking=False):
+    def start_animation(self, animation_settings, pause_current_animation=False, blocking=False):
         self.__animation_controller.start_animation(animation_settings=animation_settings,
+                                                    pause_current_animation=pause_current_animation,
                                                     blocking=blocking)
 
     def schedule_animation(self, cron_structure, animation_settings):
