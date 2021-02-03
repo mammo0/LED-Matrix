@@ -152,7 +152,7 @@
             document.getElementById("tab_" + previos_selected_tab + "_dropdown_item").classList.remove("d-none");
 
             // update environment
-            tab_drop.innerHTML = tab_items[new_tab];
+            tab_drop.textContent = tab_items[new_tab];
             previos_selected_tab = new_tab;
 
             // change the browser address bar to the current selected settings tab
