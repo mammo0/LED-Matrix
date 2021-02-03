@@ -507,9 +507,9 @@ class Main(MainInterface):
                 if first_loop:
                     self.__reload_signal.clear()
                     first_loop = False
-
-            # to limit CPU usage do not go faster than 60 "fps"
-            self.__quit_signal.wait(1/60)
+            else:
+                # to limit CPU usage do not go faster than 60 "fps" on empty queue
+                self.__quit_signal.wait(1/60)
 
         self.__animation_scheduler.shutdown()
         self.__animation_controller.stop()

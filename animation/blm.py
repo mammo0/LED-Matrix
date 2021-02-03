@@ -34,7 +34,7 @@ class BlmAnimation(AbstractAnimation):
         self.__background_color = self._settings.parameter.background_color.pil_tuple
         self.__padding_color = self._settings.parameter.padding_color.pil_tuple
 
-        print(self)
+        self.__frame_generator = self.__rendered_frames()
 
     def intrinsic_duration(self):
         ret = 0
@@ -75,17 +75,20 @@ class BlmAnimation(AbstractAnimation):
             raise AttributeError
 
     def render_next_frame(self):
-        while not self._stop_event.is_set():
-            for frame in self.__rendered_frames():
-                if not self._stop_event.is_set():
-                    self._frame_queue.put(frame["frame"].copy())
-                else:
-                    break
-                self._stop_event.wait(timeout=frame["hold"]/1000)
+        next_frame = next(self.__frame_generator, None)
 
-            # check repeat
-            if not self.is_next_iteration():
-                break
+        if next_frame is not None:
+            self._frame_queue.put(next_frame["frame"].copy())
+            self._set_animation_speed(next_frame["hold"] / 1000)
+
+            # maybe there's still more to render
+            return True
+        elif self.is_next_iteration():
+            # recreate frame generator if another iteration should be started
+            self.__frame_generator = self.__rendered_frames()
+
+        # the current iteration has no frames left
+        return False
 
     def __rendered_frames(self):
         """

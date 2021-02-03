@@ -8,12 +8,13 @@ class DummySettings(_AnimationSettingsStructure):
 
 class DummyAnimation(AbstractAnimation):
     def render_next_frame(self):
-        # do nothing and wait until the animation is stopped
-        self._stop_event.wait()
+        # do nothing here, but continue
+        return True
 
     def display_frame(self, frame):
-        # check stop event
-        if not self._stop_event.is_set():
+        # check stop and pause event
+        if not (self._stop_event.is_set() or
+                self._pause_event.is_set()):
             self._frame_queue.put(frame)
 
 

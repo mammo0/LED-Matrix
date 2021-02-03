@@ -47,6 +47,12 @@ class ClockAnimation(AbstractAnimation):
         self.__analog_max_hand_length = min([self.__analog_middle_x + 1,
                                              self.__analog_middle_y + 1])
 
+        # set the animation speed bassed on the variant
+        if self._settings.variant == ClockVariant.analog:
+            self._set_animation_speed(1)
+        elif self._settings.variant == ClockVariant.digital:
+            self._set_animation_speed(1/10)
+
     def __middle_calculation(self, value):
         value /= 2
         if value == int(value):
@@ -170,20 +176,24 @@ class ClockAnimation(AbstractAnimation):
         return image
 
     def render_next_frame(self):
-        while not self._stop_event.is_set():
-            local_time = time.localtime()
+        local_time = time.localtime()
 
-            if self._settings.variant == ClockVariant.analog:
-                image = self.__analog_create_clock_image(local_time.tm_hour,
-                                                         local_time.tm_min)
-                self._frame_queue.put(np.array(image).copy())
-                self._stop_event.wait(timeout=1)
-            elif self._settings.variant == ClockVariant.digital:
-                image = self.__digital_create_clock_image(local_time.tm_hour,
-                                                          local_time.tm_min,
-                                                          local_time.tm_sec)
-                self._frame_queue.put(np.array(image).copy())
-                self._stop_event.wait(timeout=1/10)
+        if self._settings.variant == ClockVariant.analog:
+            image = self.__analog_create_clock_image(local_time.tm_hour,
+                                                     local_time.tm_min)
+            self._frame_queue.put(np.array(image).copy())
+        elif self._settings.variant == ClockVariant.digital:
+            image = self.__digital_create_clock_image(local_time.tm_hour,
+                                                      local_time.tm_min,
+                                                      local_time.tm_sec)
+            self._frame_queue.put(np.array(image).copy())
+        else:
+            # this should not happen
+            # but if, just exit here
+            return False
+
+        # the clock animation is infinitely
+        return True
 
 
 class ClockController(AbstractAnimationController):

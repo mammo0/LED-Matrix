@@ -10,6 +10,7 @@ from simple_classproperty import ClasspropertyMeta, classproperty
 from common import eprint
 from common.color import Color
 from common.structure import TypedStructure
+from common.threading import EventWithUnsetSignal
 
 
 class _AnimationSettingsStructureMeta(type(TypedStructure)):
@@ -69,20 +70,68 @@ class AbstractAnimation(ABC, Thread):
         self.__on_finish_callable = on_finish_callable
 
         self._stop_event = Event()  # query this often! exit self.render_next_frame quickly
+        # pause event
+        self._pause_event = Event()
+        # helper event
+        self.__animation_paused = EventWithUnsetSignal()
+
+        # default animation speed 60 fps
+        self.__animation_speed = 1/60
 
     def run(self):
-        """This is the run method from threading.Thread"""
-        try:
-            self.render_next_frame()
-        except Exception as e:
-            eprint("During the execution of the animation the following error occurred:")
-            eprint(repr(e))
-        finally:
-            # now the animation has stopped, so call the finish callable
-            self.__on_finish_callable()
+        while not self._stop_event.is_set():
+            if not self._pause_event.is_set():
+                # if the animation is still marked as paused, unset it here
+                if self.__animation_paused.is_set():
+                    # also notifies the resume method that now the animation is running again
+                    self.__animation_paused.clear()
+
+                # add the next frame to the frame queue
+                try:
+                    more = self.render_next_frame()
+                except Exception as e:
+                    eprint("During the execution of the animation the following error occurred:")
+                    eprint(repr(e))
+                    break
+
+                # check if the animation has finished
+                if not more:
+                    # check for more iterations
+                    if self.is_next_iteration():
+                        # decrease iteration count
+                        self.__remaining_repeat -= 1
+                        # start a new iteration
+                        continue
+                    else:
+                        # stop here
+                        break
+            else:
+                # notify the pause method that the animation is now paused
+                self.__animation_paused.set()
+
+            # limit fps
+            self._stop_event.wait(self.__animation_speed)
+
+        # now the animation has stopped, so call the finish callable
+        self.__on_finish_callable()
 
     # def start(self):
     """We do not overwrite this. It is from threading.Thread"""
+
+    def _set_animation_speed(self, animation_speed):
+        self.__animation_speed = animation_speed
+
+    def pause(self):
+        self._pause_event.set()
+
+        # wait until the current frame is rendered
+        self.__animation_paused.wait()
+
+    def resume(self):
+        self._pause_event.clear()
+
+        # wait until the animation is running again
+        self.__animation_paused.wait_unset()
 
     def stop_and_wait(self):
         self._stop_event.set()
@@ -98,7 +147,6 @@ class AbstractAnimation(ABC, Thread):
         else:
             # check remaining repeat cycles
             if self.__remaining_repeat > 0:
-                self.__remaining_repeat -= 1
                 return True
             else:
                 return False
@@ -143,6 +191,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         self.__animation_thread = None  # this variable contains the animation thread
 
         self.__animation_running = Event()
+        self.__animation_paused = Event()
 
     @classproperty
     def animation_name(cls):
@@ -179,8 +228,7 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     @property
     def animation_settings(self):
-        if (self.__animation_running.is_set() and
-                self.__animation_thread and
+        if (self.__animation_thread and
                 self.__animation_thread.is_alive()):
             return self.__animation_thread.settings
         else:
@@ -196,6 +244,10 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     @property
     def is_running(self):
         return self.__animation_running.is_set()
+
+    @property
+    def is_paused(self):
+        return self.__animation_paused.is_set()
 
     def start_animation(self, animation_settings):
         """
@@ -214,6 +266,21 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
         # start the animation thread
         self.__animation_thread.start()
+
+    def pause_animation(self):
+        if (self.__animation_running.is_set() and
+                self.__animation_thread and
+                self.__animation_thread.is_alive()):
+            self.__animation_thread.pause()
+            self.__animation_paused.set()
+            self.__animation_running.clear()
+
+    def resume_animation(self):
+        if (self.__animation_thread and
+                self.__animation_thread.is_alive()):
+            self.__animation_thread.resume()
+            self.__animation_running.set()
+            self.__animation_paused.clear()
 
     def _validate_animation_settings(self, animation_settings):
         # variant

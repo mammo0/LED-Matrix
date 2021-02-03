@@ -35,8 +35,13 @@ class MoodlightAnimation(AbstractAnimation):
         # TODO: implement hold and transition_duration
         self.__hold = 10  # seconds to hold colors
         self.__transition_duration = 10  # seconds to change from one to other
-        self.__frequency = 60  # frames per second
-        print("MoodlightAnimation created")
+
+        if self._settings.variant == MoodlightVariant.colorwheel:
+            self.__frame_generator = self.__generate_frames(_ColorMode.colorwheel, _Style.fill)
+        elif self._settings.variant == MoodlightVariant.cyclecolors:
+            self.__frame_generator = self.__generate_frames(_ColorMode.cyclecolors, _Style.random_dot)
+        elif self._settings.variant == MoodlightVariant.wish_down_up:
+            self.__frame_generator = self.__generate_frames(_ColorMode.colorwheel, _Style.wish_down_up)
 
     def __hsv_to_rgb(self, h, s, v):
         # h is in degrees
@@ -89,7 +94,7 @@ class MoodlightAnimation(AbstractAnimation):
                 for _ in range(hold):
                     yield color
 
-    def __frame_generator(self, color_mode, style):
+    def __generate_frames(self, color_mode, style):
         frame = np.zeros((self._height, self._width, 3), dtype=np.uint8)
 
         if color_mode == _ColorMode.colorwheel:
@@ -113,26 +118,12 @@ class MoodlightAnimation(AbstractAnimation):
                 yield frame
 
     def render_next_frame(self):
-        while not self._stop_event.is_set():
-            if self._settings.variant == MoodlightVariant.colorwheel:
-                generator = self.__frame_generator(_ColorMode.colorwheel, _Style.fill)
+        # there's always a next frame because of 'while True' in the generator
+        next_frame = next(self.__frame_generator)
+        self._frame_queue.put(next_frame.copy())
 
-            elif self._settings.variant == MoodlightVariant.cyclecolors:
-                generator = self.__frame_generator(_ColorMode.cyclecolors, _Style.random_dot)
-
-            elif self._settings.variant == MoodlightVariant.wish_down_up:
-                generator = self.__frame_generator(_ColorMode.colorwheel, _Style.wish_down_up)
-
-            for frame in generator:
-                if not self._stop_event.is_set():
-                    self._frame_queue.put(frame.copy())
-                else:
-                    break
-                self._stop_event.wait(timeout=1/self.__frequency)
-            # if self.repeat > 0:
-            #     self.repeat -= 1
-            # elif self.repeat == 0:
-            #     break
+        # moodlight runs infinitely
+        return True
 
 
 class MoodlightController(AbstractAnimationController):

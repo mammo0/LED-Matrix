@@ -36,6 +36,10 @@ class TextAnimation(AbstractAnimation):
         self.__emoji_face.set_char_size(emoji_size * 64)
         np.set_printoptions(threshold=sys.maxsize, linewidth=300)
 
+        self.__frame_generator = self.__generate_frames()
+
+        self._set_animation_speed(1.0 / self.__steps_per_second)
+
     def __del__(self):
         del self.__text_face
         del self.__emoji_face
@@ -162,34 +166,41 @@ class TextAnimation(AbstractAnimation):
         red = buf[:, :, 2]
         return np.dstack((red, green, blue))
 
-    def render_next_frame(self):
-        while not self._stop_event.is_set():
-            if self.__steps_per_second <= 0 or self.__pixels_per_step < 1:
-                return
-            buf = self.__render(self.__text)
-            height, _width, _nbytes = buf.shape
-            h_pad_0 = self._height
-            h_pad_1 = self._width + self.__pixels_per_step
-            v_pad_0 = 0
-            v_pad_1 = 0
-            if height < self._height:
-                v_pad_0 = int((self._height - height)/2)
-                v_pad_1 = self._height - height - v_pad_0
+    def __generate_frames(self):
+        if self.__steps_per_second <= 0 or self.__pixels_per_step < 1:
+            return
+        buf = self.__render(self.__text)
+        height, _width, _nbytes = buf.shape
+        h_pad_0 = self._height
+        h_pad_1 = self._width + self.__pixels_per_step
+        v_pad_0 = 0
+        v_pad_1 = 0
+        if height < self._height:
+            v_pad_0 = int((self._height - height)/2)
+            v_pad_1 = self._height - height - v_pad_0
 
-            buf = np.pad(buf, ((v_pad_0, v_pad_1), (h_pad_0, h_pad_1), (0, 0)),
-                         'constant', constant_values=0)
-            wait = 1.0 / self.__steps_per_second
+        buf = np.pad(buf, ((v_pad_0, v_pad_1), (h_pad_0, h_pad_1), (0, 0)),
+                     'constant', constant_values=0)
 
-            for i in range(0, buf.shape[1] - self._width, self.__pixels_per_step):
-                if self._stop_event.is_set():
-                    break
-                cut = buf[0:self._height, i:i+self._width, :]
-                self._frame_queue.put(cut.copy())
-                self._stop_event.wait(timeout=wait)
-
-            # check repeat
-            if not self.is_next_iteration():
+        for i in range(0, buf.shape[1] - self._width, self.__pixels_per_step):
+            if self._stop_event.is_set():
                 break
+            yield buf[0:self._height, i:i+self._width, :]
+
+    def render_next_frame(self):
+        next_frame = next(self.__frame_generator, None)
+
+        if next_frame is not None:
+            self._frame_queue.put(next_frame.copy())
+
+            # maybe there's still more to render
+            return True
+        elif self.is_next_iteration():
+            # recreate frame generator if another iteration should be started
+            self.__frame_generator = self.__generate_frames()
+
+        # the current iteration has no frames left
+        return False
 
 
 class TextController(AbstractAnimationController):
