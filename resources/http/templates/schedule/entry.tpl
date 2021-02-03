@@ -123,8 +123,10 @@
         // add an event listener to each modal
         for(let cat in categories){
             categories[cat].modal.addEventListener('show.bs.modal', function(event){
+                // check selected checkboxes
                 for(let val of categories[cat].text.value.split(",")){
-                    document.getElementById("cron_" + cat + "_modal_check_" + val).checked = true;
+                    if(val)
+                        document.getElementById("cron_" + cat + "_modal_check_" + val).checked = true;
                 }
             }, false);
             categories[cat].modal.addEventListener('hide.bs.modal', function(event){
