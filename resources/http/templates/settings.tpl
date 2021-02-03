@@ -48,7 +48,7 @@
                                     <span class="pr-2">
                                         <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
                                     </span>
-                                    <a id="setting_day_brightness_preview_btn" class="btn btn-success">Preview</a>
+                                    <a class="btn btn-success" onclick="preview_brightness(setting_day_brightness_slider.value);">Preview</a>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -69,7 +69,7 @@
                                         <span class="pr-2">
                                             <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
                                         </span>
-                                        <a id="setting_night_brightness_preview_btn" class="btn btn-success">Preview</a>
+                                        <a class="btn btn-success" onclick="preview_brightness(setting_night_brightness_slider.value);">Preview</a>
                                     </div>
                                 </div>
                             </div>
@@ -120,23 +120,17 @@
 <script src="/js/slider.js"></script>
 <script src="/js/post_request.js"></script>
 <script>
+    function preview_brightness(brightness){
+        // create a dynamic form object, that contains only the new brightness value
+        let form_data = new FormData();
+        form_data.append("preview_brightness_value", brightness);
+
+        // send the request
+        post_request("/settings/preview_brightness", form_data);
+    }
+
     window.addEventListener("load", function(){
-        setting_day_brightness_preview_btn.onclick = function(){
-            // create a dynamic form object, that contains only the new brightness value
-            let form_data = new FormData();
-            form_data.append("preview_brightness_value", setting_day_brightness_slider.value);
-
-            // send the request
-            post_request("/settings/preview_brightness", form_data);
-        }
-        setting_night_brightness_preview_btn.onclick = function(){
-            // create a dynamic form object, that contains only the new brightness value
-            let form_data = new FormData();
-            form_data.append("preview_brightness_value", setting_night_brightness_slider.value);
-
-            // send the request
-            post_request("/settings/preview_brightness", form_data);
-        }
+        // toggle night brightness slider visibiltiy with checkbox
         setting_night_brightness_enabled.onchange = function() {
             if(this.checked)
                 setting_night_brightness_container.classList.remove("d-none");
