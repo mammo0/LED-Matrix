@@ -72,7 +72,7 @@
                                             </div>
                                             <div class="row pt-3 form-check">
                                                 <input id="cron_{{category}}_modal_check_all" class="form-check-input all-checkbox" type="checkbox" onclick="mark_modal_checkboxes(cron_{{category}}_modal_form, this.checked);">
-                                                <label class="form-check-label" for="cron_{{category}}_modal_check_all">
+                                                <label class="form-check-label d-block" for="cron_{{category}}_modal_check_all">
                                                     afdsL
                                                 </label>
                                             </div>
@@ -82,7 +82,7 @@
                                         % for item in items:
                                             <div class="form-check">
                                                 <input id="cron_{{category}}_modal_check_{{item["value"]}}" class="form-check-input" type="checkbox" name="{{item["value"]}}" onclick="update_all_checked_checkbox(cron_{{category}}_modal_form);">
-                                                <label class="form-check-label" for="cron_{{category}}_modal_check_{{item["value"]}}">
+                                                <label class="form-check-label d-block" for="cron_{{category}}_modal_check_{{item["value"]}}">
                                                     {{item["text"]}}
                                                 </label>
                                             </div>
