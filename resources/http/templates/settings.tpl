@@ -38,7 +38,7 @@
                         <form id="main_settings_form" method="post" action="/settings/{{SettingsTabs.main.name}}" autocomplete="off">
                             <div class="form-group">
                                 <label for="setting_day_brightness_container">Day Brightness</label>
-                                <div id="setting_day_brightness_container" class="slider_container d-flex align-items-center">
+                                <div id="setting_day_brightness_container" class="slider-container d-flex align-items-center">
                                     <input id="setting_day_brightness_slider"
                                            class="custom-range slider flex-grow-1 mr-2"
                                            style="width:1px"
@@ -59,7 +59,7 @@
                                     </label>
                                 </div>
                                 <div id="setting_night_brightness_container" class="{{"d-none" if night_brightness == -1 else ""}}">
-                                    <div class="slider_container d-flex align-items-center">
+                                    <div class="slider-container d-flex align-items-center">
                                         <input id="setting_night_brightness_slider"
                                                class="custom-range slider flex-grow-1 mr-2"
                                                style="width:1px"

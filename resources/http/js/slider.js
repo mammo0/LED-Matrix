@@ -1,5 +1,5 @@
 window.addEventListener("load", function(){
-    let slider_container = document.getElementsByClassName("slider_container");
+    let slider_container = document.getElementsByClassName("slider-container");
 
     for(let container of slider_container){
         let slider = container.getElementsByClassName("slider")[0];
