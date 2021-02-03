@@ -141,7 +141,10 @@
 
         // keep the dropdown tab selection in sync with the real tabs
         var previos_selected_tab = "{{active_tab.name}}";
-        function update_tab_environment(selected_dropdown_item, new_dropdown_content, new_tab){
+        let tab_items = {
+            {{!",".join(["'%s': '%s'" % (tab.name, tab.value) for tab in SettingsTabs])}}
+        };
+        function update_tab_environment(selected_dropdown_item, new_tab){
             // hide the selected item
             selected_dropdown_item.classList.add("d-none");
 
@@ -149,23 +152,26 @@
             document.getElementById("tab_drop_" + previos_selected_tab).classList.remove("d-none");
 
             // update environment
-            tab_drop.innerHTML = new_dropdown_content;
+            tab_drop.innerHTML = tab_items[new_tab];
             previos_selected_tab = new_tab;
 
             // change the browser address bar to the current selected settings tab
             // so on page reload the same tab is displayed
             window.history.replaceState("", "{{page_title}}", "/settings/" + new_tab);
         }
-        % for tab in SettingsTabs:
-            tab_{{tab.name}}.onclick = function(){
-                update_tab_environment(tab_drop_{{tab.name}}, "{{tab.value}}", "{{tab.name}}");
+        for(let tab_name in tab_items){
+            let tab_element = document.getElementById("tab_" + tab_name);
+            let tab_dropdown_element = document.getElementById("tab_drop_" + tab_name);
+
+            tab_element.onclick = function(){
+                update_tab_environment(tab_dropdown_element, tab_name);
             }
-            tab_drop_{{tab.name}}.onclick = function(){
-                update_tab_environment(this, "{{tab.value}}", "{{tab.name}}");
+            tab_dropdown_element.onclick = function(){
+                update_tab_environment(this, tab_name);
 
                 // show the tab
-                tab_{{tab.name}}.Tab.show()
+                tab_element.Tab.show();
             }
-        % end
+        }
     });
 </script>
