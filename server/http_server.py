@@ -121,6 +121,9 @@ class HttpServer(metaclass=BottleCBVMeta):
                         default_animation_name=self.__main_app.config.get(Config.DEFAULTANIMATION.Animation))
 
     def __parse_animation_form(self, form):
+        # get unicode strings
+        form = form.decode()
+
         animation_name = form.get("selected_animation_name")
 
         animation_obj = self.__main_app.available_animations[animation_name]
@@ -161,6 +164,9 @@ class HttpServer(metaclass=BottleCBVMeta):
         return animation_settings
 
     def __parse_cron_form(self, form):
+        # get unicode strings
+        form = form.decode()
+
         cron_structure = CronStructure()
         for category in CRON_DICT.keys():
             selected_values = form.get("cron_%s_select_value" % category)
