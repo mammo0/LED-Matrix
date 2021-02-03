@@ -5,6 +5,7 @@ import argparse
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
+from queue import LifoQueue
 import queue
 import signal
 import sys
@@ -541,9 +542,12 @@ class Main(MainInterface):
 
 class AnimationController(threading.Thread):
     class _Event():
-        def __init__(self, event_type, animation_settings):
+        def __init__(self, event_type, animation_settings,
+                     pause_current_animation=False, resume_previous_animation=False):
             self.event_type = event_type
             self.animation_settings = animation_settings
+            self.pause_current_animation = pause_current_animation
+            self.resume_previous_animation = resume_previous_animation
 
             self.next_event = None
             self.event_lock = threading.Event()
@@ -606,6 +610,7 @@ class AnimationController(threading.Thread):
 
         self.__stop_event = threading.Event()
         self.__controll_queue = AnimationController._EventQueue()
+        self.__pause_queue = LifoQueue()
 
         # the current running animation
         self.__current_animation = None
@@ -635,18 +640,47 @@ class AnimationController(threading.Thread):
 
         return animations
 
-    def __start_default_animation(self):
-        return self.start_animation(self.__default_animation_settings)
+    def __on_last_element_processed(self):
+        # check for paused animations
+        if self.__pause_queue.empty():
+            # if there's no paused animation, start the default animation
+            return self.__create_start_event(self.__default_animation_settings)
+        else:
+            return self.__create_start_event(None,
+                                             pause_current_animation=False, resume_previous_animation=True,
+                                             blocking=False)
 
     def __on_animation_finished(self):
         # whenever an animation stops or finishes check if there are unfinished jobs
         if not self.__controll_queue.tasks_remaining:
-            # if not, start the default animation
-            self.__start_default_animation()
+            self.__on_last_element_processed()
 
-    def __start_animation(self, animation_settings):
-        # stop any currently running animation
-        self.__stop_animation()
+    def __start_animation(self, animation_settings, pause_current_animation, resume_previous_animation):
+        # check if the current animation should be paused
+        if (pause_current_animation and
+                self.__current_animation is not None):
+            # if so, pause it and add it to the pause stack
+            animation_to_pause = self.__current_animation
+            animation_to_pause.pause_animation()
+            self.__pause_queue.put(animation_to_pause)
+        elif (animation_settings is None and
+                resume_previous_animation):
+            # resume the last paused animation
+            animation_to_resume = self.__pause_queue.get()
+            animation_to_resume.resume_animation()
+            self.__current_animation = animation_to_resume
+
+            # stop here
+            return
+        else:
+            # if an animation should be started without pausing the current one,
+            # clear the pause queue, because the afterwards not resuming will be done
+            if not self.__pause_queue.empty():
+                # force clearing of pause queue
+                self.__pause_queue.queue.clear()
+
+            # stop any currently running animation
+            self.__stop_animation()
 
         try:
             # get the new animation
@@ -668,9 +702,21 @@ class AnimationController(threading.Thread):
             self.__current_animation.stop_animation()
             self.__current_animation = None
 
-    def start_animation(self, animation_settings, blocking=False):
+    def start_animation(self, animation_settings,
+                        pause_current_animation=False,
+                        blocking=False):
+        self.__create_start_event(animation_settings,
+                                  pause_current_animation=pause_current_animation,
+                                  resume_previous_animation=False,
+                                  blocking=blocking)
+
+    def __create_start_event(self, animation_settings,
+                             pause_current_animation=False, resume_previous_animation=False,
+                             blocking=False):
         start_event = AnimationController._Event(AnimationController._EventType.start,
-                                                 animation_settings)
+                                                 animation_settings,
+                                                 pause_current_animation=pause_current_animation,
+                                                 resume_previous_animation=resume_previous_animation)
         self.__controll_queue.put(start_event)
 
         # check blocking
@@ -680,16 +726,19 @@ class AnimationController(threading.Thread):
         return start_event
 
     def stop_animation(self, animation_name=None, blocking=False):
+        self.__create_stop_event(animation_name=animation_name, blocking=blocking)
+
+    def __create_stop_event(self, animation_name=None, blocking=False):
         # by default the current animation should be stopped
         animation_to_stop = self.__current_animation
         if animation_to_stop is None:
             # nothing can be stopped
-            return
+            return None
         # check if the current animation is the one that should be stopped
         if (animation_name is not None and
                 animation_to_stop.animation_settings.animation_name != animation_name):
             # otherwise do nothing
-            return
+            return None
 
         # create and schedule the stop event
         stop_event = AnimationController._Event(AnimationController._EventType.stop,
@@ -725,7 +774,7 @@ class AnimationController(threading.Thread):
 
     def run(self):
         # on start show default animation
-        self.__start_default_animation()
+        self.__create_start_event(self.__default_animation_settings)
 
         while not self.__stop_event.is_set():
             # get the next event
@@ -738,17 +787,19 @@ class AnimationController(threading.Thread):
 
             # check the event type
             if event.event_type == AnimationController._EventType.start:
-                self.__start_animation(event.animation_settings)
+                self.__start_animation(event.animation_settings,
+                                       pause_current_animation=event.pause_current_animation,
+                                       resume_previous_animation=event.resume_previous_animation)
             elif event.event_type == AnimationController._EventType.stop:
                 self.__stop_animation(event.animation_settings)
                 # special case on stop event:
                 # after the animation was stopped check if this was the last task (for now)
                 if self.__controll_queue.last_task_running:
-                    # if so, start the default animation
-                    default_start_event = self.__start_default_animation()
+                    # if so, resume an paused animations or start the default one
+                    new_event = self.__on_last_element_processed()
                     # link the new event to the old one
                     # this is needed for a blocking stop event
-                    event.chain(default_start_event)
+                    event.chain(new_event)
 
             # the event is processed now
             self.__controll_queue.task_done(event)
