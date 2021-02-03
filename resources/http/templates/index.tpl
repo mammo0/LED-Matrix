@@ -25,11 +25,11 @@
                 %>
             </div>
             <div class="card-footer">
-                <button id="btn_start_animation" type="submit" class="btn btn-primary float-right ml-3" formaction="/">
+                <button id="btn_start_animation" type="submit" class="btn btn-primary float-right ml-3" formaction="/" onclick="submit_animation_form(this.formAction);">
                     <span class="icon bi-play-fill"></span>
                     <span>Start</span>
                 </button>
-                <button id="btn_new_schedule_entry" type="submit" class="btn btn-primary float-right" formaction="/schedule/new">
+                <button id="btn_new_schedule_entry" type="submit" class="btn btn-primary float-right" formaction="/schedule/new" onclick="submit_animation_form(this.formAction);">
                     <span class="icon bi-clock-fill"></span>
                     <span>Schedule</span>
                 </button>
@@ -38,30 +38,4 @@
     </div>
 </div>
 
-<script>
-    window.addEventListener("load", function(){
-        function submit_animation_form(form_action) {
-            // this selector and form is defined by 'animation_settings.tpl'
-            let animation_selector = document.getElementById("animation_selector");
-            let animation_form = document.getElementById("animation_settings_form_" + animation_selector.value);
-
-            // add a hidden field that contains the selected animation name
-            const hiddenField = document.createElement('input');
-            hiddenField.type = 'hidden';
-            hiddenField.name = "selected_animation_name";
-            hiddenField.value = animation_selector.value;
-            animation_form.appendChild(hiddenField);
-
-            // submit the form
-            animation_form.action = form_action;
-            animation_form.submit();
-        }
-
-        btn_start_animation.onclick = function(){
-            submit_animation_form(this.formAction);
-        }
-        btn_new_schedule_entry.onclick = function(){
-            submit_animation_form(this.formAction);
-        }
-    });
-</script>
+<script src="/js/animation_form.js"></script>

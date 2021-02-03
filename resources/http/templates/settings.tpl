@@ -108,7 +108,7 @@
                         %>
                     </div>
                     <div class="card-footer border rounded-bottom">
-                        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right ml-3">Save</button>
+                        <button id="btn_save_default_animation" type="submit" class="btn btn-primary float-right ml-3" formaction="/settings/{{SettingsTabs.default_animation.name}}" onclick="submit_animation_form(this.formAction);">Save</button>
                         <a class="btn btn-danger float-right" href="/settings/reset/{{SettingsTabs.default_animation.name}}">Reset</a>
                     </div>
                 </div>
@@ -119,6 +119,7 @@
 
 <script src="/js/slider.js"></script>
 <script src="/js/post_request.js"></script>
+<script src="/js/animation_form.js"></script>
 <script>
     function preview_brightness(brightness){
         // create a dynamic form object, that contains only the new brightness value
@@ -136,23 +137,6 @@
                 setting_night_brightness_container.classList.remove("d-none");
             else
                 setting_night_brightness_container.classList.add("d-none");
-        }
-
-        btn_save_default_animation.onclick = function(){
-            // this selector and form is defined by 'animation_settings.tpl'
-            let animation_selector = document.getElementById("animation_selector");
-            let animation_form = document.getElementById("animation_settings_form_" + animation_selector.value);
-
-            // add a hidden field that contains the selected animation name
-            const hiddenField = document.createElement('input');
-            hiddenField.type = 'hidden';
-            hiddenField.name = "selected_animation_name";
-            hiddenField.value = animation_selector.value;
-            animation_form.appendChild(hiddenField);
-
-            // submit the form
-            animation_form.action = "/settings/{{SettingsTabs.default_animation.name}}"
-            animation_form.submit();
         }
 
         // keep the dropdown tab selection in sync with the real tabs
