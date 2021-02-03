@@ -252,7 +252,7 @@ class Main(MainInterface):
                                                   minute=entry.CRON_STRUCTURE.MINUTE,
                                                   second=entry.CRON_STRUCTURE.SECOND),
                               args=(entry.ANIMATION_SETTINGS,),
-                              kwargs={"pause_current_animation": True},
+                              kwargs={"pause_current_animation": True, "blocking": True},
                               id=entry.JOB_ID)
 
             # add it to the internal schedule table
@@ -384,7 +384,7 @@ class Main(MainInterface):
                                                                          minute=cron_structure.MINUTE,
                                                                          second=cron_structure.SECOND),
                                                      args=(animation_settings,),
-                                                     kwargs={"pause_current_animation": True})
+                                                     kwargs={"pause_current_animation": True, "blocking": True})
 
             # create an entry for the schedule table
             schedule_entry = ScheduleEntry()
