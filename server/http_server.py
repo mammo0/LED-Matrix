@@ -19,38 +19,38 @@ bottle.TEMPLATE_PATH = [(HTTP_RESOURCES_DIR / "templates").resolve()]
 
 
 CRON_DICT = {
-    "year": [
+    "second": [
                 {"value": i,
-                 "text": i} for i in range(datetime.now().year, datetime.now().year + 11)
-            ],
-    "month": [
+                 "text": i} for i in range(0, 60)
+              ],
+    "minute": [
                 {"value": i,
-                 "text": calendar.month_name[i]} for i in range(1, 13)
-             ],
-    "day": [
+                 "text": i} for i in range(0, 60)
+              ],
+    "hour": [
                 {"value": i,
-                 "text": i} for i in range(1, 32)
-           ],
-    "week": [
-                {"value": i,
-                 "text": i} for i in range(1, 54)
+                 "text": i} for i in range(0, 24)
             ],
     "day_of_week": [
                         {"value": i,
                          "text": calendar.day_name[i]} for i in range(0, 7)
                     ],
-    "hour": [
+    "week": [
                 {"value": i,
-                 "text": i} for i in range(0, 24)
+                 "text": i} for i in range(1, 54)
             ],
-    "minute": [
+    "day": [
                 {"value": i,
-                 "text": i} for i in range(0, 60)
-              ],
-    "second": [
+                 "text": i} for i in range(1, 32)
+           ],
+    "month": [
                 {"value": i,
-                 "text": i} for i in range(0, 60)
-              ],
+                 "text": calendar.month_name[i]} for i in range(1, 13)
+             ],
+    "year": [
+                {"value": i,
+                 "text": i} for i in range(datetime.now().year, datetime.now().year + 11)
+            ],
 }
 
 
