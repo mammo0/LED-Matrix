@@ -24,7 +24,7 @@
                 <a class="nav-link dropdown-toggle border rounded-top" style="border-bottom-color: white !important;" id="tab_drop" data-toggle="dropdown" href="#" aria-haspopup="true" aria-expanded="false">{{active_tab.value}}</a>
                 <div class="dropdown-menu" aria-labelledby="tab_drop">
                     % for tab in SettingsTabs:
-                        <a class="dropdown-item {{"d-none" if tab == active_tab else ""}}" id="tab_drop_{{tab.name}}" href="#">
+                        <a class="dropdown-item {{"d-none" if tab == active_tab else ""}}" id="tab_{{tab.name}}_dropdown_item" href="#">
                             {{tab.value}}
                         </a>
                     % end
@@ -149,7 +149,7 @@
             selected_dropdown_item.classList.add("d-none");
 
             // show the previous hidden item again
-            document.getElementById("tab_drop_" + previos_selected_tab).classList.remove("d-none");
+            document.getElementById("tab_" + previos_selected_tab + "_dropdown_item").classList.remove("d-none");
 
             // update environment
             tab_drop.innerHTML = tab_items[new_tab];
@@ -161,7 +161,7 @@
         }
         for(let tab_name in tab_items){
             let tab_element = document.getElementById("tab_" + tab_name);
-            let tab_dropdown_element = document.getElementById("tab_drop_" + tab_name);
+            let tab_dropdown_element = document.getElementById("tab_" + tab_name + "_dropdown_item");
 
             tab_element.onclick = function(){
                 update_tab_environment(tab_dropdown_element, tab_name);
