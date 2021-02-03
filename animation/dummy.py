@@ -7,7 +7,7 @@ class DummySettings(_AnimationSettingsStructure):
 
 
 class DummyAnimation(AbstractAnimation):
-    def animate(self):
+    def render_next_frame(self):
         # do nothing and wait until the animation is stopped
         self._stop_event.wait()
 

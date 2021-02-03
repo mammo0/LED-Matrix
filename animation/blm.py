@@ -74,7 +74,7 @@ class BlmAnimation(AbstractAnimation):
         if len(self.frames) == 0:
             raise AttributeError
 
-    def animate(self):
+    def render_next_frame(self):
         while not self._stop_event.is_set():
             for frame in self.__rendered_frames():
                 if not self._stop_event.is_set():

@@ -112,7 +112,7 @@ class MoodlightAnimation(AbstractAnimation):
                                         np.array(color * self._width).reshape(1, self._width, 3)), axis=0)
                 yield frame
 
-    def animate(self):
+    def render_next_frame(self):
         while not self._stop_event.is_set():
             if self._settings.variant == MoodlightVariant.colorwheel:
                 generator = self.__frame_generator(_ColorMode.colorwheel, _Style.fill)

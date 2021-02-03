@@ -68,12 +68,12 @@ class AbstractAnimation(ABC, Thread):
         self.__remaining_repeat = self._repeat - 1
         self.__on_finish_callable = on_finish_callable
 
-        self._stop_event = Event()  # query this often! exit self.animate quickly
+        self._stop_event = Event()  # query this often! exit self.render_next_frame quickly
 
     def run(self):
         """This is the run method from threading.Thread"""
         try:
-            self.animate()
+            self.render_next_frame()
         except Exception as e:
             eprint("During the execution of the animation the following error occurred:")
             eprint(repr(e))
@@ -104,8 +104,12 @@ class AbstractAnimation(ABC, Thread):
                 return False
 
     @abstractmethod
-    def animate(self):
-        """This is where frames are put to the frame_queue in correct time"""
+    def render_next_frame(self):
+        """
+        This is where frames are put to the frame_queue in correct time.
+        @return: True if there are more frames to come.
+                 False if the animation is finished.
+        """
 
     @property
     def settings(self):

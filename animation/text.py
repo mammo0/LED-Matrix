@@ -162,7 +162,7 @@ class TextAnimation(AbstractAnimation):
         red = buf[:, :, 2]
         return np.dstack((red, green, blue))
 
-    def animate(self):
+    def render_next_frame(self):
         while not self._stop_event.is_set():
             if self.__steps_per_second <= 0 or self.__pixels_per_step < 1:
                 return

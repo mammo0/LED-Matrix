@@ -169,7 +169,7 @@ class ClockAnimation(AbstractAnimation):
 
         return image
 
-    def animate(self):
+    def render_next_frame(self):
         while not self._stop_event.is_set():
             local_time = time.localtime()
 
