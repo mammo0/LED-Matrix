@@ -194,15 +194,6 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         """
 
     @property
-    def current_repeat_value(self):
-        if (self.__animation_running.is_set() and
-                self.__animation_thread and
-                self.__animation_thread.is_alive()):
-            return self.__animation_thread.repeat_value
-        else:
-            return None
-
-    @property
     def is_running(self):
         return self.__animation_running.is_set()
 
