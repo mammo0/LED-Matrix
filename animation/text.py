@@ -10,7 +10,7 @@ import numpy as np
 
 class TextParameter(AnimationParameter):
     text = ""
-    text_size = 13
+    text_size = 12
     steps_per_second = 15
     pixels_per_step = 1
 
