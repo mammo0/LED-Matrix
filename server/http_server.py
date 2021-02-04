@@ -57,6 +57,7 @@ CRON_DICT = {
 class SettingsTabs(Enum):
     main = "Main"
     default_animation = "Default Animation"
+    variant_upload = "Upload Variants"
 
 
 class Input():
@@ -322,6 +323,24 @@ class HttpServer(metaclass=BottleCBVMeta):
     def set_brightness(self):
         value = request.forms.get("preview_brightness_value")
         self.__main_app.preview_brightness(int(value))
+
+    @get(f"/settings/{SettingsTabs.variant_upload.name}/<animation_name>/delete/<variant_name>")
+    def delete_variant(self, animation_name, variant_name):
+        animation = self.__main_app.available_animations[animation_name]
+        variant = animation.animation_variants[variant_name]
+
+        animation.remove_dynamic_variant(variant)
+
+        redirect("/settings/" + SettingsTabs.variant_upload.name + "?show_animation=" + animation_name)
+
+    @post(f"/settings/{SettingsTabs.variant_upload.name}/<animation_name>/upload")
+    def upload_variant(self, animation_name):
+        uploaded_file = request.files.get(f"variant_upload_{animation_name}_value")
+        animation = self.__main_app.available_animations[animation_name]
+
+        animation.add_dynamic_variant(uploaded_file.filename, uploaded_file.file)
+
+        redirect("/settings/" + SettingsTabs.variant_upload.name + "?show_animation=" + animation_name)
 
     @get("/js/<file_name:path>")
     def load_js(self, file_name):

@@ -113,6 +113,15 @@
                     </div>
                 </div>
             </div>
+            <div class="tab-pane {{"active" if active_tab == SettingsTabs.variant_upload else ""}}" id="tab_pane_variant_upload" role="tabpanel" aria-labelledby="tab_variant_upload">
+                <div class="card border-0">
+                    <div class="card-body border-left border-right border-bottom rounded-bottom">
+                        <%
+                            include("animation/variant_upload.tpl", animations=animations)
+                        %>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
