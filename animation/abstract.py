@@ -213,6 +213,57 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
 
     @property
     @abstractmethod
+    def accepts_dynamic_variant(self):
+        """
+        @return: True if this animation supports adding and removing of new variants.
+                 False if not.
+        """
+
+    def add_dynamic_variant(self, file_name, file_content):
+        """
+        This method adds a new variant to the animation.
+        @param file_name: The name of the file.
+        @param file_content: A open file(-like) object that can be processed by the animation.
+        """
+        # error handling
+        if not self.accepts_dynamic_variant:
+            eprint("This animation does not support adding of new variants.")
+            return
+
+        self._add_dynamic_variant(file_name, file_content)
+
+    def _add_dynamic_variant(self, file_name, file_content):
+        """
+        Animations that support adding of variants must override this method.
+        """
+        raise NotImplementedError()
+
+    def remove_dynamic_variant(self, variant):
+        """
+        This method removes a variant from the animation.
+        @param variant: A variant of the animation that should exist in the animation_variants enum.
+        """
+        # error handling
+        if not self.accepts_dynamic_variant:
+            eprint("This animation does not support removing of variants.")
+            return
+
+        for v in self.animation_variants:
+            if (v.name == variant.name and
+                    v.value == v.value):
+                self._remove_dynamic_variant(variant)
+                return
+
+        eprint(f"The variant '{variant.name}' could not be found.")
+
+    def _remove_dynamic_variant(self, variant):
+        """
+        Animations that support removing of variants must override this method.
+        """
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
     def animation_parameters(self):
         """
         @return: A subclass of AnimationParameter that holds the parameters of the underlying animation.

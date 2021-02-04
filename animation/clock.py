@@ -216,3 +216,7 @@ class ClockController(AbstractAnimationController):
     @property
     def is_repeat_supported(self):
         return False
+
+    @property
+    def accepts_dynamic_variant(self):
+        return False

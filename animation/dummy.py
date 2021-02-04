@@ -39,6 +39,10 @@ class DummyController(AbstractAnimationController):
     def is_repeat_supported(self):
         return False
 
+    @property
+    def accepts_dynamic_variant(self):
+        return False
+
     def display_frame(self, frame):
         """
         This method is special and only available in the Dummy animation.

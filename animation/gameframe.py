@@ -220,3 +220,7 @@ class GameframeController(AbstractAnimationController):
     @property
     def is_repeat_supported(self):
         return True
+
+    @property
+    def accepts_dynamic_variant(self):
+        return True
