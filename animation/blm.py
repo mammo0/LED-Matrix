@@ -5,6 +5,8 @@ from pathlib import Path
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController, _AnimationSettingsStructure
+from common import eprint
+from common.alpine import is_alpine_linux, alpine_rw
 from common.color import Color
 import numpy as np
 
@@ -160,7 +162,8 @@ class BlmController(AbstractAnimationController):
     def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
         super(BlmController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
 
-        self._resources_path = self._resources_path / "animations" / "162-blms"
+        self.__animations_dir = self._resources_path / "animations" / "162-blms"
+        self.__animations_dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def animation_class(self):
@@ -169,13 +172,13 @@ class BlmController(AbstractAnimationController):
     @property
     def animation_variants(self):
         blm_animations = {}
-        for animation_file in sorted(self._resources_path.glob("*.blm"), key=lambda s: s.name.lower()):
+        for animation_file in sorted(self.__animations_dir.glob("*.blm"), key=lambda s: s.name.lower()):
             if animation_file.is_file():
                 blm_animations[animation_file.stem] = animation_file.resolve()
 
         # if no blm animations where found
         if not blm_animations:
-            return None
+            return Enum("BlmVariant", {})
 
         return Enum("BlmVariant", blm_animations)
 
@@ -194,3 +197,38 @@ class BlmController(AbstractAnimationController):
     @property
     def accepts_dynamic_variant(self):
         return True
+
+    def _add_dynamic_variant(self, file_name, file_content):
+        # error handling
+        if file_name.rsplit(".", 1)[-1].lower() != "blm":
+            eprint("The new variant file must be a blm-file!")
+            return
+
+        file_path = str((self.__animations_dir / file_name).resolve())
+
+        def write_file():
+            with open(file_path, "wb+") as f:
+                f.write(file_content.read())
+
+        if is_alpine_linux():
+            with alpine_rw():
+                write_file()
+        else:
+            write_file()
+
+    def _remove_dynamic_variant(self, variant):
+        animation_file = Path(variant.value).resolve()
+
+        # only remove directories that are in the animations directory
+        if animation_file in [p.resolve() for p in self.__animations_dir.iterdir()]:
+            def remove_file():
+                try:
+                    os.remove(animation_file)
+                except FileNotFoundError:
+                    pass
+
+            if is_alpine_linux():
+                with alpine_rw():
+                    remove_file()
+            else:
+                remove_file()

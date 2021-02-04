@@ -3,11 +3,15 @@ from enum import Enum
 import errno
 import os
 from pathlib import Path
+import shutil
+from zipfile import ZipFile
 
 from PIL import Image
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController, _AnimationSettingsStructure
+from common import eprint
+from common.alpine import alpine_rw, is_alpine_linux
 from common.color import Color
 import numpy as np
 
@@ -190,7 +194,8 @@ class GameframeController(AbstractAnimationController):
     def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
         super(GameframeController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
 
-        self._resources_path = self._resources_path / "animations" / "gameframe"
+        self.__animations_dir = self._resources_path / "animations" / "gameframe"
+        self.__animations_dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def animation_class(self):
@@ -199,13 +204,13 @@ class GameframeController(AbstractAnimationController):
     @property
     def animation_variants(self):
         gameframe_animations = {}
-        for animation_dir in sorted(self._resources_path.glob("*"), key=lambda s: s.name.lower()):
+        for animation_dir in sorted(self.__animations_dir.glob("*"), key=lambda s: s.name.lower()):
             if animation_dir.is_dir():
                 gameframe_animations[animation_dir.name] = animation_dir.resolve()
 
-        # if no blm animations where found
+        # if no gameframe animations where found
         if not gameframe_animations:
-            return None
+            return Enum("GameframeVariant", {})
 
         return Enum("GameframeVariant", gameframe_animations)
 
@@ -224,3 +229,55 @@ class GameframeController(AbstractAnimationController):
     @property
     def accepts_dynamic_variant(self):
         return True
+
+    def _add_dynamic_variant(self, file_name, file_content):
+        # error handling
+        if file_name.rsplit(".", 1)[-1].lower() != "zip":
+            eprint("The new variant file must be a zip-file!")
+            return
+
+        with ZipFile(file_content, "r") as zip_file:
+            info = zip_file.infolist()
+
+            if len(info) > 0:
+                def extract_zip():
+                    # check if the root element is a single directory
+                    if (len(info) > 1 or not info[0].is_dir()):
+                        # if not, try to create a directory with the file name
+                        extract_path = (self.__animations_dir / file_name.rsplit(".", 1)[0]).resolve()
+
+                        if extract_path.exists():
+                            eprint(f"The variant '{extract_path.name}' already exists.")
+                            return
+                        else:
+                            extract_path.mkdir(parents=True)
+                    else:
+                        # otherwise extract the zip-file directly
+                        extract_path = self.__animations_dir.resolve()
+
+                        if (self.__animations_dir / info[0].filename.rsplit(".", 1)[0]).exists():
+                            eprint(f"The variant '{info[0].filename.rsplit('.', 1)[0]}' already exists.")
+                            return
+
+                    # extract the zip file
+                    zip_file.extractall(path=str(extract_path))
+
+                if is_alpine_linux():
+                    with alpine_rw():
+                        extract_zip()
+                else:
+                    extract_zip()
+
+            else:
+                eprint("The zip-file was empty.")
+
+    def _remove_dynamic_variant(self, variant):
+        animation_dir = Path(variant.value).resolve()
+
+        # only remove directories that are in the animations directory
+        if animation_dir in [p.resolve() for p in self.__animations_dir.iterdir()]:
+            if is_alpine_linux():
+                with alpine_rw():
+                    shutil.rmtree(str(animation_dir), ignore_errors=True)
+            else:
+                shutil.rmtree(str(animation_dir), ignore_errors=True)
