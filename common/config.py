@@ -5,7 +5,8 @@ from io import StringIO
 import json
 import shutil
 
-from common import eprint
+from common import eprint, alpine
+from common.alpine import alpine_rw
 from common.structure import NestedStructure, Structure, StructureROMixin
 
 
@@ -289,8 +290,15 @@ class Configuration():
                 print(file=output)
                 print(file=output)
 
-            with open(self.__config_file_path, "w+") as f:
-                output.seek(0)
-                shutil.copyfileobj(output, f)
+            def write_config():
+                with open(self.__config_file_path, "w+") as f:
+                    output.seek(0)
+                    shutil.copyfileobj(output, f)
+
+            if alpine.is_alpine_linux():
+                with alpine_rw():
+                    write_config()
+            else:
+                write_config()
         else:
             eprint("This configuration object can't be saved!")
