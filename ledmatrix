@@ -7,7 +7,7 @@ BASE_DIR=/usr/local/$RC_SVCNAME
 CONFIG_FILE="/etc/${RC_SVCNAME}.ini"
 
 command="$BASE_DIR/.venv/bin/python"
-command_args="main.py --config-file $CONFIG_FILE --commit-changes"
+command_args="main.py --config-file $CONFIG_FILE"
 command_background="yes"
 pidfile="/run/$RC_SVCNAME.pid"
 start_stop_daemon_args="--chdir $BASE_DIR"

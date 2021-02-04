@@ -4,8 +4,6 @@ from distutils.util import strtobool
 from io import StringIO
 import json
 import shutil
-import subprocess
-import sys
 
 from common import eprint
 from common.structure import NestedStructure, Structure, StructureROMixin
@@ -190,14 +188,13 @@ class Config(Structure, StructureROMixin):
 
 
 class Configuration():
-    def __init__(self, *args, config_file_path=None, commit_changes=False, **kwargs):
+    def __init__(self, *args, config_file_path=None, **kwargs):
         self.__config_parser = ConfigParser(*args, **kwargs)
         self.__config_parser.optionxform = lambda option: option
 
         self.__config = {}
 
         self.__config_file_path = config_file_path
-        self.__commit_changes = commit_changes
 
         use_default_config = False
         # check if a path is supplied
@@ -295,15 +292,5 @@ class Configuration():
             with open(self.__config_file_path, "w+") as f:
                 output.seek(0)
                 shutil.copyfileobj(output, f)
-
-            # now check if the changes should be commited
-            if self.__commit_changes:
-                # also check if the 'lbu' tool is available
-                if shutil.which("lbu") is not None:
-                    lbu_process = subprocess.run(["lbu", "commit", "-d"], stdout=sys.stdout, stderr=sys.stderr)
-                    if lbu_process.returncode != 0:
-                        eprint("Failed to commit file changes with 'lbu'! See output above.")
-                else:
-                    eprint("Cannot commit file changes, because 'lbu' tool was not found!")
         else:
             eprint("This configuration object can't be saved!")

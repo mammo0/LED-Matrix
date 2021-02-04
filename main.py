@@ -161,7 +161,7 @@ class MainInterface(ABC):
 
 
 class Main(MainInterface):
-    def __init__(self, config_file_path=None, commit_changes=False):
+    def __init__(self, config_file_path=None):
         # catch SIGINT, SIGQUIT and SIGTERM
         self.__quit_signal = threading.Event()
         signal.signal(signal.SIGINT, self.__quit)
@@ -175,7 +175,6 @@ class Main(MainInterface):
             self.__config_file_path = DEFAULT_CONFIG_FILE
         else:
             self.__config_file_path = config_file_path
-        self.__commit_changes = commit_changes
         self.__load_settings()
 
         # this is the queue that holds the frames to display
@@ -214,8 +213,7 @@ class Main(MainInterface):
         self.__reload_signal = EventWithUnsetSignal()
 
     def __load_settings(self):
-        self.__config = Configuration(config_file_path=self.__config_file_path, commit_changes=self.__commit_changes,
-                                      allow_no_value=True)
+        self.__config = Configuration(config_file_path=self.__config_file_path, allow_no_value=True)
 
         # get [MAIN] options
         self.__conf_hardware = self.__config.get(Config.MAIN.Hardware)
@@ -825,13 +823,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="LED-Matrix main control application.")
     parser.add_argument("-f", "--config-file", type=Path,
                         help="The path of the configuration file.")
-    parser.add_argument("-c", "--commit-changes", action="store_true",
-                        help="Set this flag if changes to the filesystem should be commited with 'lbu'.")
 
     # get config path
     args = parser.parse_args(sys.argv[1:])
 
     # load the main application
-    app = Main(args.config_file, args.commit_changes)
+    app = Main(args.config_file)
 
     app.mainloop()
