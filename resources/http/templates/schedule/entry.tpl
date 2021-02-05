@@ -1,6 +1,7 @@
 % from bottle import request
 % from common.schedule import CronStructure
 % from server.http_server import CRON_DICT
+% from server.http_server import get_cron_selector_pattern
 % from server.http_server import SettingsTabs
 
 % setdefault("animations", {})
@@ -18,7 +19,7 @@
 
 <div class="row">
     <div class="col">
-        <div class="card">
+        <div id="animation_settings" class="card">
             <div class="card-header" id="animation_collapse_header">
                 <a class="btn btn-link" data-toggle="collapse" href="#animation_collapse_body" role="button" aria-expanded="false" aria-controls="animation_collapse_body">
                     <span class="icon bi-pencil-fill"></span>
@@ -31,6 +32,9 @@
                 </div>
             </div>
         </div>
+        <div class="invalid-feedback">
+            Some of the animation settings are invalid.
+        </div>
     </div>
 </div>
 <div class="row pt-3">
@@ -40,18 +44,21 @@
                 Schedule
             </div>
             <div class="card-body">
-                <form id="cron_form" method="post" autocomplete="off">
+                <form id="cron_form" method="post" class="needs-validation" autocomplete="off" novalidate>
                     % for category in CRON_DICT.keys():
                         <div class="form-group">
                             <label for="cron_{{category}}_select_text_container">
                                 {{category.title().replace("_", " ")}}
                             </label>
                             <div id="cron_{{category}}_select_text_container" class="input-group">
-                                <input id="cron_{{category}}_select_text" type="text" class="form-control" name="cron_{{category}}_select_value" placeholder="Any" value="{{xstr(getattr(entry.CRON_STRUCTURE, category.upper()))}}" aria-describedby="cron_{{category}}_select_btn">
+                                <input id="cron_{{category}}_select_text" type="text" class="form-control" name="cron_{{category}}_select_value" placeholder="Any" value="{{xstr(getattr(entry.CRON_STRUCTURE, category.upper()))}}" aria-describedby="cron_{{category}}_select_btn" pattern="{{get_cron_selector_pattern(category)}}">
                                 <div class="input-group-append">
-                                    <button id="cron_{{category}}_select_btn" type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="modal" data-target="#cron_{{category}}_modal">
+                                    <button id="cron_{{category}}_select_btn" type="button" class="btn btn-outline-secondary dropdown-toggle rounded-right" data-toggle="modal" data-target="#cron_{{category}}_modal">
                                         Select
                                     </button>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Try to use the Select button.
                                 </div>
                             </div>
                         </div>
@@ -115,6 +122,7 @@
     </div>
 </div>
 
+<script src="/js/bootstrap_form_validation.js"></script>
 <script>
     function* get_all_checkboxes_of_modal(modal_form) {
         for(let form_item of modal_form.elements){
@@ -208,6 +216,15 @@
 
             // this selector and form is defined by 'animation/settings.tpl'
             let animation_form = document.getElementById("animation_settings_form_{{entry.ANIMATION_SETTINGS.animation_name}}");
+            //  check if the form is valid
+            let animation_form_valid = animation_form.checkValidity();
+            if(animation_form_valid === false) {
+                // if it's not valid do some highlighting
+                animation_settings.classList.add("is-invalid")
+                animation_settings.classList.add("border-danger")
+            }
+            animation_form.classList.add('was-validated');
+
             // copy the field values from the animation form
             for(let form_item of animation_form.elements){
                 let value = "";
@@ -229,10 +246,15 @@
                 hiddenField.value = form_data[form_item_name];
                 cron_form.appendChild(hiddenField);
             }
-            // submit it
-            cron_form.action = this.formAction;
-            const submitEvent = new SubmitEvent("submit", {"bubbles":false, "cancelable":true});
-            cron_form.dispatchEvent(submitEvent);
+
+            // validate the form
+            if (cron_form.checkValidity() === true && animation_form_valid === true) {
+                // if valid, submit it
+                cron_form.action = this.formAction;
+                const submitEvent = new SubmitEvent("submit", {"bubbles":false, "cancelable":true});
+                cron_form.dispatchEvent(submitEvent);
+            } else
+                cron_form.classList.add('was-validated');
         }
     });
 </script>

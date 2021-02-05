@@ -54,6 +54,28 @@ CRON_DICT = {
 }
 
 
+def get_cron_selector_pattern(cron_category):
+    valid_numbers = [str(item["value"]) for item in CRON_DICT[cron_category]]
+
+    return ("^"                                      # noqa, BOS
+            "(?!"                                    # Validate no dups
+                ".*"
+                "("                                  # (1 start)
+                    "\\b"
+                   f"(?:{'|'.join(valid_numbers)})"  # number range
+                    "\\b"
+                ")"                                  # (1 end)
+                ".*"
+                "\\b\\1\\b"
+            ")"
+           f"(?:{'|'.join(valid_numbers)})"          # Unrolled-loop, match 1 to many numb's
+            "(?:"                                    # in the number range
+                ","
+               f"(?:{'|'.join(valid_numbers)})"
+            ")*"
+            "$")                                     # EOS
+
+
 class SettingsTabs(Enum):
     main = "Main"
     default_animation = "Default Animation"
