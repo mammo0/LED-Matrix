@@ -231,7 +231,8 @@
             }
             // submit it
             cron_form.action = this.formAction;
-            cron_form.submit();
+            const submitEvent = new SubmitEvent("submit", {"bubbles":false, "cancelable":true});
+            cron_form.dispatchEvent(submitEvent);
         }
     });
 </script>
