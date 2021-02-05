@@ -1,14 +1,17 @@
-from enum import Enum
 import errno
 import os
 from pathlib import Path
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController, _AnimationSettingsStructure
-from common import eprint
+from common import eprint, RESOURCES_DIR
 from common.alpine import is_alpine_linux, alpine_rw
 from common.color import Color
+from common.enum import DynamicEnumMeta, DynamicEnum
 import numpy as np
+
+
+_ANIMATIONS_DIR = RESOURCES_DIR / "animations" / "162-blms"
 
 
 class BlmParameter(AnimationParameter):
@@ -17,7 +20,23 @@ class BlmParameter(AnimationParameter):
     padding_color = Color(60, 60, 60)
 
 
+class _BlmVariantMeta(DynamicEnumMeta):
+    @property
+    def dynamic_enum_dict(cls):
+        blm_animations = {}
+        for animation_file in sorted(_ANIMATIONS_DIR.glob("*.blm"), key=lambda s: s.name.lower()):
+            if animation_file.is_file():
+                blm_animations[animation_file.stem] = animation_file.resolve()
+
+        return blm_animations
+
+
+class BlmVariant(DynamicEnum, metaclass=_BlmVariantMeta):
+    pass
+
+
 class BlmSettings(_AnimationSettingsStructure):
+    variant = BlmVariant._empty
     parameter = BlmParameter
 
 
@@ -171,16 +190,7 @@ class BlmController(AbstractAnimationController):
 
     @property
     def animation_variants(self):
-        blm_animations = {}
-        for animation_file in sorted(self.__animations_dir.glob("*.blm"), key=lambda s: s.name.lower()):
-            if animation_file.is_file():
-                blm_animations[animation_file.stem] = animation_file.resolve()
-
-        # if no blm animations where found
-        if not blm_animations:
-            return Enum("BlmVariant", {})
-
-        return Enum("BlmVariant", blm_animations)
+        return BlmVariant
 
     @property
     def animation_parameters(self):

@@ -1,5 +1,4 @@
 import configparser
-from enum import Enum
 import errno
 import os
 from pathlib import Path
@@ -10,10 +9,14 @@ from PIL import Image
 
 from animation.abstract import AbstractAnimation, AnimationParameter, \
     AbstractAnimationController, _AnimationSettingsStructure
-from common import eprint
+from common import eprint, RESOURCES_DIR
 from common.alpine import alpine_rw, is_alpine_linux
 from common.color import Color
+from common.enum import DynamicEnumMeta, DynamicEnum
 import numpy as np
+
+
+_ANIMATIONS_DIR = RESOURCES_DIR / "animations" / "gameframe"
 
 
 # TODO: Subfolders have not been implemented yet.
@@ -21,7 +24,25 @@ class GameframeParameter(AnimationParameter):
     background_color = Color(0, 0, 0)
 
 
+class _GameframeVariantMeta(DynamicEnumMeta):
+    @property
+    def dynamic_enum_dict(cls):
+        gameframe_animations = {}
+        for animation_dir in sorted(_ANIMATIONS_DIR.glob("*"), key=lambda s: s.name.lower()):
+            if animation_dir.is_dir():
+                gameframe_animations[animation_dir.name] = animation_dir.resolve()
+
+        gameframe_animations
+
+        return gameframe_animations
+
+
+class GameframeVariant(DynamicEnum, metaclass=_GameframeVariantMeta):
+    pass
+
+
 class GameframeSettings(_AnimationSettingsStructure):
+    variant = GameframeVariant._empty
     parameter = GameframeParameter
 
 
@@ -203,16 +224,7 @@ class GameframeController(AbstractAnimationController):
 
     @property
     def animation_variants(self):
-        gameframe_animations = {}
-        for animation_dir in sorted(self.__animations_dir.glob("*"), key=lambda s: s.name.lower()):
-            if animation_dir.is_dir():
-                gameframe_animations[animation_dir.name] = animation_dir.resolve()
-
-        # if no gameframe animations where found
-        if not gameframe_animations:
-            return Enum("GameframeVariant", {})
-
-        return Enum("GameframeVariant", gameframe_animations)
+        return GameframeVariant
 
     @property
     def animation_parameters(self):
