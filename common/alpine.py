@@ -9,13 +9,13 @@ import sys
 from common import eprint
 
 
-__ETC_DIR = Path("/") / "etc"
-__OS_RELEASE_FILE = __ETC_DIR / "os-release"
-__ALPINE_LBU_CONF_FILE = __ETC_DIR / "lbu" / "lbu.conf"
-__ALPINE_MEDIA_DIR = Path("/") / "media"
+_ETC_DIR = Path("/") / "etc"
+_OS_RELEASE_FILE = _ETC_DIR / "os-release"
+_ALPINE_LBU_CONF_FILE = _ETC_DIR / "lbu" / "lbu.conf"
+_ALPINE_MEDIA_DIR = Path("/") / "media"
 
 
-def __read_system_config_file(file_path):
+def _read_system_config_file(file_path):
     if not file_path.exists():
         return {}
     elif file_path.exists() and not file_path.is_file():
@@ -38,8 +38,8 @@ def __read_system_config_file(file_path):
 
 
 # load the necessary system files
-__OS_RELEASE = __read_system_config_file(__OS_RELEASE_FILE)
-__ALPINE_LBU_CONF = __read_system_config_file(__ALPINE_LBU_CONF_FILE)
+_OS_RELEASE = _read_system_config_file(_OS_RELEASE_FILE)
+_ALPINE_LBU_CONF = _read_system_config_file(_ALPINE_LBU_CONF_FILE)
 
 
 def is_alpine_linux():
@@ -47,8 +47,8 @@ def is_alpine_linux():
     This method checks if the current OS is Alpine Linux.
     @return: True if it's Alpine Linux. False for any other OS.
     """
-    if ("NAME" in __OS_RELEASE and
-            "Alpine" in __OS_RELEASE["NAME"]):
+    if ("NAME" in _OS_RELEASE and
+            "Alpine" in _OS_RELEASE["NAME"]):
         return True
     else:
         return False
@@ -105,7 +105,7 @@ class alpine_rw():
             eprint("Not running on Alpine Linux. So no changes to the filesystem will be made.")
             return
 
-        if "LBU_MEDIA" not in __ALPINE_LBU_CONF:
+        if "LBU_MEDIA" not in _ALPINE_LBU_CONF:
             eprint("No Alpine Linux diskless installation detected. So no changes to the filesystem will be made.")
 
         if not self.__is_root():
@@ -113,7 +113,7 @@ class alpine_rw():
                 "To enable disk write access on Alpine Linux in diskless mode root permissions are necessary!"
             )
 
-        self.__mount_target = str(__ALPINE_MEDIA_DIR / __ALPINE_LBU_CONF["LBU_MEDIA"])
+        self.__mount_target = str(_ALPINE_MEDIA_DIR / _ALPINE_LBU_CONF["LBU_MEDIA"])
 
         # remount root filesystem rw
         self.__remount(self.__mount_target, ro=False)
