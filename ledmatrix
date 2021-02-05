@@ -4,7 +4,7 @@ name=$RC_SVCNAME
 description="Alpine Linux autostart service."
 
 BASE_DIR=/usr/local/$RC_SVCNAME
-CONFIG_FILE="/etc/${RC_SVCNAME}.ini"
+CONFIG_FILE="$BASE_DIR/config.ini"
 
 command="$BASE_DIR/.venv/bin/python"
 command_args="main.py --config-file $CONFIG_FILE"
