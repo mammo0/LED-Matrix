@@ -178,11 +178,10 @@ class BlmAnimation(AbstractAnimation):
 
 
 class BlmController(AbstractAnimationController):
-    def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
-        super(BlmController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
+    def __init__(self, width, height, frame_queue, on_finish_callable):
+        super(BlmController, self).__init__(width, height, frame_queue, on_finish_callable)
 
-        self.__animations_dir = self._resources_path / "animations" / "162-blms"
-        self.__animations_dir.mkdir(parents=True, exist_ok=True)
+        _ANIMATIONS_DIR.mkdir(parents=True, exist_ok=True)
 
     @property
     def animation_class(self):
@@ -214,7 +213,7 @@ class BlmController(AbstractAnimationController):
             eprint("The new variant file must be a blm-file!")
             return
 
-        file_path = str((self.__animations_dir / file_name).resolve())
+        file_path = str((_ANIMATIONS_DIR / file_name).resolve())
 
         def write_file():
             with open(file_path, "wb+") as f:
@@ -230,7 +229,7 @@ class BlmController(AbstractAnimationController):
         animation_file = Path(variant.value).resolve()
 
         # only remove directories that are in the animations directory
-        if animation_file in [p.resolve() for p in self.__animations_dir.iterdir()]:
+        if animation_file in [p.resolve() for p in _ANIMATIONS_DIR.iterdir()]:
             def remove_file():
                 try:
                     os.remove(animation_file)

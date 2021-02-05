@@ -21,7 +21,7 @@ from simple_plugin_loader import Loader
 import tzlocal
 
 from animation.abstract import AbstractAnimationController
-from common import BASE_DIR, RESOURCES_DIR, DEFAULT_CONFIG_FILE, eprint
+from common import BASE_DIR, DEFAULT_CONFIG_FILE, eprint
 from common.config import Configuration, Config
 from common.schedule import ScheduleEntry
 from common.threading import EventWithUnsetSignal
@@ -638,7 +638,6 @@ class AnimationController(threading.Thread):
         for _name, cls in animation_loader.plugins.items():
             animations[cls.animation_name] = cls(width=self.__display_width, height=self.__display_height,
                                                  frame_queue=self.__display_frame_queue,
-                                                 resources_path=RESOURCES_DIR,
                                                  on_finish_callable=self.__on_animation_finished)
 
         return animations

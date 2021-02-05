@@ -181,11 +181,10 @@ class AbstractAnimationControllerMeta(ABCMeta, ClasspropertyMeta):
 
 
 class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
-    def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
+    def __init__(self, width, height, frame_queue, on_finish_callable):
         self.__width = width  # width of frames to produce
         self.__height = height  # height of frames to produce
         self.__frame_queue = frame_queue  # queue to put frames onto
-        self._resources_path = resources_path  # path to the 'resources' directory
         self.__on_finish_callable = on_finish_callable  # this gets called whenever an animation stops/finishes
 
         self.__animation_thread = None  # this variable contains the animation thread

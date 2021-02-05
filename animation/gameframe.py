@@ -212,11 +212,10 @@ class GameframeAnimation(AbstractAnimation):
 
 
 class GameframeController(AbstractAnimationController):
-    def __init__(self, width, height, frame_queue, resources_path, on_finish_callable):
-        super(GameframeController, self).__init__(width, height, frame_queue, resources_path, on_finish_callable)
+    def __init__(self, width, height, frame_queue, on_finish_callable):
+        super(GameframeController, self).__init__(width, height, frame_queue, on_finish_callable)
 
-        self.__animations_dir = self._resources_path / "animations" / "gameframe"
-        self.__animations_dir.mkdir(parents=True, exist_ok=True)
+        _ANIMATIONS_DIR.mkdir(parents=True, exist_ok=True)
 
     @property
     def animation_class(self):
@@ -256,7 +255,7 @@ class GameframeController(AbstractAnimationController):
                     # check if the root element is a single directory
                     if (len(info) > 1 or not info[0].is_dir()):
                         # if not, try to create a directory with the file name
-                        extract_path = (self.__animations_dir / file_name.rsplit(".", 1)[0]).resolve()
+                        extract_path = (_ANIMATIONS_DIR / file_name.rsplit(".", 1)[0]).resolve()
 
                         if extract_path.exists():
                             eprint(f"The variant '{extract_path.name}' already exists.")
@@ -265,9 +264,9 @@ class GameframeController(AbstractAnimationController):
                             extract_path.mkdir(parents=True)
                     else:
                         # otherwise extract the zip-file directly
-                        extract_path = self.__animations_dir.resolve()
+                        extract_path = _ANIMATIONS_DIR.resolve()
 
-                        if (self.__animations_dir / info[0].filename.rsplit(".", 1)[0]).exists():
+                        if (_ANIMATIONS_DIR / info[0].filename.rsplit(".", 1)[0]).exists():
                             eprint(f"The variant '{info[0].filename.rsplit('.', 1)[0]}' already exists.")
                             return
 
@@ -287,7 +286,7 @@ class GameframeController(AbstractAnimationController):
         animation_dir = Path(variant.value).resolve()
 
         # only remove directories that are in the animations directory
-        if animation_dir in [p.resolve() for p in self.__animations_dir.iterdir()]:
+        if animation_dir in [p.resolve() for p in _ANIMATIONS_DIR.iterdir()]:
             if is_alpine_linux():
                 with alpine_rw():
                     shutil.rmtree(str(animation_dir), ignore_errors=True)
