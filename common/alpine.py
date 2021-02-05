@@ -7,7 +7,6 @@ import subprocess
 import sys
 
 from common import eprint
-import configparser
 
 
 __ETC_DIR = Path("/") / "etc"
@@ -23,11 +22,13 @@ def __read_system_config_file(file_path):
         return {}
 
     parser = ConfigParser()
+    parser.optionxform = str
     with open(file_path, "r") as f:
         try:
             parser.read_file(f)
         except MissingSectionHeaderError:
-            parser.read_string(f"[{configparser.DEFAULTSECT}]\n" + f.read())
+            f.seek(0)
+            parser.read_string(f"[TEMP]\n" + f.read())
 
     d = {}
     for section in parser.sections():
