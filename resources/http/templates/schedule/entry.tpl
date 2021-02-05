@@ -190,17 +190,15 @@
                 // set value of (un)check all checkbox
                 update_all_checked_checkbox(categories[cat].form);
             }, false);
-            categories[cat].modal.addEventListener('hide.bs.modal', function(event){
-                if(event.explicitOriginalTarget == categories[cat].btn_apply){
-                    // save values only if the apply button of the modal was clicked
-                    let selected_values = [];
-                    for(let form_item of get_all_checkboxes_of_modal(categories[cat].form)){
-                        if(form_item.checked)
-                            selected_values.push(form_item.name);
-                    }
-                    categories[cat].text.value = selected_values.join(",");
+            categories[cat].btn_apply.onclick = function() {
+                // save values only if the apply button of the modal was clicked
+                let selected_values = [];
+                for(let form_item of get_all_checkboxes_of_modal(categories[cat].form)){
+                    if(form_item.checked)
+                        selected_values.push(form_item.name);
                 }
-            }, false);
+                categories[cat].text.value = selected_values.join(",");
+            }
             categories[cat].modal.addEventListener('hidden.bs.modal', function(event){
                 // reset form if modal isn't visible anymore
                 categories[cat].form.reset();
