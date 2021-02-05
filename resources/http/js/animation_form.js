@@ -13,6 +13,6 @@ function submit_animation_form(form_action) {
 
     // submit the form
     animation_form.action = form_action;
-    const submitEvent = new SubmitEvent("submit", {"bubbles":false, "cancelable":true});
+    const submitEvent = new Event("submit", {"bubbles":false, "cancelable":true});
     animation_form.dispatchEvent(submitEvent);
 }

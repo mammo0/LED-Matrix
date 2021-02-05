@@ -251,7 +251,7 @@
             if (cron_form.checkValidity() === true && animation_form_valid === true) {
                 // if valid, submit it
                 cron_form.action = this.formAction;
-                const submitEvent = new SubmitEvent("submit", {"bubbles":false, "cancelable":true});
+                const submitEvent = new Event("submit", {"bubbles":false, "cancelable":true});
                 cron_form.dispatchEvent(submitEvent);
             } else
                 cron_form.classList.add('was-validated');
