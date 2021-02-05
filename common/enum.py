@@ -1,4 +1,4 @@
-from enum import EnumMeta, Enum
+from enum import EnumMeta, Enum, _is_dunder
 
 
 class DynamicEnumMeta(EnumMeta):
@@ -20,13 +20,18 @@ class DynamicEnumMeta(EnumMeta):
         return EnumMeta.__call__(cls, cls.__name__, names=enum_dict)
 
     def __getattr__(cls, name):
+        # first test for empty element
+        if name == DynamicEnumMeta.empty_attr:
+            return EnumMeta.__getattr__(cls.__get_dynamic_enum_class({DynamicEnumMeta.empty_attr: object()}),
+                                        DynamicEnumMeta.empty_attr)
+        # ignore dunder attributes
+        elif _is_dunder(name):
+            return EnumMeta.__getattr__(cls, name)
+
         # this avoids recursion
         enum_dict = cls.dynamic_enum_dict
         if name in enum_dict:
             return EnumMeta.__getattr__(cls.__get_dynamic_enum_class(enum_dict), name)
-        elif name == DynamicEnumMeta.empty_attr:
-            return EnumMeta.__getattr__(cls.__get_dynamic_enum_class({DynamicEnumMeta.empty_attr: object()}),
-                                        DynamicEnumMeta.empty_attr)
         else:
             return EnumMeta.__getattr__(cls, name)
 
