@@ -329,6 +329,14 @@ class HttpServer(metaclass=BottleCBVMeta):
         animation = self.__main_app.available_animations[animation_name]
         variant = animation.animation_variants[variant_name]
 
+        # remove a scheduled animation if it's variant gets deleted
+        for scheduled_animation in self.__main_app.scheduled_animations:
+            if scheduled_animation.ANIMATION_SETTINGS.animation_name == animation_name:
+                scheduled_variant = scheduled_animation.ANIMATION_SETTINGS.variant
+                if (scheduled_variant is not None and
+                        scheduled_variant == variant):
+                    self.__main_app.remove_scheduled_animation(scheduled_animation.JOB_ID)
+
         animation.remove_dynamic_variant(variant)
 
         redirect("/settings/" + SettingsTabs.variant_upload.name + "?show_animation=" + animation_name)
