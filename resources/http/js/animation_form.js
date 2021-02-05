@@ -12,7 +12,9 @@ function submit_animation_form(form_action) {
     animation_form.appendChild(hiddenField);
 
     // submit the form
-    animation_form.action = form_action;
-    const submitEvent = new Event("submit", {"bubbles":false, "cancelable":true});
-    animation_form.dispatchEvent(submitEvent);
+    if (animation_form.checkValidity() === true){
+        animation_form.action = form_action;
+        animation_form.submit();
+    } else
+        animation_form.classList.add('was-validated');
 }
