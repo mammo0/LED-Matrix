@@ -190,7 +190,6 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         self.__animation_thread = None  # this variable contains the animation thread
 
         self.__animation_running = Event()
-        self.__animation_paused = Event()
 
     @classproperty
     def animation_name(cls):
@@ -295,10 +294,6 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     def is_running(self):
         return self.__animation_running.is_set()
 
-    @property
-    def is_paused(self):
-        return self.__animation_paused.is_set()
-
     def start_animation(self, animation_settings):
         """
         For settings see _AnimationSettingsStructure.
@@ -322,7 +317,6 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                 self.__animation_thread and
                 self.__animation_thread.is_alive()):
             self.__animation_thread.pause()
-            self.__animation_paused.set()
             self.__animation_running.clear()
 
     def resume_animation(self):
@@ -330,7 +324,6 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                 self.__animation_thread.is_alive()):
             self.__animation_thread.resume()
             self.__animation_running.set()
-            self.__animation_paused.clear()
 
     def _validate_animation_settings(self, animation_settings):
         # variant
