@@ -663,13 +663,14 @@ class AnimationController(threading.Thread):
                 self.__current_animation is not None):
             # if so, pause it and add it to the pause stack
             animation_to_pause = self.__current_animation
-            animation_to_pause.pause_animation()
-            self.__pause_queue.put(animation_to_pause)
+            paused_thread = animation_to_pause.pause_animation()
+            if paused_thread is not None:
+                self.__pause_queue.put((animation_to_pause, paused_thread))
         elif (animation_settings is None and
                 resume_previous_animation):
             # resume the last paused animation
-            animation_to_resume = self.__pause_queue.get()
-            animation_to_resume.resume_animation()
+            animation_to_resume, resume_thread = self.__pause_queue.get()
+            animation_to_resume.resume_animation(resume_thread)
             self.__current_animation = animation_to_resume
 
             # stop here

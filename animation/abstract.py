@@ -318,12 +318,13 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
                 self.__animation_thread.is_alive()):
             self.__animation_thread.pause()
             self.__animation_running.clear()
+            return self.__animation_thread
 
-    def resume_animation(self):
-        if (self.__animation_thread and
-                self.__animation_thread.is_alive()):
-            self.__animation_thread.resume()
-            self.__animation_running.set()
+        return None
+
+    def resume_animation(self, animation_thread):
+        animation_thread.resume()
+        self.__animation_running.set()
 
     def _validate_animation_settings(self, animation_settings):
         # variant
