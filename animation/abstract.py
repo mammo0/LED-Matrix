@@ -294,17 +294,21 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
     def is_running(self):
         return self.__animation_running.is_set()
 
-    def start_animation(self, animation_settings):
+    def create_animation(self, animation_settings):
         """
         For settings see _AnimationSettingsStructure.
         """
         # parse the parameters
         self._validate_animation_settings(animation_settings)
 
-        self.__animation_thread = self.animation_class(width=self.__width, height=self.__height,
-                                                       frame_queue=self.__frame_queue,
-                                                       settings=animation_settings,
-                                                       on_finish_callable=self.__animation_finished_stopped)
+        return self.animation_class(width=self.__width, height=self.__height,
+                                    frame_queue=self.__frame_queue,
+                                    settings=animation_settings,
+                                    on_finish_callable=self.__animation_finished_stopped)
+
+    def start_animation(self, animation_instance):
+        # set the current animation thread
+        self.__animation_thread = animation_instance
 
         # mark the animation as running
         self.__animation_running.set()

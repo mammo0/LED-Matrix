@@ -663,32 +663,35 @@ class AnimationController(threading.Thread):
             self.__on_last_element_processed()
 
     def __start_animation(self, animation_settings, pause_current_animation):
-        # check if the current animation should be paused
-        if (pause_current_animation and
-                self.__current_animation is not None):
-            # if so, pause it and add it to the pause stack
-            animation_to_pause = self.__current_animation
-            paused_thread = animation_to_pause.pause_animation()
-            if paused_thread is not None:
-                self.__pause_queue.put((animation_to_pause, paused_thread))
-        else:
-            # if an animation should be started without pausing the current one,
-            # clear the pause queue, because afterwards no resuming should be done
-            if not self.__pause_queue.empty():
-                # force clearing of pause queue
-                self.__pause_queue.queue.clear()
-
-            # stop any currently running animation
-            self.__stop_animation()
-
         try:
             # get the new animation
             animation = self.__all_animations[animation_settings.animation_name]
         except KeyError:
             eprint("The animation '%s' could not be found!" % animation_settings.animation_name)
         else:
+            # create the animation thread instance
+            animation_thread = animation.create_animation(animation_settings)
+
+            # check if the current animation should be paused
+            if (pause_current_animation and
+                    self.__current_animation is not None):
+                # if so, pause it and add it to the pause stack
+                animation_to_pause = self.__current_animation
+                paused_thread = animation_to_pause.pause_animation()
+                if paused_thread is not None:
+                    self.__pause_queue.put((animation_to_pause, paused_thread))
+            else:
+                # if an animation should be started without pausing the current one,
+                # clear the pause queue, because afterwards no resuming should be done
+                if not self.__pause_queue.empty():
+                    # force clearing of pause queue
+                    self.__pause_queue.queue.clear()
+
+                # stop any currently running animation
+                self.__stop_animation()
+
             # start it
-            animation.start_animation(animation_settings)
+            animation.start_animation(animation_thread)
             self.__current_animation = animation
 
     def __stop_animation(self, animation_settings=None):
