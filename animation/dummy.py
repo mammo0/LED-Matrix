@@ -1,4 +1,6 @@
-from animation.abstract import AbstractAnimation, AbstractAnimationController,\
+import numpy
+
+from animation.abstract import AbstractAnimation, AbstractAnimationController, \
     _AnimationSettingsStructure
 
 
@@ -7,8 +9,21 @@ class DummySettings(_AnimationSettingsStructure):
 
 
 class DummyAnimation(AbstractAnimation):
+    def __init__(self, width, height, frame_queue, settings, on_finish_callable):
+        AbstractAnimation.__init__(self, width, height, frame_queue, settings, on_finish_callable)
+
+        self.__first_run = True
+
     def render_next_frame(self):
-        # do nothing here, but continue
+        # only on first run
+        if self.__first_run:
+            # clear the current display
+            frame = numpy.zeros((self._height, self._width, 3),
+                                dtype=numpy.uint8)
+            self._frame_queue.put(frame)
+            self.__first_run = False
+
+        # do nothing more here, but continue
         return True
 
     def display_frame(self, frame):
