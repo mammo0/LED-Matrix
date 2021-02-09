@@ -670,18 +670,18 @@ class AnimationController(threading.Thread):
         if not self.__controll_queue.tasks_remaining:
             self.__on_last_element_processed()
 
-    def __start_animation(self, animation_settings, pause_current_animation):
+    def __start_animation(self, event):
         try:
             # get the new animation
-            animation = self.__all_animations[animation_settings.animation_name]
+            animation = self.__all_animations[event.event_settings.animation_settings.animation_name]
         except KeyError:
-            eprint("The animation '%s' could not be found!" % animation_settings.animation_name)
+            eprint("The animation '%s' could not be found!" % event.event_settings.animation_settings.animation_name)
         else:
             # create the animation thread instance
-            animation_thread = animation.create_animation(animation_settings)
+            animation_thread = animation.create_animation(event.event_settings.animation_settings)
 
             # check if the current animation should be paused
-            if (pause_current_animation and
+            if (event.event_settings.pause_current_animation and
                     self.__current_animation is not None):
                 # if so, pause it and add it to the pause stack
                 animation_to_pause = self.__current_animation
@@ -702,19 +702,19 @@ class AnimationController(threading.Thread):
             animation.start_animation(animation_thread)
             self.__current_animation = animation
 
-    def __stop_animation(self, animation_settings=None):
+    def __stop_animation(self, event=None):
         # if there's already a running animation, stop it
         if self.__current_animation is not None:
             # but only if not a specific animation should be stopped
-            if (animation_settings is not None and
-                    self.__current_animation.animation_name != animation_settings.animation_name):
+            if (event is not None and
+                    self.__current_animation.animation_name != event.event_settings.animation_settings.animation_name):
                 return
             self.__current_animation.stop_animation()
             self.__current_animation = None
 
-    def __resume_animation(self, animation_to_resume, resume_thread):
-        animation_to_resume.resume_animation(resume_thread)
-        self.__current_animation = animation_to_resume
+    def __resume_animation(self, event):
+        event.event_settings.animation_to_resume.resume_animation(event.event_settings.resume_thread)
+        self.__current_animation = event.event_settings.animation_to_resume
 
     def __create_resume_event(self, animation_to_resume, resume_thread):
         resume_event = AnimationController._Event(
@@ -811,13 +811,11 @@ class AnimationController(threading.Thread):
 
             # check the event type
             if event.event_type == AnimationController._EventType.start:
-                self.__start_animation(event.event_settings.animation_settings,
-                                       pause_current_animation=event.event_settings.pause_current_animation)
+                self.__start_animation(event)
             elif event.event_type == AnimationController._EventType.resume:
-                self.__resume_animation(animation_to_resume=event.event_settings.animation_to_resume,
-                                        resume_thread=event.event_settings.resume_thread)
+                self.__resume_animation(event)
             elif event.event_type == AnimationController._EventType.stop:
-                self.__stop_animation(event.event_settings.animation_settings)
+                self.__stop_animation(event)
                 # special case on stop event:
                 # after the animation was stopped check if this was the last task (for now)
                 if self.__controll_queue.last_task_running:
