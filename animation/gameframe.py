@@ -116,7 +116,12 @@ class GameframeAnimation(AbstractAnimation):
         config = self.__folder.joinpath("config.ini")
         if config.is_file():
             parser = configparser.ConfigParser()
-            parser.read(str(config))
+            try:
+                # first try utf-8 encoding
+                parser.read(str(config), encoding="utf-8")
+            except UnicodeDecodeError:
+                # after that try windows encoding
+                parser.read(str(config), encoding="cp1252")
             self.__hold = int(parser.get('animation', 'hold', fallback='100'))
             self.__loop = parser.getboolean('animation', 'loop', fallback=True)
             self.__moveX = int(parser.get('translate', 'moveX', fallback='0'))
