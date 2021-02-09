@@ -44,13 +44,16 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def start_animation(self, animation_settings, pause_current_animation=False, block_until_started=False):
+    def start_animation(self, animation_settings, pause_current_animation=False,
+                        block_until_started=False, block_until_finished=False):
         """
         Start a specific animation. See the respective animation class for which options are available.
         @param animation_settings: Instance of _AnimationSettingsStructure.
         @param pause_current_animation: If set to True, just pause the current animation and resume
                                           after the new animation finishes.
         @param block_until_started: If set to True, wait until the animation is running. Otherwise return immediately.
+        @param block_until_finished: If set to True, wait until the animation has finished.
+                                     Otherwise return immediately.
         """
 
     @abstractmethod
@@ -251,7 +254,7 @@ class Main(MainInterface):
                                                   minute=entry.CRON_STRUCTURE.MINUTE,
                                                   second=entry.CRON_STRUCTURE.SECOND),
                               args=(entry.ANIMATION_SETTINGS,),
-                              kwargs={"pause_current_animation": True, "block_until_started": True},
+                              kwargs={"pause_current_animation": True, "block_until_finished": True},
                               id=entry.JOB_ID)
 
             # add it to the internal schedule table
@@ -366,10 +369,12 @@ class Main(MainInterface):
         # wait until the the __reload_signal is unset
         self.__reload_signal.wait_unset()
 
-    def start_animation(self, animation_settings, pause_current_animation=False, block_until_started=False):
+    def start_animation(self, animation_settings, pause_current_animation=False,
+                        block_until_started=False, block_until_finished=False):
         self.__animation_controller.start_animation(animation_settings=animation_settings,
                                                     pause_current_animation=pause_current_animation,
-                                                    block_until_started=block_until_started)
+                                                    block_until_started=block_until_started,
+                                                    block_until_finished=block_until_finished)
 
     def schedule_animation(self, cron_structure, animation_settings):
         with self.__schedule_lock:
@@ -384,7 +389,7 @@ class Main(MainInterface):
                                                                          second=cron_structure.SECOND),
                                                      args=(animation_settings,),
                                                      kwargs={"pause_current_animation": True,
-                                                             "block_until_started": True})
+                                                             "block_until_finished": True})
 
             # create an entry for the schedule table
             schedule_entry = ScheduleEntry()
@@ -557,6 +562,9 @@ class AnimationController(threading.Thread):
             self.event_type = event_type
             self.event_settings = event_settings
 
+            # special attribute for monitoring an animation thread on a start event
+            self.start_animation_thread = None
+
             self.next_event = None
             self.event_lock = threading.Event()
 
@@ -702,6 +710,9 @@ class AnimationController(threading.Thread):
             animation.start_animation(animation_thread)
             self.__current_animation = animation
 
+            # special: set the thread (for blocking until animation has finished)
+            event.start_animation_thread = animation_thread
+
     def __stop_animation(self, event=None):
         # if there's already a running animation, stop it
         if self.__current_animation is not None:
@@ -728,22 +739,30 @@ class AnimationController(threading.Thread):
 
     def start_animation(self, animation_settings,
                         pause_current_animation=False,
-                        block_until_started=False):
-        self.__create_start_event(animation_settings,
-                                  pause_current_animation=pause_current_animation,
-                                  block_until_started=block_until_started)
+                        block_until_started=False, block_until_finished=False):
+        start_event = self.__create_start_event(animation_settings,
+                                                pause_current_animation=pause_current_animation)
 
-    def __create_start_event(self, animation_settings, pause_current_animation=False, block_until_started=False):
+        # check blocking until started
+        if block_until_started:
+            start_event.wait()
+
+        # check blocking until finished
+        if block_until_finished:
+            # first wait until started
+            start_event.wait()
+            # then get the thread object from the start animation
+            if start_event.start_animation_thread is not None:
+                # wait until the thread/animation finishes
+                start_event.start_animation_thread.join()
+
+    def __create_start_event(self, animation_settings, pause_current_animation=False):
         start_event = AnimationController._Event(
             AnimationController._EventType.start,
             AnimationController.StartStopSettings(animation_settings=animation_settings,
                                                   pause_current_animation=pause_current_animation)
         )
         self.__controll_queue.put(start_event)
-
-        # check blocking
-        if block_until_started:
-            start_event.wait()
 
         return start_event
 
