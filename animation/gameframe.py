@@ -185,7 +185,11 @@ class GameframeAnimation(AbstractAnimation):
                 else:
                     cur_y = h - DY - y
 
-                yield frame[cur_y:cur_y+DY, cur_x:cur_x+DX, :]
+                frame = frame[cur_y:cur_y+DY, cur_x:cur_x+DX, :]
+                if frame.size == 0:
+                    break
+                else:
+                    yield frame
 
                 i += 1
                 x += abs(self.__moveX)
