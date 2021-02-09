@@ -240,7 +240,7 @@ class Main(MainInterface):
 
             # during load of the saved scheduled animations, the ANIMATION_SETTINGS attribute is a dict
             # it must be converted to the respective class instead
-            animation = self.available_animations[entry.ANIMATION_SETTINGS.animation_name]
+            animation = self.available_animations[entry.ANIMATION_SETTINGS["animation_name"]]
             entry.ANIMATION_SETTINGS = animation.default_animation_settings(**entry.ANIMATION_SETTINGS)
 
             # add job to the scheduler
