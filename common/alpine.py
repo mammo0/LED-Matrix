@@ -1,4 +1,5 @@
 from configparser import ConfigParser, MissingSectionHeaderError
+from ctypes import util
 import ctypes
 import os
 from pathlib import Path
@@ -74,7 +75,7 @@ class alpine_rw():
     """
     def __init__(self):
         # load system mount command
-        self.__libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+        self.__libc = ctypes.CDLL(util.find_library("c"), use_errno=True)
         self.__libc.mount.argtypes = (ctypes.c_char_p,  # source
                                       ctypes.c_char_p,  # target
                                       ctypes.c_char_p,  # filesystemtype
