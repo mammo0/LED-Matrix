@@ -36,6 +36,7 @@ class BlmVariant(DynamicEnum, metaclass=_BlmVariantMeta):
 
 
 class BlmSettings(_AnimationSettingsStructure):
+    animation_name = "blinkenlights"
     variant = BlmVariant._empty
     parameter = BlmParameter
 
