@@ -18,7 +18,9 @@ class _AnimationSettingsStructureMeta(type(TypedStructure)):
 
         # programmatically change the animation_name attribute
         if cls != "_AnimationSettingsStructure":
-            new_cls._params_map_["animation_name"] = new_cls.__module__.rpartition(".")[-1]
+            # if it was not set manually
+            if new_cls._params_map_.get("animation_name", None) is None:
+                new_cls._params_map_["animation_name"] = new_cls.__module__.rpartition(".")[-1]
 
         return new_cls
 
