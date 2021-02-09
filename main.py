@@ -583,10 +583,17 @@ class AnimationController(threading.Thread):
         def _put(self, item):
             # check for duplicates
             for event in self.queue:
-                # compare event type and the animation name
-                if (event.event_type == item.event_type and
-                        event.animation_settings.animation_name == item.animation_settings.animation_name):
-                    return
+                # compare event type
+                if event.event_type == item.event_type:
+                    # on resume event, compare the animation_to_resume thread
+                    if event.event_type == AnimationController._EventType.resume:
+                        if event.event_settings.resume_thread == item.event_settings.resume_thread:
+                            return
+                    # on start/stop event compare the animation_settings (raw)
+                    else:
+                        if event.event_settings.animation_settings.as_raw_dict() == \
+                                item.event_settings.animation_settings.as_raw_dict():
+                            return
 
             queue.Queue._put(self, item)
 
