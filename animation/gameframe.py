@@ -58,8 +58,11 @@ class GameframeAnimation(AbstractAnimation):
 
         self.__background_color = self._settings.parameter.background_color.pil_tuple
 
-        self.__load_frames()
+        self.__global_crop_x = 0
+        self.__global_crop_y = 0
+
         self.__read_config()
+        self.__load_frames()
 
         if not (self.__loop or self.__move_loop):
             self._repeat = 0
@@ -94,11 +97,26 @@ class GameframeAnimation(AbstractAnimation):
                                 key=lambda bmpfile: int(bmpfile.stem))):
             with open(str(path), 'rb') as f:
                 image = Image.open(f)
-                # center (crop) image
-                background_img = Image.new(mode='RGB', size=(self._width, self._height), color=self.__background_color)
-                x = (self._width - image.width) / 2
-                y = (self._height - image.height) / 2
-                background_img.paste(image, (int(x), int(y)))
+
+                # if __moveX or __moveY are set, than multiple images are placed in one
+                if self.__moveX > 0 or self.__moveY > 0:
+                    background_img = Image.new(mode='RGB', size=image.size, color=self.__background_color)
+                    background_img.paste(image)
+
+                    # calculate the global crop coordinates for the single images
+                    if self.__moveX > 0:
+                        self.__global_crop_x = abs(int((self._width - self.__moveX) / 2))
+                    if self.__moveY > 0:
+                        self.__global_crop_y = abs(int((self._height - self.__moveY) / 2))
+                else:
+                    # center (crop) image
+                    background_img = Image.new(mode='RGB',
+                                               size=(self._width, self._height),
+                                               color=self.__background_color)
+                    x = int((self._width - image.width) / 2)
+                    y = int((self._height - image.height) / 2)
+                    background_img.paste(image, (x, y))
+
                 self.frames.append(np.array(background_img))
             image = None
         if len(self.frames) == 0:
@@ -138,8 +156,8 @@ class GameframeAnimation(AbstractAnimation):
         i = 0
         end = len(self.frames)
 
-        x = 0
-        y = 0
+        x = self.__global_crop_x
+        y = self.__global_crop_y
         DX = self._width
         DY = self._height
 
