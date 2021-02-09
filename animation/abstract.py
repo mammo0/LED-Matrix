@@ -4,6 +4,7 @@ This is the sceleton code for all animations.
 
 from abc import abstractmethod, ABC, ABCMeta
 from threading import Thread, Event
+import time
 
 from simple_classproperty import ClasspropertyMeta, classproperty
 
@@ -80,6 +81,7 @@ class AbstractAnimation(ABC, Thread):
 
     def run(self):
         while not self._stop_event.is_set():
+            start_time = time.time()
             if not self._pause_event.is_set():
                 # if the animation is still marked as paused, unset it here
                 if self.__animation_paused.is_set():
@@ -109,8 +111,10 @@ class AbstractAnimation(ABC, Thread):
                 # notify the pause method that the animation is now paused
                 self.__animation_paused.set()
 
-            # limit fps
-            self._stop_event.wait(self.__animation_speed)
+            # limit fps = animation_speed - the execution time
+            wait_time = self.__animation_speed - (time.time() - start_time)
+            if wait_time > 0:
+                self._stop_event.wait(wait_time)
 
         # now the animation has stopped, so call the finish callable
         self.__on_finish_callable()
