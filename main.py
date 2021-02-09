@@ -44,13 +44,13 @@ class MainInterface(ABC):
         """
 
     @abstractmethod
-    def start_animation(self, animation_settings, pause_current_animation=False, blocking=False):
+    def start_animation(self, animation_settings, pause_current_animation=False, block_until_started=False):
         """
         Start a specific animation. See the respective animation class for which options are available.
         @param animation_settings: Instance of _AnimationSettingsStructure.
         @param pause_current_animation: If set to True, just pause the current animation and resume
                                           after the new animation finishes.
-        @param blocking: If set to True, wait until the animation is running. Otherwise return immediately.
+        @param block_until_started: If set to True, wait until the animation is running. Otherwise return immediately.
         """
 
     @abstractmethod
@@ -251,7 +251,7 @@ class Main(MainInterface):
                                                   minute=entry.CRON_STRUCTURE.MINUTE,
                                                   second=entry.CRON_STRUCTURE.SECOND),
                               args=(entry.ANIMATION_SETTINGS,),
-                              kwargs={"pause_current_animation": True, "blocking": True},
+                              kwargs={"pause_current_animation": True, "block_until_started": True},
                               id=entry.JOB_ID)
 
             # add it to the internal schedule table
@@ -366,10 +366,10 @@ class Main(MainInterface):
         # wait until the the __reload_signal is unset
         self.__reload_signal.wait_unset()
 
-    def start_animation(self, animation_settings, pause_current_animation=False, blocking=False):
+    def start_animation(self, animation_settings, pause_current_animation=False, block_until_started=False):
         self.__animation_controller.start_animation(animation_settings=animation_settings,
                                                     pause_current_animation=pause_current_animation,
-                                                    blocking=blocking)
+                                                    block_until_started=block_until_started)
 
     def schedule_animation(self, cron_structure, animation_settings):
         with self.__schedule_lock:
@@ -383,7 +383,8 @@ class Main(MainInterface):
                                                                          minute=cron_structure.MINUTE,
                                                                          second=cron_structure.SECOND),
                                                      args=(animation_settings,),
-                                                     kwargs={"pause_current_animation": True, "blocking": True})
+                                                     kwargs={"pause_current_animation": True,
+                                                             "block_until_started": True})
 
             # create an entry for the schedule table
             schedule_entry = ScheduleEntry()
@@ -727,12 +728,12 @@ class AnimationController(threading.Thread):
 
     def start_animation(self, animation_settings,
                         pause_current_animation=False,
-                        blocking=False):
+                        block_until_started=False):
         self.__create_start_event(animation_settings,
                                   pause_current_animation=pause_current_animation,
-                                  blocking=blocking)
+                                  block_until_started=block_until_started)
 
-    def __create_start_event(self, animation_settings, pause_current_animation=False, blocking=False):
+    def __create_start_event(self, animation_settings, pause_current_animation=False, block_until_started=False):
         start_event = AnimationController._Event(
             AnimationController._EventType.start,
             AnimationController.StartStopSettings(animation_settings=animation_settings,
@@ -741,7 +742,7 @@ class AnimationController(threading.Thread):
         self.__controll_queue.put(start_event)
 
         # check blocking
-        if blocking:
+        if block_until_started:
             start_event.wait()
 
         return start_event

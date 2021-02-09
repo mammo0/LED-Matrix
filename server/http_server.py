@@ -219,7 +219,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         new_animation_settings = self.__parse_animation_form(request.forms)
         self.__main_app.start_animation(animation_settings=new_animation_settings,
                                         # wait until the new animation runs
-                                        blocking=True)
+                                        block_until_started=True)
 
         redirect("/")
 
