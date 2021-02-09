@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 import argparse
+from collections import namedtuple
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -544,13 +545,16 @@ class Main(MainInterface):
 
 
 class AnimationController(threading.Thread):
+    StartStopSettings = namedtuple("StartStopSettings", ["animation_settings",
+                                                         "pause_current_animation"],
+                                   defaults=(False,))
+    ResumeSettings = namedtuple("ResumeSettings", ["animation_to_resume",
+                                                   "resume_thread"])
+
     class _Event():
-        def __init__(self, event_type, animation_settings,
-                     pause_current_animation=False, resume_previous_animation=False):
+        def __init__(self, event_type, event_settings):
             self.event_type = event_type
-            self.animation_settings = animation_settings
-            self.pause_current_animation = pause_current_animation
-            self.resume_previous_animation = resume_previous_animation
+            self.event_settings = event_settings
 
             self.next_event = None
             self.event_lock = threading.Event()
@@ -573,6 +577,7 @@ class AnimationController(threading.Thread):
     class _EventType(Enum):
         start = 1
         stop = 2
+        resume = 3
 
     class _EventQueue(queue.Queue):
         def _put(self, item):
@@ -644,20 +649,20 @@ class AnimationController(threading.Thread):
 
     def __on_last_element_processed(self):
         # check for paused animations
-        if self.__pause_queue.empty():
+        try:
+            animation_to_resume, resume_thread = self.__pause_queue.get_nowait()
+        except queue.Empty:
             # if there's no paused animation, start the default animation
             return self.__create_start_event(self.__default_animation_settings)
         else:
-            return self.__create_start_event(None,
-                                             pause_current_animation=False, resume_previous_animation=True,
-                                             blocking=False)
+            return self.__create_resume_event(animation_to_resume=animation_to_resume, resume_thread=resume_thread)
 
     def __on_animation_finished(self):
         # whenever an animation stops or finishes check if there are unfinished jobs
         if not self.__controll_queue.tasks_remaining:
             self.__on_last_element_processed()
 
-    def __start_animation(self, animation_settings, pause_current_animation, resume_previous_animation):
+    def __start_animation(self, animation_settings, pause_current_animation):
         # check if the current animation should be paused
         if (pause_current_animation and
                 self.__current_animation is not None):
@@ -666,18 +671,9 @@ class AnimationController(threading.Thread):
             paused_thread = animation_to_pause.pause_animation()
             if paused_thread is not None:
                 self.__pause_queue.put((animation_to_pause, paused_thread))
-        elif (animation_settings is None and
-                resume_previous_animation):
-            # resume the last paused animation
-            animation_to_resume, resume_thread = self.__pause_queue.get()
-            animation_to_resume.resume_animation(resume_thread)
-            self.__current_animation = animation_to_resume
-
-            # stop here
-            return
         else:
             # if an animation should be started without pausing the current one,
-            # clear the pause queue, because the afterwards not resuming will be done
+            # clear the pause queue, because afterwards no resuming should be done
             if not self.__pause_queue.empty():
                 # force clearing of pause queue
                 self.__pause_queue.queue.clear()
@@ -705,21 +701,33 @@ class AnimationController(threading.Thread):
             self.__current_animation.stop_animation()
             self.__current_animation = None
 
+    def __resume_animation(self, animation_to_resume, resume_thread):
+        animation_to_resume.resume_animation(resume_thread)
+        self.__current_animation = animation_to_resume
+
+    def __create_resume_event(self, animation_to_resume, resume_thread):
+        resume_event = AnimationController._Event(
+            AnimationController._EventType.resume,
+            AnimationController.ResumeSettings(animation_to_resume=animation_to_resume,
+                                               resume_thread=resume_thread)
+        )
+        self.__controll_queue.put(resume_event)
+
+        return resume_event
+
     def start_animation(self, animation_settings,
                         pause_current_animation=False,
                         blocking=False):
         self.__create_start_event(animation_settings,
                                   pause_current_animation=pause_current_animation,
-                                  resume_previous_animation=False,
                                   blocking=blocking)
 
-    def __create_start_event(self, animation_settings,
-                             pause_current_animation=False, resume_previous_animation=False,
-                             blocking=False):
-        start_event = AnimationController._Event(AnimationController._EventType.start,
-                                                 animation_settings,
-                                                 pause_current_animation=pause_current_animation,
-                                                 resume_previous_animation=resume_previous_animation)
+    def __create_start_event(self, animation_settings, pause_current_animation=False, blocking=False):
+        start_event = AnimationController._Event(
+            AnimationController._EventType.start,
+            AnimationController.StartStopSettings(animation_settings=animation_settings,
+                                                  pause_current_animation=pause_current_animation)
+        )
         self.__controll_queue.put(start_event)
 
         # check blocking
@@ -744,8 +752,10 @@ class AnimationController(threading.Thread):
             return None
 
         # create and schedule the stop event
-        stop_event = AnimationController._Event(AnimationController._EventType.stop,
-                                                animation_to_stop.animation_settings)
+        stop_event = AnimationController._Event(
+            AnimationController._EventType.stop,
+            AnimationController.StartStopSettings(animation_settings=animation_to_stop.animation_settings)
+        )
         self.__controll_queue.put(stop_event)
 
         # check blocking
@@ -790,11 +800,13 @@ class AnimationController(threading.Thread):
 
             # check the event type
             if event.event_type == AnimationController._EventType.start:
-                self.__start_animation(event.animation_settings,
-                                       pause_current_animation=event.pause_current_animation,
-                                       resume_previous_animation=event.resume_previous_animation)
+                self.__start_animation(event.event_settings.animation_settings,
+                                       pause_current_animation=event.event_settings.pause_current_animation)
+            elif event.event_type == AnimationController._EventType.resume:
+                self.__resume_animation(animation_to_resume=event.event_settings.animation_to_resume,
+                                        resume_thread=event.event_settings.resume_thread)
             elif event.event_type == AnimationController._EventType.stop:
-                self.__stop_animation(event.animation_settings)
+                self.__stop_animation(event.event_settings.animation_settings)
                 # special case on stop event:
                 # after the animation was stopped check if this was the last task (for now)
                 if self.__controll_queue.last_task_running:
