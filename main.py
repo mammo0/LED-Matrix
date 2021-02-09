@@ -240,7 +240,7 @@ class Main(MainInterface):
 
             # during load of the saved scheduled animations, the ANIMATION_SETTINGS attribute is a dict
             # it must be converted to the respective class instead
-            animation = self.available_animations[entry.ANIMATION_SETTINGS["animation_name"]]
+            animation = self.available_animations[entry.ANIMATION_SETTINGS.animation_name]
             entry.ANIMATION_SETTINGS = animation.default_animation_settings(**entry.ANIMATION_SETTINGS)
 
             # add job to the scheduler
@@ -657,9 +657,10 @@ class AnimationController(threading.Thread):
 
         # use module names to identify the animations not the class names
         for _name, cls in animation_loader.plugins.items():
-            animations[cls.animation_name] = cls(width=self.__display_width, height=self.__display_height,
-                                                 frame_queue=self.__display_frame_queue,
-                                                 on_finish_callable=self.__on_animation_finished)
+            animation_controller = cls(width=self.__display_width, height=self.__display_height,
+                                       frame_queue=self.__display_frame_queue,
+                                       on_finish_callable=self.__on_animation_finished)
+            animations[animation_controller.default_animation_settings.animation_name] = animation_controller
 
         return animations
 
@@ -718,7 +719,8 @@ class AnimationController(threading.Thread):
         if self.__current_animation is not None:
             # but only if not a specific animation should be stopped
             if (event is not None and
-                    self.__current_animation.animation_name != event.event_settings.animation_settings.animation_name):
+                    self.__current_animation.default_animation_settings.animation_name !=
+                    event.event_settings.animation_settings.animation_name):
                 return
             self.__current_animation.stop_animation()
             self.__current_animation = None
@@ -777,7 +779,7 @@ class AnimationController(threading.Thread):
             return None
         # check if the current animation is the one that should be stopped
         if (animation_name is not None and
-                animation_to_stop.animation_settings.animation_name != animation_name):
+                animation_to_stop.default_animation_settings.animation_name != animation_name):
             # otherwise do nothing
             return None
 
@@ -811,7 +813,7 @@ class AnimationController(threading.Thread):
     def get_current_animation_name(self):
         cur_a = self.__current_animation
         if cur_a:
-            return cur_a.animation_name
+            return cur_a.default_animation_settings.animation_name
         else:
             return ""
 

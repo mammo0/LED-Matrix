@@ -9,7 +9,7 @@
             <div class="card">
                 <div class="card-header" id="dynamic_variant_header_{{animation_name}}">
                     <h2 class="mb-0">
-                        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#dynamic_variant_body_{{animation_name}}" aria-expanded="false" aria-controls="dynamic_variant_body_{{animation.animation_name}}">
+                        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#dynamic_variant_body_{{animation_name}}" aria-expanded="false" aria-controls="dynamic_variant_body_{{animation_name}}">
                             {{animation_name.title()}}
                         </button>
                     </h2>

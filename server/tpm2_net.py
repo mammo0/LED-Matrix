@@ -46,7 +46,7 @@ class Tpm2NetServer(socketserver.UDPServer):
         if self.__last_time_received:
             if self.__last_time_received + self.__timeout < time.time():
                 # stop dummy animation
-                self.__main_app.stop_animation(self.__dummy_animation.animation_name)
+                self.__main_app.stop_animation(self.__dummy_animation.default_animation_settings.animation_name)
                 self.__last_time_received = None
                 self.__timeout_timer = None
                 self.__misbehaving = False
@@ -90,7 +90,7 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
             # tell main_app that tpm2_net data is received
             if not self.__dummy_animation.is_running:
                 # use dummy animation, because the frame_queue gets filled here
-                self.server.main_app.start_animation(self.__dummy_animation.animation_name)
+                self.server.main_app.start_animation(self.__dummy_animation.default_animation_settings.animation_name)
             self.server.update_time()
 
             if packet_number == 0:

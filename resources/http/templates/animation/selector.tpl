@@ -18,8 +18,8 @@
 <div class="my-3"></div>
 <hr/>
 
-% for animation in animations.values():
-    <div id="animation_settings_{{animation.animation_name}}" class="{{"d-none" if animation.animation_name != current_animation_name else ""}}">
+% for animation_name, animation in animations.items():
+    <div id="animation_settings_{{animation_name}}" class="{{"d-none" if animation_name != current_animation_name else ""}}">
         % include("animation/settings.tpl", animation_settings=animation.animation_settings)
     </div>
 % end

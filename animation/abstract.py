@@ -2,11 +2,9 @@
 This is the sceleton code for all animations.
 """
 
-from abc import abstractmethod, ABC, ABCMeta
+from abc import abstractmethod, ABC
 from threading import Thread, Event
 import time
-
-from simple_classproperty import ClasspropertyMeta, classproperty
 
 from common import eprint
 from common.color import Color
@@ -175,16 +173,9 @@ class AbstractAnimation(ABC, Thread):
     #     Return -1 for animations that do not have an intrinsic_duration. The
     #     basic idea is to let animations run for only a default amount of time.
     #     Longer animations should be supported by asking for their intrinsic
-    #     duration. Of course repeats must be set to 0 then."""
 
 
-class AbstractAnimationControllerMeta(ABCMeta, ClasspropertyMeta):
-    """
-    Dummy class for chaining meta classes
-    """
-
-
-class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
+class AbstractAnimationController(ABC):
     def __init__(self, width, height, frame_queue, on_finish_callable):
         self.__width = width  # width of frames to produce
         self.__height = height  # height of frames to produce
@@ -194,10 +185,6 @@ class AbstractAnimationController(metaclass=AbstractAnimationControllerMeta):
         self.__animation_thread = None  # this variable contains the animation thread
 
         self.__animation_running = Event()
-
-    @classproperty
-    def animation_name(cls):
-        return cls.__module__.rpartition(".")[-1]
 
     @property
     @abstractmethod
