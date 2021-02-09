@@ -253,7 +253,14 @@ class GameframeController(AbstractAnimationController):
             if len(info) > 0:
                 def extract_zip():
                     # check if the root element is a single directory
-                    if (len(info) > 1 or not info[0].is_dir()):
+                    if (len(info) > 1 and info[0].is_dir()):
+                        # extract the zip-file directly
+                        extract_path = _ANIMATIONS_DIR.resolve()
+
+                        if (_ANIMATIONS_DIR / info[0].filename.rsplit(".", 1)[0]).exists():
+                            eprint(f"The variant '{info[0].filename.rsplit('.', 1)[0]}' already exists.")
+                            return
+                    else:
                         # if not, try to create a directory with the file name
                         extract_path = (_ANIMATIONS_DIR / file_name.rsplit(".", 1)[0]).resolve()
 
@@ -262,13 +269,6 @@ class GameframeController(AbstractAnimationController):
                             return
                         else:
                             extract_path.mkdir(parents=True)
-                    else:
-                        # otherwise extract the zip-file directly
-                        extract_path = _ANIMATIONS_DIR.resolve()
-
-                        if (_ANIMATIONS_DIR / info[0].filename.rsplit(".", 1)[0]).exists():
-                            eprint(f"The variant '{info[0].filename.rsplit('.', 1)[0]}' already exists.")
-                            return
 
                     # extract the zip file
                     zip_file.extractall(path=str(extract_path))
