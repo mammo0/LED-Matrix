@@ -94,9 +94,8 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
             # tell main_app that tpm2_net data is received
             if not self.server.dummy_animation.is_running:
                 # use dummy animation, because the frame_queue gets filled here
-                self.server.main_app.start_animation(
-                    self.server.dummy_animation.default_animation_settings.animation_name
-                )
+                self.server.main_app.start_animation(self.server.dummy_animation.default_animation_settings,
+                                                     pause_current_animation=True)
             self.server.update_time()
 
             if packet_number == 0:
