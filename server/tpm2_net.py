@@ -46,6 +46,10 @@ class Tpm2NetServer(socketserver.UDPServer):
     def tmp_buffer_index(self):
         return self.__tmp_buffer_index
 
+    @tmp_buffer_index.setter
+    def tmp_buffer_index(self, value):
+        self.__tmp_buffer_index = value
+
     @property
     def is_misbehaving(self):
         return self.__misbehaving
