@@ -184,7 +184,7 @@ class AbstractAnimationController(ABC):
         self.__frame_queue = frame_queue  # queue to put frames onto
         self.__on_finish_callable = on_finish_callable  # this gets called whenever an animation stops/finishes
 
-        self.__animation_thread = None  # this variable contains the animation thread
+        self._animation_thread = None  # this variable contains the animation thread
 
         self.__animation_running = Event()
 
@@ -270,9 +270,9 @@ class AbstractAnimationController(ABC):
 
     @property
     def animation_settings(self):
-        if (self.__animation_thread and
-                self.__animation_thread.is_alive()):
-            return self.__animation_thread.settings
+        if (self._animation_thread and
+                self._animation_thread.is_alive()):
+            return self._animation_thread.settings
         else:
             return self.default_animation_settings()
 
@@ -301,21 +301,21 @@ class AbstractAnimationController(ABC):
 
     def start_animation(self, animation_instance):
         # set the current animation thread
-        self.__animation_thread = animation_instance
+        self._animation_thread = animation_instance
 
         # mark the animation as running
         self.__animation_running.set()
 
         # start the animation thread
-        self.__animation_thread.start()
+        self._animation_thread.start()
 
     def pause_animation(self):
         if (self.__animation_running.is_set() and
-                self.__animation_thread and
-                self.__animation_thread.is_alive()):
-            self.__animation_thread.pause()
+                self._animation_thread and
+                self._animation_thread.is_alive()):
+            self._animation_thread.pause()
             self.__animation_running.clear()
-            return self.__animation_thread
+            return self._animation_thread
 
         return None
 
@@ -343,6 +343,6 @@ class AbstractAnimationController(ABC):
 
     def stop_animation(self):
         # stop the animation if it's currently running.
-        if (self.__animation_thread and
-                self.__animation_thread.is_alive()):
-            self.__animation_thread.stop_and_wait()
+        if (self._animation_thread and
+                self._animation_thread.is_alive()):
+            self._animation_thread.stop_and_wait()

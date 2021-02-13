@@ -65,4 +65,4 @@ class DummyController(AbstractAnimationController):
         @param frame: This frame gets directly added to the frame queue if the animation is running.
         """
         if self.is_running:
-            self.__animation_thread.display_frame(frame)
+            self._animation_thread.display_frame(frame)
