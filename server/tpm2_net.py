@@ -15,6 +15,15 @@ class Tpm2NetServer(socketserver.UDPServer):
 
         self.__dummy_animation = self.__main_app.available_animations["dummy"]
 
+        self.__tmp_buffer = np.zeros((self.__display_height, self.__display_width, 3),
+                                     dtype=np.uint8)
+        self.__tmp_buffer_index = 0
+
+        # glediator is ok
+        # but pixelcontroller is counting the packets wrong.
+        # when detected that the stream is misheaving then count also wrong
+        self.__misbehaving = False
+
         self.__timeout = 3  # seconds
         self.__last_time_received = None
         self.__timeout_timer = None
@@ -26,12 +35,20 @@ class Tpm2NetServer(socketserver.UDPServer):
         return self.__main_app
 
     @property
-    def display_width(self):
-        return self.__display_width
+    def dummy_animation(self):
+        return self.__dummy_animation
 
     @property
-    def display_height(self):
-        return self.__display_height
+    def tmp_buffer(self):
+        return self.__tmp_buffer
+
+    @property
+    def tmp_buffer_index(self):
+        return self.__tmp_buffer_index
+
+    @property
+    def is_misbehaving(self):
+        return self.__misbehaving
 
     def update_time(self):
         if not self.__last_time_received:
@@ -58,19 +75,6 @@ class Tpm2NetServer(socketserver.UDPServer):
 
 
 class Tpm2NetHandler(socketserver.BaseRequestHandler):
-    def __init__(self, request, client_address, server):
-        socketserver.BaseRequestHandler.__init__(self, request, client_address, server)
-
-        self.__dummy_animation = self.server.main_app.available_animations["dummy"]
-
-        self.__tmp_buffer = np.zeros((self.server.display_height, self.server.display_width, 3),
-                                     dtype=np.uint8)
-        self.__tmp_buffer_index = 0
-        # glediator is ok
-        # but pixelcontroller is counting the packets wrong.
-        # when detected that the stream is misheaving then count also wrong
-        self.__misbehaving = False
-
     def handle(self):
         data = self.request[0].strip()
         data_length = len(data)
@@ -88,24 +92,26 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
 
         if packet_type == 0xDA:  # data frame
             # tell main_app that tpm2_net data is received
-            if not self.__dummy_animation.is_running:
+            if not self.server.dummy_animation.is_running:
                 # use dummy animation, because the frame_queue gets filled here
-                self.server.main_app.start_animation(self.__dummy_animation.default_animation_settings.animation_name)
+                self.server.main_app.start_animation(
+                    self.server.dummy_animation.default_animation_settings.animation_name
+                )
             self.server.update_time()
 
             if packet_number == 0:
-                self.__misbehaving = True
-            if packet_number == (1 if not self.__misbehaving else 0):
-                self.__tmp_buffer_index = 0
+                self.server.is_misbehaving = True
+            if packet_number == (1 if not self.server.is_misbehaving else 0):
+                self.server.tmp_buffer_index = 0
 
-            upper = min(self.__tmp_buffer.size,
-                        self.__tmp_buffer_index + frame_size)
-            arange = np.arange(self.__tmp_buffer_index,
+            upper = min(self.server.tmp_buffer.size,
+                        self.server.tmp_buffer_index + frame_size)
+            arange = np.arange(self.server.tmp_buffer_index,
                                upper)
-            np.put(self.__tmp_buffer, arange, list(data[6:-1]))
-            self.__tmp_buffer_index = self.__tmp_buffer_index + frame_size
-            if packet_number == (number_of_packets if not self.__misbehaving else number_of_packets - 1):
-                self.__dummy_animation.display_frame(self.__tmp_buffer.copy())
+            np.put(self.server.tmp_buffer, arange, list(data[6:-1]))
+            self.server.tmp_buffer_index += frame_size
+            if packet_number == (number_of_packets if not self.server.is_misbehaving else number_of_packets - 1):
+                self.server.dummy_animation.display_frame(self.server.tmp_buffer.copy())
         elif data[1] == 0xC0:  # command
             # NOT IMPLEMENTED
             return
