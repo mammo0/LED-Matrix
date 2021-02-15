@@ -1,58 +1,111 @@
-# RibbaPi
-RibbaPi - APA102 based 16x16 LED-Matrix fitted inside Ribba picture frame, controlled by Raspberry Pi in Python
+# LED-Matrix
 
-Also created an Angular UI that is using the REST service of the RibbaPi. 
-Check it out: https://github.com/ElectiveRob/RibbaPi-ui
+This project is based on the work of [stahlfabrik](https://github.com/stahlfabrik)'s https://github.com/stahlfabrik/RibbaPi.
 
-I made a video that documents the build process and shows off some of its capabilities:
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/UbVjETJd87c/0.jpg)](http://www.youtube.com/watch?v=UbVjETJd87c "RibbaPi - 16x16 APA102 LED matrix build in a Ribba frame controlled by Raspberry Pi with Python")
+And the additions made by [ElectiveRob](https://github.com/ElectiveRob).
 
-**Good news: The Raspberry Pi Zero W is more than capable of running RibbaPi!**
+Many thanks to you two.
 
-Here is an update video on the latest changes to RibbaPi and gives a peek at the current software:
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/-xVK28GpX0w/0.jpg)](https://www.youtube.com/watch?v=-xVK28GpX0w "Update on RibbaPi - 16x16 APA102 LED matrix build in a Ribba frame controlled by Raspberry Pi")
 
-These are some, but certainly not all, things that I used to build my RibbaPi:
-- Ikea Ribba picture frame, size 50x50cm
-- 5m, white PCB, 60 LEDs/m APA102 strip
-- Raspberry Pi 3 and later a Raspberry Pi Zero W
-- 74AHCT125 level shifter
-- raspberry pi prototyping hat for soldering the logic level converter circuit
-- 488x488x3,2mm wood plate (HDF)
-- 2,5mm^2 copper wire for the outer power rails
-- 1,5mm^2 copper wire for each power row
-- 0,8mm silver copper wire
-- lots of hot glue
-- lots of solder
-- Meanwell LRS-100-5 power supply
-- adequate power supply casing
-- XT60 connectors
-- switch and power plug
-- some WAGO clamps
-- 50x70cm 5mm white foam board
-- adhesive plastic foil and 50x70cm sheet of architecture paper for light diffusion
-- sharp knife (scalpel)
-- soldering iron 25W
-- cordless screwdriver with 1mm metal drill
-- some heat shrink tubes
-- USB cord to power Raspberry Pi (USB A side cut off)
-- some more wires, plugs, fuse and stuff
-- I did NOT use a capacitor as seems recommended in many WS2812b tutorials. With my power supply, the APA102 LEDs, the way of soldering EACH LED there seems no need to add an additional capacitor. Please correct me if I am wrong.
 
-Notes about the software:
-- gameframe animations supported
-- original blinkenlights animations supported
-- analogue clock animation shows current time
-- http server accepts strings that RibbaPi displays as scrolling text
-- tpm2.net server receives tpm2.net streams any time and interrupts playing animations
-- when not connected to APA102 LEDs a virtual display can be used on the local computer that simulates the LED matrix. Very handy for development!
-- currently all parameters are set in the ribbapi.py - also called "the brain"
+## What is this project about?
+This project brings an old study project of mine back to life. Together with some collegues I built a simple LED matarix with APA102 LEDs that are controlled by a Raspberry Pi 1.
 
-A lot of fine tuning and enhancements are needed.
+After some years of inactivity I had some time to re-activate this project and found the repository of [stahlfabrik](https://github.com/stahlfabrik), who has also built a LED matrix with similar hardware. So I continued his work.
 
-TODO-List:
-- make html server look nicer (especially on mobile) and more capable
-- enhance selection process of animations (enable, disable, randomness, weight)
-- moodlight animation module!
-- moodlight control via html server
-- maybe make html server show gif previews of all animations
+If you have also built such an LED matrix, this project may help you to do some cool stuff with it.
+
+
+
+## Preparations
+This project is designed to be used in conjunction with an Alpine Linux installation on a Raspberry Pi.
+
+To install Alpine Linux on a Raspberry Pi please stick to the official documentation: https://wiki.alpinelinux.org/wiki/Raspberry_Pi
+
+
+#### Install dependencies
+After Alpine Linux is running on your Raspberry Pi, install these dependencies:
+
+```shell
+apk add git \
+        make \
+        python3 \
+        py3-numpy \
+        py3-pillow \
+        py3-bottle \
+        py3-six
+```
+
+
+#### Build the Python virtual environment (On local PC)
+This project uses Pipenv to manage it's dependencies. Unfortunately some of these dependencies require building of external libraries. Normally that wouldn't be a problem. But running Alpine Linux in diskless mode on a Raspberry Pi 1 means, that you have only a few 100MB of available 'disk' space. This is not enough to build all dependencies.
+
+As a workaround you can build these dependencies on your local PC with the help of Docker. Therefore this repository contains a `Dockerfile` that creates and builds the virual Python environment with all dependencies.
+
+To do this, run the following `make` target on your local PC:
+
+```shell
+make build-alpine-venv
+```
+
+After that you find an `tar`-archive in the `resources` directory of this repository, that contains the virtual environment for your Alpine Linux installation. This archive is needed in point **4** of the **Installation** section.
+
+
+
+## Installation (On Raspberry Pi)
+1. Enable write support on your SD card partition:
+```shell
+mount -o remount,rw /media/<sd_card>
+```
+You get the correct mount location form the `LBU_MEDIA` parameter in the `/etc/lbu/lbu.conf` file.
+
+2. Enter the directory of the mount point:
+```shell
+cd /media/<sd_card>
+```
+
+3. Clone this repository:
+```shell
+git clone https://github.com/mammo0/LED-Matrix.git
+cd LED-Matrix
+```
+
+4. Copy the `tar`-archive containing the virtual environment from your local PC to the `resources` directory on the Raspberry Pi, e.g. by using `scp`.
+
+5. Install the virtual environment:
+```shell
+make install-alpine-venv
+```
+
+6. Generate the `config.ini` file:
+```shell
+make config
+```
+
+7. *(Optional)* Edit the `config.ini` file to your needs.
+
+8. Test the installation:
+```shell
+make run
+```
+If everything runs without errors and you see the default animation (clock) on your LED matrix, stop the execution with `Ctrl-C`. *If there are errors, feel free to open an issue with an detailed error report on GitHub.*
+
+9. Disable write support on the SD card again:
+```shell
+mount -o remount,ro /media/<sd_card>
+```
+
+10. Add this project to the autostart of Alpine Linux:
+```shell
+make install
+```
+
+
+## Usage
+If everything went well, there should be a web interface available under:
+
+```
+http://<ip-of-raspberry-pi>:<port-from-config.ini>
+```
+
+From there you can manage most of the settings of the LED matrix. And you can start/stop and schedule animations.
