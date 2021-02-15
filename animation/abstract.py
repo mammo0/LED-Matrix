@@ -8,7 +8,7 @@ import time
 
 from common import eprint
 from common.color import Color
-from common.structure import TypedStructure
+from common.structure import TypedStructure, mixedmethod
 from common.threading import EventWithUnsetSignal
 
 
@@ -37,8 +37,9 @@ class _AnimationSettingsStructure(TypedStructure, metaclass=_AnimationSettingsSt
     # 0: no repeat, -1: forever, > 0: x-times
     repeat = 0
 
-    def as_raw_dict(self):
-        raw_dict = TypedStructure.as_raw_dict(self)
+    @mixedmethod
+    def as_raw_dict(self_or_cls):
+        raw_dict = TypedStructure.as_raw_dict(self_or_cls)
         for k, v in raw_dict.items():
             if (k == "variant" and
                     v is not None):
@@ -49,8 +50,9 @@ class _AnimationSettingsStructure(TypedStructure, metaclass=_AnimationSettingsSt
 
 
 class AnimationParameter(TypedStructure):
-    def as_raw_dict(self):
-        raw_dict = TypedStructure.as_raw_dict(self)
+    @mixedmethod
+    def as_raw_dict(self_or_cls):
+        raw_dict = TypedStructure.as_raw_dict(self_or_cls)
         for k, v in raw_dict.items():
             if isinstance(v, Color):
                 # get hex value for raw

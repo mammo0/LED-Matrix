@@ -8,6 +8,25 @@ def _is_function(x):
             or isinstance(x, types.BuiltinFunctionType)
 
 
+class mixedmethod(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, cls):
+        def newfunc(*args, **kwargs):
+            n_cls = cls
+            n_instance = instance
+            if len(args) >= 1:
+                if isinstance(args[0], cls):
+                    n_instance = args[0]
+                    args = args[1:]
+                elif isclass(args[0]) and issubclass(args[0], cls):
+                    n_cls = args[0]
+                    args = args[1:]
+            return self.func(n_cls if n_instance is None else n_instance, *args, **kwargs)
+        return newfunc
+
+
 class _StructureMeta(type):
     def __new__(metacls, cls, bases, classdict):
         params = {}
@@ -23,7 +42,7 @@ class _StructureMeta(type):
             params.update({k: v for k, v in classdict.items() if not (
                 k.startswith("_") or
                 _is_function(v) or
-                isinstance(v, (property, classmethod, staticmethod))
+                isinstance(v, (property, classmethod, staticmethod, mixedmethod))
             )})
 
             # and remove them from the normal class dictionary
@@ -79,14 +98,6 @@ class _StructureMeta(type):
     def __iter__(cls):
         return iter(cls._params_map_.items())
 
-    def as_raw_dict(cls):
-        raw_dict = cls._params_map_.copy()
-        for k, v in raw_dict.items():
-            if isinstance(v, Structure):
-                raw_dict[k] = v.as_raw_dict()
-
-        return raw_dict
-
     @property
     def names(cls):
         return cls._params_names_
@@ -123,10 +134,11 @@ class Structure(metaclass=_StructureMeta):
     def __iter__(self):
         return iter(self._params_map_.items())
 
-    def as_raw_dict(self):
-        raw_dict = self._params_map_.copy()
+    @mixedmethod
+    def as_raw_dict(self_or_cls):
+        raw_dict = self_or_cls._params_map_.copy()
         for k, v in raw_dict.items():
-            if isinstance(v, Structure):
+            if isinstance(v, Structure) or (isclass(v) and issubclass(v, Structure)):
                 raw_dict[k] = v.as_raw_dict()
 
         return raw_dict
