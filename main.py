@@ -589,20 +589,31 @@ class AnimationController(threading.Thread):
         resume = 3
 
     class _EventQueue(queue.Queue):
+        def __init__(self, maxsize=0):
+            queue.Queue.__init__(self, maxsize=maxsize)
+
+            # this list contains all events + the ones not marked as finished
+            # no thread safe list is required here since it is only accessed by the main animation controller thread
+            self.__all_events = []
+
         def _put(self, item):
-            # check for duplicates
-            for event in self.queue:
-                # compare event type
-                if event.event_type == item.event_type:
-                    # on resume event, compare the animation_to_resume thread
-                    if event.event_type == AnimationController._EventType.resume:
-                        if event.event_settings.resume_thread == item.event_settings.resume_thread:
-                            return
-                    # on start/stop event compare the animation_settings (raw)
-                    else:
-                        if event.event_settings.animation_settings.as_raw_dict() == \
-                                item.event_settings.animation_settings.as_raw_dict():
-                            return
+            if item is not None:
+                # check for duplicates in all events
+                for event in self.__all_events:
+                    # compare event type
+                    if event.event_type == item.event_type:
+                        # on resume event, compare the animation_to_resume thread
+                        if event.event_type == AnimationController._EventType.resume:
+                            if event.event_settings.resume_thread == item.event_settings.resume_thread:
+                                return
+                        # on start event compare the animation_settings (raw)
+                        elif event.event_type == AnimationController._EventType.start:
+                            if event.event_settings.animation_settings.as_raw_dict() == \
+                                    item.event_settings.animation_settings.as_raw_dict():
+                                return
+
+                # add the event to the complete list
+                self.__all_events.append(item)
 
             queue.Queue._put(self, item)
 
@@ -612,6 +623,9 @@ class AnimationController(threading.Thread):
 
             # mark the corresponding event also as done
             if event is not None:
+                # remove the event from the complete list
+                self.__all_events.remove(event)
+
                 event.done()
 
         @property
