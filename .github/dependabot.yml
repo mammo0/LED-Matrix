@@ -1,0 +1,7 @@
+version: 2
+updates:
+  # manage dependencies for pipenv
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
