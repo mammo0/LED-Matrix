@@ -1,0 +1,51 @@
+name: LED-Matrix Venv
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+
+env:
+    RELEASE_ASSET_ZIP_FILE: LED-Matrix_virtuelenv.tar.gz
+
+jobs:
+  test:
+    name: Build LED-Matrix Venv
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        # build virtual Python environment for Raspberry Pi
+        - name: Build Venv
+          run: make build-alpine-venv
+
+        # create the GH release
+        - name: Create GH Release
+          if: |
+              startsWith(github.event.ref, 'refs/tags') ||
+              (github.event_name == 'push' && github.actor == 'dependabot[bot]')
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+              tag_name: ${{ github.ref }}
+              release_name: LED-Matrix Venv ${{ github.ref }}
+              draft: false
+              prerelease: ${{ github.event_name == 'push' && github.actor == 'dependabot[bot]' }}
+        - name: Upload Venv archive
+          if: |
+              startsWith(github.event.ref, 'refs/tags') ||
+              (github.event_name == 'push' && github.actor == 'dependabot[bot]')
+          uses: actions/upload-release-asset@v1
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+              upload_url: ${{ steps.create_release.outputs.upload_url }}
+              asset_path: resources/${{ env.RELEASE_ASSET_ZIP_FILE }}
+              asset_name: ${{ env.RELEASE_ASSET_ZIP_FILE }}
+              asset_content_type: application/zip
