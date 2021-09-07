@@ -42,7 +42,9 @@ This project uses Pipenv to manage it's dependencies. Unfortunately some of thes
 
 As a workaround you can build these dependencies on your local PC with the help of Docker. Therefore this repository contains a `Dockerfile` that creates and builds the virual Python environment with all dependencies.
 
-To do this, run the following `make` target on your local PC:
+**A pre-packed archive containing the virtual environment can be downloaded from the [Releases page](https://github.com/mammo0/LED-Matrix/releases).** This archive is built by a GitHub Actions workflow.
+
+**Alternatively** you can also build it on your local PC by running the following `make` target:
 
 ```shell
 make build-alpine-venv
