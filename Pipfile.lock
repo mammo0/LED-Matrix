@@ -155,19 +155,19 @@
         },
         "simple-classproperty": {
             "hashes": [
-                "sha256:3e3237ab86c486f3ba9ac66b4930ecc8c49a757236b597d4fb8349b27fb67826",
-                "sha256:d597703afacaffc161bd026a6512129a67fc07f932c02c8b4d805ff0f5f37a94"
+                "sha256:4d5f0e35e5d52c116495a8a831d7865f4872c7925758de9bb6a03f2295b7e71a",
+                "sha256:afd92830cc20b5975e0936c78b8a6c7a07a4e050f5de192a6e020d337a9f6fc8"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.3.1"
+            "version": "==1.3.3"
         },
         "simple-plugin-loader": {
             "hashes": [
-                "sha256:054b43404379fbf69e0b619c670dc42a4af746be98d910d7a0517ce56ef5445d",
-                "sha256:f2e15ce02334a3343210885446955ad2808b0d9c1064039f8a66cd07d8b35ccd"
+                "sha256:0e9a9c9e512050151e810e4ad4a090ff8c96668c3d08bbd1afdf0f488c5feabc",
+                "sha256:b6b9d7532aee72c1dfcbc7d48b59f9a58fbbf8caa57991abd7bb458dbcd4f5bb"
             ],
             "index": "pypi",
-            "version": "==2.0"
+            "version": "==2.1"
         },
         "six": {
             "hashes": [
