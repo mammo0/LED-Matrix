@@ -12,7 +12,7 @@ jobs:
         github.event.workflow_run.conclusion == 'success' &&
         github.actor == 'dependabot[bot]'
     steps:
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v5
         with:
           script: |
             github.pulls.merge({
