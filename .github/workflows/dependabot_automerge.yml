@@ -16,7 +16,7 @@ jobs:
         with:
           script: |
             github.pulls.merge({
-              owner: context.actor,
-              repo: context.payload.repository.name,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
               pull_number: context.payload.workflow_run.pull_requests[0].number
             })
