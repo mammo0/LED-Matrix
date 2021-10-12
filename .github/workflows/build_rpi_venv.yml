@@ -30,9 +30,7 @@ jobs:
 
         # create the GH release
         - name: Create GH Release
-          if: |
-              startsWith(github.event.ref, 'refs/tags') ||
-              (github.event_name == 'push' && github.actor == 'dependabot[bot]')
+          if: startsWith(github.event.ref, 'refs/tags')
           id: create_release
           uses: actions/create-release@v1
           env:
@@ -41,11 +39,9 @@ jobs:
               tag_name: ${{ github.ref }}
               release_name: LED-Matrix Venv ${{ github.ref }}
               draft: false
-              prerelease: ${{ github.event_name == 'push' && github.actor == 'dependabot[bot]' }}
+              prerelease: false
         - name: Upload Venv archive
-          if: |
-              startsWith(github.event.ref, 'refs/tags') ||
-              (github.event_name == 'push' && github.actor == 'dependabot[bot]')
+          if: startsWith(github.event.ref, 'refs/tags')
           uses: actions/upload-release-asset@v1
           env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
