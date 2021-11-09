@@ -16,11 +16,11 @@
     "default": {
         "apscheduler": {
             "hashes": [
-                "sha256:793b2d37c52ece53e34626619e6142e99b20b59a12155f39e1e6932e324f079d",
-                "sha256:82d6d21b2f0343510d07bb35618333a794653439a265635555b12935647b460a"
+                "sha256:5cf344ebcfbdaa48ae178c029c055cec7bc7a4a47c21e315e4d1f08bd35f2355",
+                "sha256:c22cb14b411a31435eb2c530dfbbec948ac63015b517087c7978adb61b574865"
             ],
             "index": "pypi",
-            "version": "==3.8.0"
+            "version": "==3.8.1"
         },
         "astral": {
             "hashes": [
