@@ -151,11 +151,11 @@
         },
         "simple-plugin-loader": {
             "hashes": [
-                "sha256:0e9a9c9e512050151e810e4ad4a090ff8c96668c3d08bbd1afdf0f488c5feabc",
-                "sha256:b6b9d7532aee72c1dfcbc7d48b59f9a58fbbf8caa57991abd7bb458dbcd4f5bb"
+                "sha256:44890bb074ddb6ec406fca3445ab5d6674600fb1f26577fd10358ff40fd1e307",
+                "sha256:8047cdde2b1d442307300770c2f4778a75efc1aa67b6ed7e130676971ddc4c7c"
             ],
             "index": "pypi",
-            "version": "==2.1"
+            "version": "==2.2"
         },
         "six": {
             "hashes": [
