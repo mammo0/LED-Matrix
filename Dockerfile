@@ -36,6 +36,17 @@ RUN alpine_deps='' && \
             $alpine_deps \
             # spidev dependencies
             python3-dev && \
+    # install all build dependencies of the pre-installed Alpine Python packages
+    # if pip still needs to build a package later, all required dependencies are installed and the build process will not fail
+    cd $(mktemp -d) && \
+    for dep in $(echo $ALPINE_PY_DEPS | tr ',' ' '); do \
+        # first try main repository
+        curl -f "https://git.alpinelinux.org/aports/plain/main/py3-$dep/APKBUILD?h=$ALPINE_VERSION-stable" -o APKBUILD | \
+            # if that fails, try the community repository
+            curl -f "https://git.alpinelinux.org/aports/plain/community/py3-$dep/APKBUILD?h=$ALPINE_VERSION-stable" -o APKBUILD; \
+        abuild -F deps; \
+        rm APKBUILD; \
+    done && \
     # install pip
     python3 -m ensurepip && \
     pip3 install --upgrade pip && \
