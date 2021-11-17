@@ -1,4 +1,6 @@
-FROM balenalib/raspberry-pi-alpine:3.12
+ARG ALPINE_VERSION=3.12
+FROM balenalib/raspberry-pi-alpine:$ALPINE_VERSION
+ARG ALPINE_VERSION
 
 
 ARG BUILD_UID=1000
