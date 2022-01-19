@@ -193,7 +193,7 @@ class Main(MainInterface):
         self.__schedule_lock = Lock()
 
         # the nighttime scheduler
-        self.__location = lookup(tzlocal.get_localzone().zone.split("/")[1], database())
+        self.__location = lookup(tzlocal.get_localzone_name().split("/")[1], database())
         self.__nighttime_scheduler = BackgroundScheduler()
         self.__sunrise_job = self.__nighttime_scheduler.add_job(func=self.apply_brightness)
         self.__sunset_job = self.__nighttime_scheduler.add_job(func=self.apply_brightness)
