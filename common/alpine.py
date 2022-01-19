@@ -108,6 +108,7 @@ class alpine_rw():
 
         if "LBU_MEDIA" not in _ALPINE_LBU_CONF:
             eprint("No Alpine Linux diskless installation detected. So no changes to the filesystem will be made.")
+            return
 
         if not self.__is_root():
             raise RuntimeError(
