@@ -35,7 +35,9 @@ RUN alpine_deps='' && \
             # alpine python dependencies
             $alpine_deps \
             # spidev dependencies
-            python3-dev && \
+            python3-dev \
+            # freetype-py dependencies
+            openssl-dev && \
     # install all build dependencies of the pre-installed Alpine Python packages
     # if pip still needs to build a package later, all required dependencies are installed and the build process will not fail
     cd $(mktemp -d) && \
