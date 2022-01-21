@@ -30,13 +30,14 @@ RUN alpine_deps='' && \
     done && \
     apk update && \
     apk add alpine-sdk \
-            cmake \
+            # Python
             python3 \
             # alpine python dependencies
             $alpine_deps \
             # spidev dependencies
             python3-dev \
             # freetype-py dependencies
+            cmake \
             openssl-dev && \
     # install all build dependencies of the pre-installed Alpine Python packages
     # if pip still needs to build a package later, all required dependencies are installed and the build process will not fail
