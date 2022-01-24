@@ -142,19 +142,19 @@
         },
         "simple-classproperty": {
             "hashes": [
-                "sha256:4d5f0e35e5d52c116495a8a831d7865f4872c7925758de9bb6a03f2295b7e71a",
-                "sha256:afd92830cc20b5975e0936c78b8a6c7a07a4e050f5de192a6e020d337a9f6fc8"
+                "sha256:7e7f1a052d7e398d2fe0a81e78385337ff34fab0af88d98efe2d908535a07a2a",
+                "sha256:860dfc449f720d3d1ae2f8aa3b5fec44cc626bd7cb566c197dc9d031d0b4b5c3"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==1.3.3"
+            "markers": "python_version >= '3.7'",
+            "version": "==1.4"
         },
         "simple-plugin-loader": {
             "hashes": [
-                "sha256:44890bb074ddb6ec406fca3445ab5d6674600fb1f26577fd10358ff40fd1e307",
-                "sha256:8047cdde2b1d442307300770c2f4778a75efc1aa67b6ed7e130676971ddc4c7c"
+                "sha256:654b571f6b77b1055636afa5d2b7f53a5830f538ad28f4ef1b2bc0d6bb874f82",
+                "sha256:c734c25c862586ef3b30d71d6d2aff13406726cb7fbda9018e6f39d44d2e3dda"
             ],
             "index": "pypi",
-            "version": "==2.2"
+            "version": "==2.2.1"
         },
         "six": {
             "hashes": [
