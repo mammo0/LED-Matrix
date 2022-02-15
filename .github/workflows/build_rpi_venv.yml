@@ -29,6 +29,12 @@ jobs:
           run: make build-alpine-venv
 
         # create the GH release
+        - name: Prepare release
+          if: startsWith(github.event.ref, 'refs/tags')
+          id: prepare_release
+          run: |
+              echo ::set-output name=alpine_ver::${GITHUB_REF_NAME%-*}
+              echo ::set-output name=release_num::${GITHUB_REF_NAME#*-}
         - name: Create GH Release
           if: startsWith(github.event.ref, 'refs/tags')
           id: create_release
@@ -37,7 +43,7 @@ jobs:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
               tag_name: ${{ github.ref }}
-              release_name: LED-Matrix Venv ${{ github.ref }}
+              release_name: LED-Matrix Venv r${{ steps.prepare_release.outputs.release_num }} (Alpine Linux ${{ steps.prepare_release.outputs.alpine_ver }})
               draft: false
               prerelease: false
         - name: Upload Venv archive
