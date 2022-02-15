@@ -50,7 +50,7 @@ As a workaround you can build these dependencies on your local PC with the help 
 make build-alpine-venv
 ```
 
-After that you find an `tar`-archive in the `resources` directory of this repository, that contains the virtual environment for your Alpine Linux installation. This archive is needed in point **4** of the **Installation** section.
+After that you find an `tar`-archive in the `resources` directory of this repository, that contains the virtual environment for your Alpine Linux installation. This archive is needed in step **4** of the **Installation** section.
 
 
 
