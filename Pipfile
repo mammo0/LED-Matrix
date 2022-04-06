@@ -9,7 +9,7 @@ numpy = "*"
 pillow = "*"
 bottle = "*"
 imageio = "*"
-freetype-py = {editable = false, ref = "a67acdd4d2784457c1a98d5514b310846a1672ef", git = "https://github.com/mammo0/freetype-py.git"}
+freetype-py = {editable = false, ref = "b49e201be5a6f21405f2c1968fce5840fae4dc6d", git = "https://github.com/mammo0/freetype-py.git"}
 simple-plugin-loader = "*"
 apscheduler = "*"
 astral = "*"

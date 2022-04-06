@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "32a044f582ec37a81c76daac7a24ec43bb3650641eeabb7196801e1b5dbb6a12"
+            "sha256": "38eaa30e5fb9c641e28e8b5d63d31a438a50e06e556513f541fed293b89ff1cc"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -41,7 +41,7 @@
         "freetype-py": {
             "editable": false,
             "git": "https://github.com/mammo0/freetype-py.git",
-            "ref": "a67acdd4d2784457c1a98d5514b310846a1672ef"
+            "ref": "b49e201be5a6f21405f2c1968fce5840fae4dc6d"
         },
         "imageio": {
             "hashes": [
