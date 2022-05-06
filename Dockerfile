@@ -63,7 +63,7 @@ WORKDIR "$BUILD_DIR"
 
 
 # create virtual environment
-RUN PIPENV_VENV_IN_PROJECT=1 PIPENV_SITE_PACKAGES=1 VIRTUALENV_ALWAYS_COPY=1 pipenv lock -r > "$VENV_REQ_FILE" && \
+RUN PIPENV_VENV_IN_PROJECT=1 PIPENV_SITE_PACKAGES=1 VIRTUALENV_ALWAYS_COPY=1 pipenv requirements > "$VENV_REQ_FILE" && \
     # remove already installed alpine requirements from pip file
     for installed_dep in $(echo $ALPINE_PY_DEPS | tr ',' ' '); do \
         sed -i "/$installed_dep/d" "$VENV_REQ_FILE"; \
