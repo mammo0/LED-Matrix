@@ -45,11 +45,11 @@
         },
         "imageio": {
             "hashes": [
-                "sha256:7e803cd50a6b271e96e18f14767f8c2e01f27b84f93768cf9f08ad5277e9d030",
-                "sha256:cd8c946ecdf71f2fc74419b2e3c97a46104e91c2d2c4288d3217eae366778638"
+                "sha256:cd5b6ac2f4111c76f08d33b86a4cb987520f1d6ec2183e8a2656ace8d026a38e",
+                "sha256:d63600626b80ebe1ec9614c33434879c754dea328717f4e2cebe88f156fa1a9c"
             ],
             "index": "pypi",
-            "version": "==2.19.0"
+            "version": "==2.19.1"
         },
         "numpy": {
             "hashes": [
