@@ -45,11 +45,11 @@
         },
         "imageio": {
             "hashes": [
-                "sha256:0c9df80e42f2ee68bea92001e7fcf612aa149910efe040eb757f5ce323250ae1",
-                "sha256:d36ab8616175a093676693a4dbc85c6cc767f981c9ce93041422569c76d06347"
+                "sha256:49991206a92955ef5d3a7686e9733cfe3b37c08972375929da3c042de1e6785b",
+                "sha256:eb3cd70de8be87b72ea85716b7363c700b91144589ee6b5d7b49d42998b7d185"
             ],
             "index": "pypi",
-            "version": "==2.19.3"
+            "version": "==2.19.5"
         },
         "numpy": {
             "hashes": [
@@ -160,11 +160,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:16923d366ced322712c71ccb97164d07472abeecd13f3a6c283f6d5d26722793",
-                "sha256:db3b8e2f922b2a910a29804776c643ea609badb6a32c4bcc226fd4fd902cce65"
+                "sha256:0d33c374d41c7863419fc8f6c10bfe25b7b498aa34164d135c622e52580c6b16",
+                "sha256:c04b44a57a6265fe34a4a444e965884716d34bae963119a76353434d6f18e450"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==63.1.0"
+            "version": "==63.2.0"
         },
         "simple-classproperty": {
             "hashes": [
