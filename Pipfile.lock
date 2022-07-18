@@ -160,27 +160,27 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:16923d366ced322712c71ccb97164d07472abeecd13f3a6c283f6d5d26722793",
-                "sha256:db3b8e2f922b2a910a29804776c643ea609badb6a32c4bcc226fd4fd902cce65"
+                "sha256:0d33c374d41c7863419fc8f6c10bfe25b7b498aa34164d135c622e52580c6b16",
+                "sha256:c04b44a57a6265fe34a4a444e965884716d34bae963119a76353434d6f18e450"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==63.1.0"
+            "version": "==63.2.0"
         },
         "simple-classproperty": {
             "hashes": [
-                "sha256:0235fe1e17bca89730cdfdd8e696ac974d5271a166f11dae0fbfdda2cda9df89",
-                "sha256:9f5bad2140aec61492ef430c957c3d848ebf548f5c03d6af2b7daa45726b739a"
+                "sha256:7dc0382e76e367aa79a26cf3fad0cee5380a124d64e6833c45a8b8ca8788c56b",
+                "sha256:a4bd5c868d013edcb6bf300de79154eec0dbd96960bb529f445c3b94b5df8b19"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==1.4.1"
+            "version": "==1.4.2"
         },
         "simple-plugin-loader": {
             "hashes": [
-                "sha256:4a7baff9fa660ed4e54e10dffecfcfb23df4c39031901053373dcfdca8e5364f",
-                "sha256:6627e93923060613a385422366a0881c81bd47bc287922220c55a34cb671ff2d"
+                "sha256:1b384a45b2802b0c3f484cbc9afdd9100c8a87e808e7ce48d5dd6f74c63a2020",
+                "sha256:2aa050127f14ea77ca86f9910dafd86a0e3a6c5c21076626c6ade45f6d188a6b"
             ],
             "index": "pypi",
-            "version": "==2.2.4"
+            "version": "==2.2.5"
         },
         "six": {
             "hashes": [
