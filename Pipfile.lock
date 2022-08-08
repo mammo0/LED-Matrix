@@ -32,11 +32,11 @@
         },
         "bottle": {
             "hashes": [
-                "sha256:6e1c9817019dae3a8c20adacaf09035251798d2ae2fcc8ce43157ee72965f257",
-                "sha256:787c61b6cc02b9c229bf2663011fac53dd8fc197f7f8ad2eeede29d888d7887e"
+                "sha256:683de3aa399fb26e87b274dbcf70b1a651385d459131716387abdc3792e04167",
+                "sha256:9f1c363257c590bd34db5fad4693a7f06ff4217e9ad18337451de69c25137127"
             ],
             "index": "pypi",
-            "version": "==0.12.21"
+            "version": "==0.12.23"
         },
         "freetype-py": {
             "editable": false,
@@ -160,11 +160,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:273b6847ae61f7829c1affcdd9a32f67aa65233be508f4fbaab866c5faa4e408",
-                "sha256:d5340d16943a0f67057329db59b564e938bb3736c6e50ae16ea84d5e5d9ba6d0"
+                "sha256:73bfae4791da7c1c56882ab17577d00f7a37a0347162aeb9360058de0dc25083",
+                "sha256:abcb76aa4decd7a17cbe0e4b31bdf549d106ba7f668e87e0860f5f7b84b9b3fe"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==63.3.0"
+            "version": "==63.4.2"
         },
         "simple-classproperty": {
             "hashes": [
