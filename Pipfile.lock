@@ -24,11 +24,11 @@
         },
         "astral": {
             "hashes": [
-                "sha256:b9ef70faf32e81a8ba174d21e8f29dc0b53b409ef035f27e0749ddc13cb5982a",
-                "sha256:e41d9967d5c48be421346552f0f4dedad43ff39a83574f5ff2ad32b6627b6fbe"
+                "sha256:8fd917102529cde70a8ecde7b1e1b7831a80f640b851ead2a298e07bae0e1cfe",
+                "sha256:f740515dea2adbea6af7ff18857387276d2f800cd29e37a7f76dcd1967efde34"
             ],
             "index": "pypi",
-            "version": "==2.2"
+            "version": "==3.0"
         },
         "bottle": {
             "hashes": [
