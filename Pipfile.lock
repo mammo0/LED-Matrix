@@ -174,13 +174,21 @@
             "markers": "python_version >= '3.7'",
             "version": "==65.5.0"
         },
+        "simple-classproperty": {
+            "hashes": [
+                "sha256:16f875106dea9629b60361c93166d544d7fea5600702236ad11942b47c7087c4",
+                "sha256:1d3a1db29f88c46710ffcf8928b9dedc2dacb3851f1feb8437dc12a357b20e9e"
+            ],
+            "markers": "python_version >= '3.7'",
+            "version": "==3.0.0"
+        },
         "simple-plugin-loader": {
             "hashes": [
-                "sha256:3405b9f65dff139c7c0a7846cba812b92a7bb57ae09b303d950b008f388deaae",
-                "sha256:63b6b2f018a6111b7581520a3288832c42cd175ef6d24a8047089f87b8f5c4b6"
+                "sha256:5d72ea14a9300949b6a5f1b41eb17845a7c17ef6aab55cda2e14886f473376e4",
+                "sha256:80b08890f9436ad2b41932c24ff1482cdd20c6ea4e38f8239628f3a64b83e091"
             ],
             "index": "pypi",
-            "version": "==2.2.6"
+            "version": "==2.2.7"
         },
         "six": {
             "hashes": [
