@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # manage dependencies for pipenv
+  # manage dependencies for Poetry
   - package-ecosystem: "pip"
     directory: "/"
     schedule:

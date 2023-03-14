@@ -31,10 +31,10 @@ config:
 	$(BASE_DIR)/scripts/create_config.py $(CONFIG_FILE)
 
 develop: config
-	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync -d
+	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry install --sync
 
 production: config
-	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pipenv sync
+	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry install --without dev --sync
 
 __check_alpine:
 ifeq ("$(findstring Alpine,$(shell grep '^NAME' /etc/os-release))", "")
@@ -42,22 +42,22 @@ ifeq ("$(findstring Alpine,$(shell grep '^NAME' /etc/os-release))", "")
 endif
 
 install: __check_alpine
-	-ln -s $(BASE_DIR) $(INSTALL_DIR)
+	ln -s $(BASE_DIR) $(INSTALL_DIR)
 	cp $(INITD_SCRIPT) $(INITD_DIR)/$(INITD_SERVICE)
 	rc-update add $(INITD_SERVICE)
 	@# save changes to disk
 	lbu commit -d
 
 uninstall: __check_alpine
-	-rc-update del $(INITD_SERVICE)
-	-rm $(INITD_DIR)/$(INITD_SERVICE)
-	-rm $(INSTALL_DIR)
+	rc-update del $(INITD_SERVICE)
+	rm $(INITD_DIR)/$(INITD_SERVICE)
+	rm $(INSTALL_DIR)
 	@# save changes to disk
 	lbu commit -d
 
 run:
 ifeq ("$(wildcard $(BASE_DIR)/.venv)","")
-	$(eval VENV_DIR:=$(shell pipenv --venv))
+	$(eval VENV_DIR:=$(shell poetry env info -p))
 else
 	$(eval VENV_DIR:=$(BASE_DIR)/.venv)
 endif

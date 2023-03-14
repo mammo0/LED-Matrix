@@ -19,7 +19,7 @@ ENV BUILD_GID=$BUILD_GID
 # so install them through apk, not pip
 # this reduces the build time
 ARG ALPINE_PY_DEPS="numpy,pillow,bottle"
-# this is a temporary file created by pipenv to install the remaining dependencies via pip
+# this is a temporary file created by Poetry to install the remaining dependencies via pip
 ARG VENV_REQ_FILE=$BUILD_DIR/resources/requirements.pip
 
 
@@ -53,8 +53,8 @@ RUN alpine_deps='' && \
     # install pip
     python3 -m ensurepip && \
     pip3 install --upgrade pip && \
-    # install pipenv
-    pip3 install pipenv
+    # install Poetry
+    pip3 install poetry
 
 
 # add source code
@@ -63,7 +63,11 @@ WORKDIR "$BUILD_DIR"
 
 
 # create virtual environment
-RUN PIPENV_VENV_IN_PROJECT=1 PIPENV_SITE_PACKAGES=1 VIRTUALENV_ALWAYS_COPY=1 pipenv requirements > "$VENV_REQ_FILE" && \
+RUN POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_OPTIONS_SYSTEM_SITE_PACKAGES=1 \
+    POETRY_VIRTUALENVS_OPTIONS_ALWAYS_COPY=1 \
+    poetry lock --check && \
+    poetry export -f requirements.txt --without-hashes -o "$VENV_REQ_FILE" && \
     # remove already installed alpine requirements from pip file
     for installed_dep in $(echo $ALPINE_PY_DEPS | tr ',' ' '); do \
         sed -i "/$installed_dep/d" "$VENV_REQ_FILE"; \
