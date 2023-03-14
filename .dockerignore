@@ -3,7 +3,6 @@
 
 # resources
 /resources/animations
-/resources/requirements.pip
 /resources/LED-Matrix_virtuelenv.tar.gz
 
 # eclipse files

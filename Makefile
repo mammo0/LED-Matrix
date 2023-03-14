@@ -6,6 +6,7 @@ INITD_DIR=/etc/init.d
 
 
 D_BUILD_IMAGE_TAG=matrix_venv_builder:latest
+D_PIP_REQUIREMENTS=$(BASE_DIR)/resources/docker_requirements.pip
 ALPINE_VENV_ARCHIVE=$(BASE_DIR)/resources/LED-Matrix_virtuelenv.tar.gz
 CONFIG_FILE=$(BASE_DIR)/config.ini
 
@@ -17,10 +18,12 @@ endif
 
 
 build-alpine-venv:
+	poetry export -f requirements.txt --without-hashes --without dev -o $(D_PIP_REQUIREMENTS)
 	docker build --build-arg BUILD_UID=`id -u` \
 				 --build-arg BUILD_GID=`id -g` \
 				 -t $(D_BUILD_IMAGE_TAG) .
 	docker run --rm -v $(BASE_DIR)/resources:/out $(D_BUILD_IMAGE_TAG)
+	rm $(D_PIP_REQUIREMENTS)
 
 install-alpine-venv: $(ALPINE_VENV_ARCHIVE)
 	tar -zxvf $(ALPINE_VENV_ARCHIVE)

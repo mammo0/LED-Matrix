@@ -1,6 +1,6 @@
 # resources
 /resources/animations
-/resources/requirements.pip
+/resources/docker_requirements.pip
 /resources/LED-Matrix_virtuelenv.tar.gz
 
 # eclipse files
@@ -87,7 +87,7 @@ target/
 .ipynb_checkpoints
 
 # pyenv
-.python-version
+#.python-version
 
 # celery beat schedule file
 celerybeat-schedule
