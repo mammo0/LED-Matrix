@@ -11,9 +11,9 @@ homepage = "https://github.com/mammo0/LED-Matrix"
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
 spidev = "^3.6"
-numpy = "^1.24.2"
-pillow = "^9.4.0"
-bottle = "^0.12.25"
+numpy = "^1.21.4"
+pillow = "^8.4.0"
+bottle = "^0.12.19"
 imageio = "^2.26.0"
 freetype-py = {git = "https://github.com/mammo0/freetype-py.git", rev = "7bf07468787f58bcb8b4f6f75b8bc289fdbddb3d"}
 simple-plugin-loader = "^2.2.7"
