@@ -23,6 +23,11 @@ jobs:
           uses: docker/setup-qemu-action@v2
           with:
               platforms: arm
+        - name: Set up Python
+          # by default uses the .python-version file
+          uses: actions/setup-python@v4
+        - name: Set up Poetry
+          uses: abatilo/actions-poetry@v2
 
         # build virtual Python environment for Raspberry Pi
         - name: Build Venv
