@@ -22,7 +22,7 @@ astral = "^3.2"
 tzlocal = "^4.3"
 
 [tool.poetry.group.dev.dependencies]
-pygame = "^2.3.0"
+pygame = "^2.4.0"
 
 
 [tool.poetry-dynamic-versioning]
