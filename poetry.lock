@@ -75,14 +75,14 @@ resolved_reference = "7bf07468787f58bcb8b4f6f75b8bc289fdbddb3d"
 
 [[package]]
 name = "imageio"
-version = "2.30.0"
+version = "2.31.0"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "imageio-2.30.0-py3-none-any.whl", hash = "sha256:e045e9593ed94af41759901d6a51d5313b1e78fc118b6befbbfbf4e9cbe7398a"},
-    {file = "imageio-2.30.0.tar.gz", hash = "sha256:7fc6ad5b5677cb1e58077875a72512aa8c392b6d40885eca0a6ab250efb4b8f4"},
+    {file = "imageio-2.31.0-py3-none-any.whl", hash = "sha256:141bbd97910fad105c179a6b344ae4e7fef0dd85411303c63cd925b4c6163bee"},
+    {file = "imageio-2.31.0.tar.gz", hash = "sha256:9e2d1dec1c74ba10d58856f2f02883b84f5cd5be937a1156cc238b539a6cf068"},
 ]
 
 [package.dependencies]
@@ -414,4 +414,4 @@ devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pyte
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "59fa5be0e1b54742ea13bf14b51871f8e945cb1011e3f656ceb86af702196fca"
+content-hash = "265806ed1674e3b8430c350f7d0a7325c126bb693cf42445e333c4286f27a250"
