@@ -11,7 +11,7 @@ homepage = "https://github.com/mammo0/LED-Matrix"
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 spidev = "^3.6"
-numpy = "^1.25.1"
+numpy = "^1.25.2"
 pillow = "^10.0.0"
 bottle = "^0.12.19"
 imageio = "^2.31.1"
