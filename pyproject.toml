@@ -17,7 +17,7 @@ bottle = "^0.12.19"
 imageio = "^2.31.1"
 freetype-py = {git = "https://github.com/mammo0/freetype-py.git", rev = "7bf07468787f58bcb8b4f6f75b8bc289fdbddb3d"}
 simple-plugin-loader = "^2.2.7"
-apscheduler = "^3.10.3"
+apscheduler = "^3.10.4"
 astral = "^3.2"
 tzlocal = "^5.0"
 
