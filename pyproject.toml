@@ -14,7 +14,7 @@ spidev = "^3.6"
 numpy = "^1.25.2"
 pillow = "^10.0.0"
 bottle = "^0.12.19"
-imageio = "^2.31.2"
+imageio = "^2.31.3"
 freetype-py = {git = "https://github.com/mammo0/freetype-py.git", rev = "7bf07468787f58bcb8b4f6f75b8bc289fdbddb3d"}
 simple-plugin-loader = "^2.2.7"
 apscheduler = "^3.10.4"
