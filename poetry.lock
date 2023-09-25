@@ -70,13 +70,13 @@ resolved_reference = "7bf07468787f58bcb8b4f6f75b8bc289fdbddb3d"
 
 [[package]]
 name = "imageio"
-version = "2.31.3"
+version = "2.31.4"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "imageio-2.31.3-py3-none-any.whl", hash = "sha256:ea777be55bfa4bd6aee126c7dfa3bf1759bf87be982876c50f1a976d1b65446d"},
-    {file = "imageio-2.31.3.tar.gz", hash = "sha256:74c6a832d81b7ad5a8a80976dea58ee033d3e2b99a54990cbd789b4cb0b31461"},
+    {file = "imageio-2.31.4-py3-none-any.whl", hash = "sha256:9a39577b482b9c9533b95b436b45540dc32fdf2868ba912d723d3490594fae22"},
+    {file = "imageio-2.31.4.tar.gz", hash = "sha256:8c18323d0f9d1bfce672bd9dcb18e85aa398039431bc73f70bd8bfba23c005d1"},
 ]
 
 [package.dependencies]
@@ -221,6 +221,8 @@ files = [
     {file = "pygame-2.5.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0e24d05184e4195fe5ebcdce8b18ecb086f00182b9ae460a86682d312ce8d31f"},
     {file = "pygame-2.5.2-cp311-cp311-win32.whl", hash = "sha256:f02c1c7505af18d426d355ac9872bd5c916b27f7b0fe224749930662bea47a50"},
     {file = "pygame-2.5.2-cp311-cp311-win_amd64.whl", hash = "sha256:6d58c8cf937815d3b7cdc0fa9590c5129cb2c9658b72d00e8a4568dea2ff1d42"},
+    {file = "pygame-2.5.2-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:1a2a43802bb5e89ce2b3b775744e78db4f9a201bf8d059b946c61722840ceea8"},
+    {file = "pygame-2.5.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:1c289f2613c44fe70a1e40769de4a49c5ab5a29b9376f1692bb1a15c9c1c9bfa"},
     {file = "pygame-2.5.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:074aa6c6e110c925f7f27f00c7733c6303407edc61d738882985091d1eb2ef17"},
     {file = "pygame-2.5.2-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:fe0228501ec616779a0b9c4299e837877783e18df294dd690b9ab0eed3d8aaab"},
     {file = "pygame-2.5.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:31648d38ecdc2335ffc0e38fb18a84b3339730521505dac68514f83a1092e3f4"},
@@ -353,4 +355,4 @@ devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pyte
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "14ee74c520a28b77a78344ccc43532c6fa148e719ac66aeff9c7114a9a645446"
+content-hash = "e605a071d932f9c580da79d4943a11e4eca05a9bff44431706d1aec1bb45cc43"
