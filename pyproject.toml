@@ -19,7 +19,7 @@ freetype-py = {git = "https://github.com/mammo0/freetype-py.git", rev = "7bf0746
 simple-plugin-loader = "^2.2.7"
 apscheduler = "^3.10.4"
 astral = "^3.2"
-tzlocal = "^5.0"
+tzlocal = "^5.1"
 
 [tool.poetry.group.dev.dependencies]
 pygame = "^2.5.2"
