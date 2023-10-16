@@ -290,13 +290,13 @@ files = [
 
 [[package]]
 name = "simple-plugin-loader"
-version = "2.2.7"
+version = "3.0.0"
 description = "Dynamically load other python modules to your project."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "simple-plugin-loader-2.2.7.tar.gz", hash = "sha256:5d72ea14a9300949b6a5f1b41eb17845a7c17ef6aab55cda2e14886f473376e4"},
-    {file = "simple_plugin_loader-2.2.7-py3-none-any.whl", hash = "sha256:80b08890f9436ad2b41932c24ff1482cdd20c6ea4e38f8239628f3a64b83e091"},
+    {file = "simple_plugin_loader-3.0.0-py3-none-any.whl", hash = "sha256:9cb94e6c0fe4c2862796f5abd43296c3b1978b7a42c01b65b3ab22f79a9a72df"},
+    {file = "simple_plugin_loader-3.0.0.tar.gz", hash = "sha256:effbdd6320cda1914ab10eca7fb10c2a458db20be704b26ed0be1c0c6d2042dd"},
 ]
 
 [package.dependencies]
@@ -355,4 +355,4 @@ devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pyte
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "2b395db7a30913b54072a6ef3028614694988dae7da7dc8ab9432d992ca3eec7"
+content-hash = "9f00639b1ec012e352fca87fdca25c791e398b04c6d03dcdac3c3fb6acadb863"
