@@ -34,10 +34,12 @@ config:
 	$(BASE_DIR)/scripts/create_config.py $(CONFIG_FILE)
 
 develop: config
-	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry install --sync
+	poetry install --sync
+	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry run pip install --force git+https://github.com/mammo0/freetype-py.git@led-matrix
 
 production: config
-	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry install --without dev --sync
+	poetry install --without dev --sync
+	poetry run FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry run pip install --force git+https://github.com/mammo0/freetype-py.git@led-matrix
 
 __check_alpine:
 ifeq ("$(findstring Alpine,$(shell grep '^NAME' /etc/os-release))", "")
