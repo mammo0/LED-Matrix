@@ -55,18 +55,18 @@ files = [
 
 [[package]]
 name = "freetype-py"
-version = "2.2.1.dev16+g7bf0746"
+version = "2.4.1.dev12+g6c5c6f2"
 description = "Freetype python bindings"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = []
 develop = false
 
 [package.source]
 type = "git"
 url = "https://github.com/mammo0/freetype-py.git"
-reference = "7bf07468787f58bcb8b4f6f75b8bc289fdbddb3d"
-resolved_reference = "7bf07468787f58bcb8b4f6f75b8bc289fdbddb3d"
+reference = "led-matrix"
+resolved_reference = "6c5c6f2c493b469887a20468724dc409f89e86e9"
 
 [[package]]
 name = "imageio"
@@ -268,24 +268,24 @@ files = [
 
 [[package]]
 name = "pytz"
-version = "2022.7.1"
+version = "2023.3.post1"
 description = "World timezone definitions, modern and historical"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pytz-2022.7.1-py2.py3-none-any.whl", hash = "sha256:78f4f37d8198e0627c5f1143240bb0206b8691d8d7ac6d78fee88b78733f8c4a"},
-    {file = "pytz-2022.7.1.tar.gz", hash = "sha256:01a0681c4b9684a28304615eba55d1ab31ae00bf68ec157ec3708a8182dbbcd0"},
+    {file = "pytz-2023.3.post1-py2.py3-none-any.whl", hash = "sha256:ce42d816b81b68506614c11e8937d3aa9e41007ceb50bfdcb0749b921bf646c7"},
+    {file = "pytz-2023.3.post1.tar.gz", hash = "sha256:7b4fddbeb94a1eba4b557da24f19fdf9db575192544270a9101d8509f9f43d7b"},
 ]
 
 [[package]]
 name = "simple-classproperty"
-version = "3.0.0"
+version = "4.0.1"
 description = "Provides a 'classproperty' decorator."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "simple-classproperty-3.0.0.tar.gz", hash = "sha256:16f875106dea9629b60361c93166d544d7fea5600702236ad11942b47c7087c4"},
-    {file = "simple_classproperty-3.0.0-py3-none-any.whl", hash = "sha256:1d3a1db29f88c46710ffcf8928b9dedc2dacb3851f1feb8437dc12a357b20e9e"},
+    {file = "simple_classproperty-4.0.1-py3-none-any.whl", hash = "sha256:425640b2e2624391bb4a9c55f0e04276edf252cf5505302dc54545c6aa945edb"},
+    {file = "simple_classproperty-4.0.1.tar.gz", hash = "sha256:d51ea519c21e46e0bb9b566ae57f1045e4bed077db675cfd1c9bc884607526fe"},
 ]
 
 [[package]]
@@ -326,13 +326,13 @@ files = [
 
 [[package]]
 name = "tzdata"
-version = "2022.7"
+version = "2023.3"
 description = "Provider of IANA time zone data"
 optional = false
 python-versions = ">=2"
 files = [
-    {file = "tzdata-2022.7-py2.py3-none-any.whl", hash = "sha256:2b88858b0e3120792a3c0635c23daf36a7d7eeeca657c323da299d2094402a0d"},
-    {file = "tzdata-2022.7.tar.gz", hash = "sha256:fe5f866eddd8b96e9fcba978f8e503c909b19ea7efda11e52e39494bad3a7bfa"},
+    {file = "tzdata-2023.3-py2.py3-none-any.whl", hash = "sha256:7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda"},
+    {file = "tzdata-2023.3.tar.gz", hash = "sha256:11ef1e08e54acb0d4f95bdb1be05da659673de4acbd21bf9c69e94cc5e907a3a"},
 ]
 
 [[package]]
@@ -354,5 +354,5 @@ devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pyte
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.9,<4.0"
-content-hash = "ae4a8e0a6519dc6cc17943852c779941dae4f6c5d8fc3b8dcde00c8834d36d90"
+python-versions = ">=3.11,<4.0"
+content-hash = "920da7a2a6fb23ac3c7d0d926a9bec905ff3ba1ab18c94e92f591826170ed055"
