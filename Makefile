@@ -12,6 +12,7 @@ build-alpine-package: PKG_REL:=$(shell poetry version | cut -d " " -f2 | sed "s/
 build-alpine-package:
 	poetry build -f wheel
 
+	poetry install --only config
 	poetry run create-config alpine/default_config.ini
 
 	docker build --build-arg PKG_VER=$(PKG_VER) \
