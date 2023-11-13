@@ -1,20 +1,14 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from ipaddress import IPv4Address, IPv6Address
-from typing import cast
 
-from astral import LocationInfo
-from astral.geocoder import database, lookup
-from astral.sun import sun
 import tzlocal
+from astral import LocationInfo
+from astral.geocoder import GroupInfo, database, lookup, lookup_in_group
+from astral.sun import sun
 
-from led_matrix.config.types import (
-    Hardware,
-    LEDColorType,
-    LEDOrientation,
-    LEDOrigin,
-    LEDWireMode,
-)
+from led_matrix.config.types import (Hardware, LEDColorType, LEDOrientation,
+                                     LEDOrigin, LEDWireMode)
 
 
 @dataclass(kw_only=True)
@@ -34,8 +28,23 @@ class MainSettings:
     tpm2net_server: bool = False
 
     def __post_init__(self) -> None:
-        self.__location: LocationInfo = cast(LocationInfo,
-                                             lookup(tzlocal.get_localzone_name().split("/")[1], database()))
+        self.__location: LocationInfo
+        region: str
+        city: str
+        try:
+            region, city = tzlocal.get_localzone_name().split("/", maxsplit=1)
+        except  ValueError:
+            self.__location = LocationInfo()
+        else:
+            loc: GroupInfo | LocationInfo = lookup(region, database())
+            if isinstance(loc, LocationInfo):
+                self.__location = loc
+            else:
+                try:
+                    self.__location = lookup_in_group(location=city, group=loc)
+                except KeyError:
+                    self.__location = LocationInfo()
+
         self.__sunrise: datetime
         self.__sunset: datetime
         self.__brightness: int
