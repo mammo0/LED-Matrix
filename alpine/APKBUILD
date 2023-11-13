@@ -7,7 +7,6 @@ license="GPL-3.0-only"
 
 arch="armhf"
 options="!check"
-install="$pkgname.post-install $pkgname.post-deinstall"
 # py3-setuptools is a missing dependency from apscheduler
 depends="openrc py3-numpy py3-pillow py3-bottle py3-apscheduler py3-setuptools py3-tzlocal"
 makedepends="cmake python3-dev py3-pip py3-installer"
