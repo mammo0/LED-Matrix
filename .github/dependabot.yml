@@ -5,6 +5,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+    - dependency-name: "numpy"
+    - dependency-name: "pillow"
+    - dependency-name: "bottle"
+    - dependency-name: "apscheduler"
+    - dependency-name: "tzlocal"
   # GH actions
   - package-ecosystem: "github-actions"
     directory: "/"
