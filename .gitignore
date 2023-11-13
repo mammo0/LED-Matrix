@@ -1,15 +1,11 @@
-# resources
-/resources/animations
-/resources/docker_requirements.pip
-/resources/LED-Matrix_virtuelenv.tar.gz
+# animation resources
+/led_matrix/resources/animations
 
-# eclipse files
-/.project
-/.pydevproject
-/.settings
+# Alpine site-packages
+/led_matrix/resources/alpine_site-packages
 
-# pipenv virtualenv
-/.venv
+# Alpine default config file
+/alpine/default_config.ini
 
 # config file
 /config.ini

@@ -23,38 +23,22 @@ This project is designed to be used in conjunction with an Alpine Linux installa
 To install Alpine Linux on a Raspberry Pi please stick to the official documentation: https://wiki.alpinelinux.org/wiki/Raspberry_Pi
 
 
-#### Install dependencies
-After Alpine Linux is running on your Raspberry Pi, install these dependencies:
-
-```shell
-apk add git \
-        make \
-        python3 \
-        py3-numpy \
-        py3-pillow \
-        py3-bottle \
-        py3-six
-```
-
-
-#### Build the Python virtual environment (On local PC)
-This project uses Pipenv to manage it's dependencies. Unfortunately some of these dependencies require building of external libraries. Normally that wouldn't be a problem. But running Alpine Linux in diskless mode on a Raspberry Pi 1 means, that you have only a few 100MB of available 'disk' space. This is not enough to build all dependencies.
-
-As a workaround you can build these dependencies on your local PC with the help of Docker. Therefore this repository contains a `Dockerfile` that creates and builds the virual Python environment with all dependencies.
-
-**A pre-packed archive containing the virtual environment can be downloaded from the [Releases page](https://github.com/mammo0/LED-Matrix/releases).** This archive is built by a GitHub Actions workflow.
+#### Build Alpine package
+**A ready-to-use package can be downloaded from the [Releases page](https://github.com/mammo0/LED-Matrix/releases).** This package is built by a GitHub Actions workflow.
 
 **Alternatively** you can also build it on your local PC by running the following `make` target:
 
 ```shell
-make build-alpine-venv
+make build-alpine-package
 ```
 
-After that you find an `tar`-archive in the `resources` directory of this repository, that contains the virtual environment for your Alpine Linux installation. This archive is needed in step **4** of the **Installation** section.
+*NOTE: This requires a working Docker installation.*
+
+After that you find the `apk`-package in the `dist` directory of this repository. This package is needed in step **3** of the **Installation** section.
 
 
 
-## Installation (On Raspberry Pi)
+## Installation
 1. Enable write support on your SD card partition:
 ```shell
 mount -o remount,rw /media/<sd_card>
@@ -66,40 +50,34 @@ You get the correct mount location form the `LBU_MEDIA` parameter in the `/etc/l
 cd /media/<sd_card>
 ```
 
-3. Clone this repository:
+3. Copy the `apk`-package (that was built or downloaded previously) from your local PC to the current directory on the Raspberry Pi, e.g. by using `scp`.
+
+4. Install the package:
 ```shell
-git clone https://github.com/mammo0/LED-Matrix.git
-cd LED-Matrix
+apk add --allow-untrusted <package_name>.apk
 ```
 
-4. Copy the `tar`-archive containing the virtual environment from your local PC to the `resources` directory on the Raspberry Pi, e.g. by using `scp`.
+5. Edit the `/etc/led-matrix.ini` file to your needs. The available settings are documented in the file. **Don't forget step 9 after every change!**
 
-5. Install the virtual environment:
+6. Test the installation:
 ```shell
-make install-alpine-venv
+led-matrix --config-file /etc/led-matrix.ini
 ```
+If everything runs without errors, stop the execution with `Ctrl-C`. *If there are errors, feel free to open an issue with an detailed error report on GitHub.*
 
-6. Generate the `config.ini` file:
-```shell
-make config
-```
-
-7. *(Optional)* Edit the `config.ini` file to your needs.
-
-8. Test the installation:
-```shell
-make run
-```
-If everything runs without errors and you see the default animation (clock) on your LED matrix, stop the execution with `Ctrl-C`. *If there are errors, feel free to open an issue with an detailed error report on GitHub.*
-
-9. Disable write support on the SD card again:
+7. Disable write support on the SD card again:
 ```shell
 mount -o remount,ro /media/<sd_card>
 ```
 
-10. Add this project to the autostart of Alpine Linux:
+8. Add this project to the autostart of Alpine Linux:
 ```shell
-make install
+rc-update add led-matrix
+```
+
+9. Commit any change to the file system:
+```shell
+lbu commit -d
 ```
 
 

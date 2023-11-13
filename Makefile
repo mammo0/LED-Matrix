@@ -1,37 +1,32 @@
 BASE_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-INITD_SERVICE=ledmatrix
-INSTALL_DIR=/usr/local/$(INITD_SERVICE)
-INITD_SCRIPT=$(BASE_DIR)/$(INITD_SERVICE)
-INITD_DIR=/etc/init.d
-
 
 D_BUILD_IMAGE_TAG=matrix_venv_builder:latest
-D_PIP_REQUIREMENTS=$(BASE_DIR)/resources/docker_requirements.pip
-ALPINE_VENV_ARCHIVE=$(BASE_DIR)/resources/LED-Matrix_virtuelenv.tar.gz
 CONFIG_FILE=$(BASE_DIR)/config.ini
 
 
-$(ALPINE_VENV_ARCHIVE):
-ifeq ("$(wildcard $(ALPINE_VENV_ARCHIVE))","")
-	$(error "File $(ALPINE_VENV_ARCHIVE) not found!")
-endif
+build-alpine-package: ALL_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --with config | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
+build-alpine-package: ALPINE_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --only alpine | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
+build-alpine-package: INSTALL_DEPS:=$(filter-out $(ALPINE_DEPS), $(ALL_DEPS))
+build-alpine-package: PKG_VER:=$(shell poetry version | cut -d " " -f2 | sed "s/\.post.*//")
+build-alpine-package: PKG_REL:=$(shell poetry version | cut -d " " -f2 | sed "s/.*\.post//")
+build-alpine-package:
+	poetry build -f wheel
 
+	poetry run create-config alpine/default_config.ini
 
-build-alpine-venv:
-	poetry export -f requirements.txt --without-hashes --without dev -o $(D_PIP_REQUIREMENTS)
-	docker build --build-arg BUILD_UID=`id -u` \
-				 --build-arg BUILD_GID=`id -g` \
-				 -t $(D_BUILD_IMAGE_TAG) .
-	docker run --rm -v $(BASE_DIR)/resources:/out $(D_BUILD_IMAGE_TAG)
-	rm $(D_PIP_REQUIREMENTS)
+	docker build --build-arg PKG_VER=$(PKG_VER) \
+				 --build-arg PKG_REL=$(PKG_REL) \
+				 --build-arg BUILD_UID=`id -u` \
+			     --build-arg BUILD_GID=`id -g` \
+				 --build-arg PYTHON_DEPS="$(INSTALL_DEPS)" \
+			     -t $(D_BUILD_IMAGE_TAG) .
+	docker run --rm -v $(BASE_DIR)/dist:/out $(D_BUILD_IMAGE_TAG)
 
-install-alpine-venv: $(ALPINE_VENV_ARCHIVE)
-	tar -zxvf $(ALPINE_VENV_ARCHIVE)
-
-# target alias for creating the cofig file
+# target alias for creating the config file
 config:
+	poetry install --only config
 	@# create or update the config file if necessary
-	$(BASE_DIR)/scripts/create_config.py $(CONFIG_FILE)
+	poetry run create-config $(CONFIG_FILE)
 
 develop: config
 	poetry install --sync
@@ -39,32 +34,7 @@ develop: config
 
 production: config
 	poetry install --without dev --sync
-	poetry run FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry run pip install --force git+https://github.com/mammo0/freetype-py.git@led-matrix
-
-__check_alpine:
-ifeq ("$(findstring Alpine,$(shell grep '^NAME' /etc/os-release))", "")
-	$(error This command must be executed on "Alpine Linux"!)
-endif
-
-install: __check_alpine
-	ln -s $(BASE_DIR) $(INSTALL_DIR)
-	cp $(INITD_SCRIPT) $(INITD_DIR)/$(INITD_SERVICE)
-	rc-update add $(INITD_SERVICE)
-	@# save changes to disk
-	lbu commit -d
-
-uninstall: __check_alpine
-	rc-update del $(INITD_SERVICE)
-	rm $(INITD_DIR)/$(INITD_SERVICE)
-	rm $(INSTALL_DIR)
-	@# save changes to disk
-	lbu commit -d
+	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry run pip install --force git+https://github.com/mammo0/freetype-py.git@led-matrix
 
 run:
-ifeq ("$(wildcard $(BASE_DIR)/.venv)","")
-	$(eval VENV_DIR:=$(shell poetry env info -p))
-else
-	$(eval VENV_DIR:=$(BASE_DIR)/.venv)
-endif
-	$(eval PYTHON=$(VENV_DIR)/bin/python)
-	$(PYTHON) main.py --config-file $(CONFIG_FILE)
+	poetry run led-matrix $(CONFIG_FILE)

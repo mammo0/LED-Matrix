@@ -8,8 +8,9 @@
             "name": "Python: LED-Matrix",
             "type": "python",
             "request": "launch",
-            "module": "main",
-            "justMyCode": true
+            "module": "led_matrix",
+            "args": ["config.ini"],
+            "justMyCode": false
         }
     ]
 }

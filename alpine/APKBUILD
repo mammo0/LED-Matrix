@@ -1,0 +1,36 @@
+pkgname="led-matrix"
+pkgver=${PKG_VER}
+pkgrel=${PKG_REL}
+pkgdesc="APA102 based LED-Matrix controlled by Raspberry Pi on Alpine Linux written in Python."
+url="https://github.com/mammo0/LED-Matrix"
+license="GPL-3.0-only"
+
+arch="armhf"
+options="!check"
+install="$pkgname.post-install $pkgname.post-deinstall"
+# py3-setuptools is a missing dependency from apscheduler
+depends="openrc py3-numpy py3-pillow py3-bottle py3-apscheduler py3-setuptools py3-tzlocal"
+makedepends="cmake python3-dev py3-pip py3-installer"
+source="led-matrix.initd \
+        default_config.ini \
+        led_matrix-${pkgver}.post${pkgrel}-py3-none-any.whl"
+
+build() {
+    # install the dependecies that are not part of Alpine
+    FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pip install --root "${builddir}" $PYTHON_DEPS
+}
+
+package() {
+    # install the led-matrix wheel
+    python3 -m installer -d "${pkgdir}" "${srcdir}/led_matrix-${pkgver}.post${pkgrel}-py3-none-any.whl"
+
+    # cp the previously installed dependencies
+    python_site_path=$(python -c "from sysconfig import get_path; print(get_path('purelib'))")
+    cp -r "${builddir}/${python_site_path}" "${pkgdir}/${python_site_path}/led_matrix/resources/alpine_site-packages"
+
+    # install the config file and the OpenRC service
+    etc_dir="${pkgdir}/etc"
+    initd_dir=${etc_dir}/init.d
+    install -Dm755 "${srcdir}/led-matrix.initd" "${initd_dir}/led-matrix"
+    install -Dm644 "${srcdir}/default_config.ini" "${etc_dir}/led-matrix.ini"
+}

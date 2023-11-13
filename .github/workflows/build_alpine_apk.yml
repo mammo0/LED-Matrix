@@ -1,0 +1,51 @@
+name: LED-Matrix Alpine Package
+
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+
+
+jobs:
+  test:
+    name: Build LED-Matrix Alpine Package
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Set up QEMU
+          id: qemu
+          uses: docker/setup-qemu-action@v3
+          with:
+              platforms: arm
+        - name: Set up Python
+          # by default uses the .python-version file
+          uses: actions/setup-python@v4
+        - name: Set up Poetry
+          uses: abatilo/actions-poetry@v2
+
+        # build the Alpine package
+        - name: Build Alpine Package
+          run: make build-alpine-package
+
+        # create the GH release
+        - name: Prepare release
+          if: startsWith(github.event.ref, 'refs/tags')
+          id: prepare_release
+          run: |
+              echo ::set-output name=alpine_ver::${GITHUB_REF_NAME%-*}
+              echo ::set-output name=release_num::${GITHUB_REF_NAME#*-}
+        - name: Create GH Release
+          if: startsWith(github.event.ref, 'refs/tags')
+          uses: softprops/action-gh-release@v1
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+              name: LED-Matrix Alpine Package r${{ steps.prepare_release.outputs.release_num }} (Alpine Linux ${{ steps.prepare_release.outputs.alpine_ver }})
+              draft: false
+              prerelease: false
+              files: dist/*.apk

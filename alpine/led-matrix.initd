@@ -1,0 +1,24 @@
+#!/sbin/openrc-run
+
+name=$RC_SVCNAME
+description="Alpine Linux autostart service."
+
+CONFIG_FILE="/etc/led-matrix.ini"
+
+command_args="led-matrix --config-file $CONFIG_FILE"
+command_background="yes"
+pidfile="/run/$RC_SVCNAME.pid"
+
+
+depend() {
+    need net
+}
+
+reload() {
+    ebegin "Reloading $RC_SVCNAME"
+    # send SIGHUP(1) to process
+    start-stop-daemon --exec $command \
+                      --pidfile $pidfile \
+                      -s 1
+    eend $?
+}
