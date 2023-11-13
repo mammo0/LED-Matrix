@@ -377,13 +377,11 @@ class HttpServer(metaclass=BottleCBVMeta):
             self.__main_app.apply_brightness()
 
             # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
-            enable_rest: bool = form.get("enable_rest", default=False, type=bool)
             enable_tpm2net: bool = form.get("enable_tpm2net", default=False, type=bool)
 
             # save the settings
             self.__main_app.config.main.day_brightness = day_brightness
             self.__main_app.config.main.night_brightness = night_brightness
-            self.__main_app.config.main.rest_server = enable_rest
             self.__main_app.config.main.tpm2net_server = enable_tpm2net
         elif SettingsTabs[tab.upper()] == SettingsTabs.DEFAULT_ANIMATION:
             new_default_an: str

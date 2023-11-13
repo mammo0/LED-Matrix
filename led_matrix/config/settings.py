@@ -31,10 +31,6 @@ class MainSettings:
     http_server_port: int = 8080
     http_server_listen_ip: IPv4Address | IPv6Address = IPv4Address("127.0.0.1")
 
-    rest_server: bool = True
-    rest_server_port: int = 8081
-    rest_server_listen_ip: IPv4Address | IPv6Address = IPv4Address("127.0.0.1")
-
     tpm2net_server: bool = False
 
     def __post_init__(self) -> None:

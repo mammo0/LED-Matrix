@@ -121,17 +121,6 @@ class _ConfigReader:
                                  target_type=str,
                                  default_value=str(MainSettings.http_server_listen_ip))
             )
-            rest_server: bool = self.__get_value(_MainSettingsMeta.REST_SERVER,
-                                                 target_type=bool,
-                                                 default_value=MainSettings.rest_server)
-            rest_server_port: int = self.__get_value(_MainSettingsMeta.REST_SERVER_PORT,
-                                                     target_type=int,
-                                                     default_value=MainSettings.rest_server_port)
-            rest_server_listen_ip: IPv4Address | IPv6Address = ip_address(
-                self.__get_value(_MainSettingsMeta.REST_SERVER_LISTEN_IP,
-                                 target_type=str,
-                                 default_value=str(MainSettings.rest_server_listen_ip))
-            )
             tpm2net_server: bool = self.__get_value(_MainSettingsMeta.TPM2NET_SERVER,
                                                     target_type=bool,
                                                     default_value=MainSettings.tpm2net_server)
@@ -144,9 +133,6 @@ class _ConfigReader:
                             http_server=http_server,
                             http_server_port=http_server_port,
                             http_server_listen_ip=http_server_listen_ip,
-                            rest_server=rest_server,
-                            rest_server_port=rest_server_port,
-                            rest_server_listen_ip=rest_server_listen_ip,
                             tpm2net_server=tpm2net_server)
 
     def __read_default_animation(self) -> DefaultAnimation:
@@ -271,7 +257,6 @@ class _ConfigWriter:
         self.__w.comment("(De-)Activate the server interfaces that control the matrix.")
         self.__w.comment("Available servers:")
         self.__w.comment("    - HttpServer [Default: true]")
-        self.__w.comment("    - RestServer [Default: true]")
         self.__w.comment("    - TPM2NetServer [Default: false]: UDP 65506")
         self.__w.key(name=_MainSettingsMeta.HTTP_SERVER, varg=main_config.http_server)
         self.__w.comment("The port on which the HTTP server listens [Default: 8080].")
@@ -279,14 +264,6 @@ class _ConfigWriter:
         self.__w.comment("The IP address of the interface on which the HTTP server should listen [Default: '127.0.0.1'].")
         self.__w.comment("Use '0.0.0.0' to listen on all available interfaces.")
         self.__w.key(name=_MainSettingsMeta.HTTP_SERVER_LISTEN_IP, varg=str(main_config.http_server_listen_ip))
-
-        self.__w.comment()
-        self.__w.key(name=_MainSettingsMeta.REST_SERVER, varg=main_config.rest_server)
-        self.__w.comment("The port on which the REST server listens [Default: 8081].")
-        self.__w.key(name=_MainSettingsMeta.REST_SERVER_PORT, varg=main_config.rest_server_port)
-        self.__w.comment("The IP address of the interface on which the REST server should listen [Default: '127.0.0.1'].")
-        self.__w.comment("Use '0.0.0.0' to listen on all available interfaces.")
-        self.__w.key(name=_MainSettingsMeta.REST_SERVER_LISTEN_IP, varg=str(main_config.rest_server_listen_ip))
 
         self.__w.comment()
         self.__w.key(name=_MainSettingsMeta.TPM2NET_SERVER, varg=main_config.tpm2net_server)

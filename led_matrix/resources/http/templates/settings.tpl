@@ -74,12 +74,6 @@
                                 <label for="setting_services_container">Services</label>
                                 <div id="setting_services_container">
                                     <div class="form-check">
-                                        <input id="setting_rest_toggle" class="form-check-input" type="checkbox" name="enable_rest" {{"checked" if config.main.rest_server else ""}}>
-                                        <label class="form-check-label" for="setting_rest_toggle">
-                                            REST Server
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
                                         <input id="setting_tpm2net_toggle" class="form-check-input" type="checkbox" name="enable_tpm2net" {{"checked" if config.main.tpm2net_server else ""}}>
                                         <label class="form-check-label" for="setting_tpm2net_toggle">
                                             TPM2Net Server

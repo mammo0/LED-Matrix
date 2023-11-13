@@ -20,7 +20,6 @@ from led_matrix.common.threading import EventWithUnsetSignal
 from led_matrix.config import Configuration
 from led_matrix.display.abstract import AbstractDisplay
 from led_matrix.server.http_server import HttpServer
-from led_matrix.server.rest_server import RestServer
 from led_matrix.server.tpm2_net import Tpm2NetServer
 
 
@@ -77,7 +76,6 @@ class MainController:
 
         # server interfaces
         self.__http_server: HttpServer | None = None
-        self.__rest_server: RestServer | None = None
         self.__tpm2_net_server: Tpm2NetServer | None = None
 
     def __create_scheduler(self) -> BackgroundScheduler:
@@ -149,16 +147,6 @@ class MainController:
             self.__http_server = HttpServer(main_app=self)
             self.__http_server.start()
 
-        # REST server
-        if (
-            self.__config.main.rest_server and
-            # if the following variable is set, that means we're in a reload phase
-            # so the server is already started
-            self.__rest_server is None
-        ):
-            self.__rest_server = RestServer(main_app=self)
-            self.__rest_server.start()
-
         # TPM2Net server
         if self.__config.main.tpm2net_server:
             self.__tpm2_net_server = Tpm2NetServer(main_app=self)
@@ -166,15 +154,11 @@ class MainController:
 
     def __stop_servers(self) -> None:
         # stop only the servers that are started
-        # except on reload, then do not stop the HTTP and REST server
+        # except on reload, then do not stop the HTTP
         if not self.__reload_signal.is_set():
             # HTTP server
             if self.__http_server is not None:
                 self.__http_server.stop()
-
-            # REST server
-            if self.__rest_server is not None:
-                self.__rest_server.stop()
 
         # TPM2Net server
         if self.__tpm2_net_server:
