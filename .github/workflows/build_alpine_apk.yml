@@ -27,6 +27,9 @@ jobs:
           uses: actions/setup-python@v4
         - name: Set up Poetry
           uses: abatilo/actions-poetry@v2
+        - name: Install Dynamic versioning plugin for Poetry
+          run: |
+              poetry self add "poetry-dynamic-versioning[plugin]"
 
         # build the Alpine package
         - name: Build Alpine Package
