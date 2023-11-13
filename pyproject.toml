@@ -48,9 +48,9 @@ enable = true
 vcs = "git"
 format-jinja = """
     {%- if distance == 0 -%}
-        {{ serialize_pep440(base, stage, revision) }}
+        {{ serialize_pep440(base) }}
     {%- else -%}
-        {{ serialize_pep440(base, stage, revision , post=distance) }}
+        {{ serialize_pep440(base, post=distance) }}
     {%- endif -%}
 """
 metadata = false

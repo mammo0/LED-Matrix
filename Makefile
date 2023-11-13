@@ -8,14 +8,16 @@ build-alpine-package: ALL_DEPS:=$(shell poetry export -f requirements.txt --with
 build-alpine-package: ALPINE_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --only alpine | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
 build-alpine-package: INSTALL_DEPS:=$(filter-out $(ALPINE_DEPS), $(ALL_DEPS))
 build-alpine-package: PKG_VER:=$(shell poetry version | cut -d " " -f2 | sed "s/\.post.*//")
-build-alpine-package: PKG_REL:=$(shell poetry version | cut -d " " -f2 | sed "s/.*\.post//")
+build-alpine-package: PKG_REL:=$(shell poetry version | cut -d " " -f2 | sed '/post/ s/.*\.post//; /^[0-9]\+$$/! s/.*/0/')
+build-alpine-package: WHL_FILE:=$(shell echo led_matrix-`poetry version | cut -d " " -f2`-py3-none-any.whl)
 build-alpine-package:
 	poetry build -f wheel
 
 	poetry install --only config
 	poetry run create-config alpine/default_config.ini
 
-	docker build --build-arg PKG_VER=$(PKG_VER) \
+	docker build --build-arg WHL_FILE=$(WHL_FILE) \
+				 --build-arg PKG_VER=$(PKG_VER) \
 				 --build-arg PKG_REL=$(PKG_REL) \
 				 --build-arg BUILD_UID=`id -u` \
 			     --build-arg BUILD_GID=`id -g` \

@@ -12,7 +12,7 @@ depends="openrc py3-numpy py3-pillow py3-bottle py3-apscheduler py3-setuptools p
 makedepends="cmake python3-dev py3-pip py3-installer"
 source="led-matrix.initd \
         default_config.ini \
-        led_matrix-${pkgver}.post${pkgrel}-py3-none-any.whl"
+        ${WHL_FILE}"
 
 build() {
     # install the dependecies that are not part of Alpine
@@ -21,7 +21,7 @@ build() {
 
 package() {
     # install the led-matrix wheel
-    python3 -m installer -d "${pkgdir}" "${srcdir}/led_matrix-${pkgver}.post${pkgrel}-py3-none-any.whl"
+    python3 -m installer -d "${pkgdir}" "${srcdir}/${WHL_FILE}"
 
     # cp the previously installed dependencies
     python_site_path=$(python -c "from sysconfig import get_path; print(get_path('purelib'))")
