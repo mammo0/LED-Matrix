@@ -34,10 +34,7 @@ class Configuration(Settings):
         self.__writer: _ConfigWriter = _ConfigWriter(config_file_path)
 
         if not config_file_path.exists():
-            log.warning("No configuration file found. Creating a new one with default settings.")
-
-            # just save the current values (normally these are the default values)
-            self.save()
+            log.warning("No configuration file found. Using the default settings.")
         else:
             # load the configuration
             reader: _ConfigReader = _ConfigReader(config_file_path)
