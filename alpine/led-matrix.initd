@@ -5,7 +5,8 @@ description="Alpine Linux autostart service."
 
 CONFIG_FILE="/etc/led-matrix.ini"
 
-command_args="led-matrix --config-file $CONFIG_FILE"
+command="led-matrix"
+command_args="$CONFIG_FILE"
 command_background="yes"
 pidfile="/run/$RC_SVCNAME.pid"
 
