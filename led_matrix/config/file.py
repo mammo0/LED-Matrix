@@ -259,14 +259,14 @@ class _ConfigWriter:
         self.__w.comment("    - HttpServer [Default: true]")
         self.__w.comment("    - TPM2NetServer [Default: false]: UDP 65506")
         self.__w.key(name=_MainSettingsMeta.HTTP_SERVER, varg=main_config.http_server)
+        self.__w.key(name=_MainSettingsMeta.TPM2NET_SERVER, varg=main_config.tpm2net_server)
+        self.__w.comment()
         self.__w.comment("The port on which the HTTP server listens [Default: 8080].")
         self.__w.key(name=_MainSettingsMeta.HTTP_SERVER_PORT, varg=main_config.http_server_port)
-        self.__w.comment("The IP address of the interface on which the HTTP server should listen [Default: '127.0.0.1'].")
+        self.__w.comment("The IP address of the interface on which the HTTP server should listen "
+                         "[Default: '127.0.0.1'].")
         self.__w.comment("Use '0.0.0.0' to listen on all available interfaces.")
         self.__w.key(name=_MainSettingsMeta.HTTP_SERVER_LISTEN_IP, varg=str(main_config.http_server_listen_ip))
-
-        self.__w.comment()
-        self.__w.key(name=_MainSettingsMeta.TPM2NET_SERVER, varg=main_config.tpm2net_server)
 
     def __write_default_animation(self, animation_config: DefaultAnimation) -> None:
         self.__w.section(name=_DefaultAnimationMeta.SECTION_NAME)
