@@ -43,43 +43,42 @@ def _patch_open_function() -> None:
                                         "+" in mode)
             is_lbu_path: bool = LBU_PATH in file_obj.parents
 
-            # execute the wrapped method
+            # before doing anything with the file, enable writing on the LBU directory
+            if writing_requested and is_lbu_path:
+                alpine_lbu.remount_rw()
+
+            # open the file
             r: R = func(*args, **kwargs)
 
             if not writing_requested:
                 # we can exit here if the file is opened just for reading
                 return r
 
-            # save the close() method of the IO stream object
-            r_close: Callable[[], None]  = r.close
+            def alpine_close(func: Callable[[], None]) -> Callable[[], None]:
+                @functools.wraps(func)
+                def wrapper() -> None:
+                    # first close the IO stream
+                    func()
 
-            # wrapper method for the close() method
-            @functools.wraps(r_close)
-            def c_wrapper() -> None:
-                # first close the IO stream
-                r_close()
+                    # make the changes persistent
+                    if is_lbu_path:
+                        # disable writing on the LBU directory again
+                        alpine_lbu.remount_ro()
+                    else:
+                        # this normally means that the config file was altered
+                        # use 'lbu commit -d' to save the /etc directory
+                        alpine_lbu_commit_d()
 
-                # make the changes persistent
-                if is_lbu_path:
-                    # disable writing on the LBU directory again
-                    alpine_lbu.remount_ro()
-                else:
-                    # this normally means that the config file was altered
-                    # use 'lbu commit -d' to save the /etc directory
-                    alpine_lbu_commit_d()
+                return wrapper
 
-            # replace the close() method with the wrapper method
-            r.close = c_wrapper
-
-            # before doing anything with the file, enable writing on the LBU directory
-            if is_lbu_path:
-                alpine_lbu.remount_rw()
+            # wrap the default IO close() method
+            r.close = alpine_close(r.close)
 
             return r
 
         return wrapper
 
-
+    # wrap the default open() method
     builtins.open = alpine_open(builtins.open)
 
 
