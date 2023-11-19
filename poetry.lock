@@ -67,7 +67,7 @@ files = [
 
 [[package]]
 name = "freetype-py"
-version = "2.4.1.dev16+g17a8b7e"
+version = "2.4.1.dev20+g5b30065"
 description = "Freetype python bindings"
 optional = false
 python-versions = ">=3.7"
@@ -78,7 +78,7 @@ develop = false
 type = "git"
 url = "https://github.com/mammo0/freetype-py.git"
 reference = "led-matrix"
-resolved_reference = "17a8b7e2c569e1019ebe98c54e782ee03297bb95"
+resolved_reference = "5b3006501aa30e1b13fd48f01b7e50609debecc6"
 
 [[package]]
 name = "imageio"
@@ -368,13 +368,13 @@ testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jar
 
 [[package]]
 name = "simple-classproperty"
-version = "4.0.1"
+version = "4.0.2"
 description = "Provides a 'classproperty' decorator."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "simple_classproperty-4.0.1-py3-none-any.whl", hash = "sha256:425640b2e2624391bb4a9c55f0e04276edf252cf5505302dc54545c6aa945edb"},
-    {file = "simple_classproperty-4.0.1.tar.gz", hash = "sha256:d51ea519c21e46e0bb9b566ae57f1045e4bed077db675cfd1c9bc884607526fe"},
+    {file = "simple_classproperty-4.0.2-py3-none-any.whl", hash = "sha256:ac13ae65df997257e72888fd3c875c97d711ae2b625ead93be28b7d79c8d0b7a"},
+    {file = "simple_classproperty-4.0.2.tar.gz", hash = "sha256:71ba436fc868f540c1908ecb0ef78ce14ea6fb1320cf4addd84945fb92988d5f"},
 ]
 
 [[package]]
