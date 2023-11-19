@@ -7,8 +7,8 @@ CONFIG_FILE=$(BASE_DIR)/config.ini
 build-alpine-package: ALL_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --with config | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
 build-alpine-package: ALPINE_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --only alpine | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
 build-alpine-package: INSTALL_DEPS:=$(filter-out $(ALPINE_DEPS), $(ALL_DEPS))
-build-alpine-package: PKG_VER:=$(shell poetry version | cut -d " " -f2 | sed "s/\.post.*//")
-build-alpine-package: PKG_REL:=$(shell poetry version | cut -d " " -f2 | sed '/post/ s/.*\.post//; /^[0-9]\+$$/! s/.*/0/')
+build-alpine-package: PKG_VER:=$(shell poetry version | cut -d " " -f2 | sed "s/\.post/_p/")
+build-alpine-package: PKG_REL:=0
 build-alpine-package: WHL_FILE:=$(shell echo led_matrix-`poetry version | cut -d " " -f2`-py3-none-any.whl)
 build-alpine-package:
 	poetry build -f wheel
