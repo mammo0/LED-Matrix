@@ -56,16 +56,17 @@ def _patch_open_function() -> None:
             # wrapper method for the close() method
             @functools.wraps(r_close)
             def c_wrapper() -> None:
+                # first close the IO stream
+                r_close()
+
+                # make the changes persistent
                 if is_lbu_path:
-                    # disable wirting on the LBU directory again
+                    # disable writing on the LBU directory again
                     alpine_lbu.remount_ro()
                 else:
                     # this normally means that the config file was altered
                     # use 'lbu commit -d' to save the /etc directory
                     alpine_lbu_commit_d()
-
-                # now finally close the IO stream
-                r_close()
 
             # replace the close() method with the wrapper method
             r.close = c_wrapper
