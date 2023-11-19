@@ -1,14 +1,12 @@
 import ctypes
-from io import TextIOWrapper
 import os
 import shutil
 import subprocess
 import sys
 from configparser import ConfigParser, MissingSectionHeaderError
-from contextlib import AbstractContextManager
 from ctypes import CDLL, util
+from io import TextIOWrapper
 from pathlib import Path
-from types import TracebackType
 from typing import Final
 
 from led_matrix.common.log import eprint
@@ -48,20 +46,18 @@ _OS_RELEASE: Final[dict[str, str]] = _read_system_config_file(_OS_RELEASE_FILE)
 _ALPINE_LBU_CONF: Final[dict[str, str]] = _read_system_config_file(_ALPINE_LBU_CONF_FILE)
 
 
-def is_alpine_linux() -> bool:
-    """
-    This method checks if the current OS is Alpine Linux.
-    @return: True if it's Alpine Linux. False for any other OS.
-    """
-    if ("NAME" in _OS_RELEASE and
-            "Alpine" in _OS_RELEASE["NAME"]):
-        return True
+# use this variable to check if we are in an Alpine Linux environment
+IS_ALPINE_LINUX: bool = ("NAME" in _OS_RELEASE and
+                         "Alpine" in _OS_RELEASE["NAME"])
 
-    return False
+
+LBU_PATH: Path | None = None
+if IS_ALPINE_LINUX and "LBU_MEDIA" in _ALPINE_LBU_CONF:
+    LBU_PATH = _ALPINE_MEDIA_DIR / _ALPINE_LBU_CONF["LBU_MEDIA"]
 
 
 def alpine_lbu_commit_d() -> None:
-    if not is_alpine_linux():
+    if not IS_ALPINE_LINUX:
         eprint("Not running on Alpine Linux. So 'lbu' is not available.")
         return
 
@@ -74,10 +70,10 @@ def alpine_lbu_commit_d() -> None:
         eprint("Cannot commit file changes, because 'lbu' tool was not found!")
 
 
-class alpine_rw(AbstractContextManager):  # pylint: disable=C0103
+class AlpineLBU:
     """
-    Use this context for writing files on an Alpine Linux diskless installation.
-    If no such installation is detected, this context will do nothing.
+    Use this class for writing files on an Alpine Linux diskless installation.
+    If no such installation is detected, this class will do nothing.
     """
     def __init__(self) -> None:
         # load system mount command
@@ -109,12 +105,12 @@ class alpine_rw(AbstractContextManager):  # pylint: disable=C0103
             errno: int = ctypes.get_errno()
             raise OSError(errno, f"Error re-mounting '{target}' {'RO' if ro else 'RW'}: {os.strerror(errno)}")
 
-    def __enter__(self) -> None:
-        if not is_alpine_linux():
+    def remount_rw(self) -> None:
+        if not IS_ALPINE_LINUX:
             eprint("Not running on Alpine Linux. So no changes to the filesystem will be made.")
             return
 
-        if "LBU_MEDIA" not in _ALPINE_LBU_CONF:
+        if LBU_PATH is None:
             eprint("No Alpine Linux diskless installation detected. So no changes to the filesystem will be made.")
             return
 
@@ -123,14 +119,12 @@ class alpine_rw(AbstractContextManager):  # pylint: disable=C0103
                 "To enable disk write access on Alpine Linux in diskless mode root permissions are necessary!"
             )
 
-        self.__mount_target = str(_ALPINE_MEDIA_DIR / _ALPINE_LBU_CONF["LBU_MEDIA"])
+        self.__mount_target = str(LBU_PATH)
 
         # remount root filesystem rw
         self.__remount(self.__mount_target, ro=False)
 
-    def __exit__(self, exc_type: type[BaseException] | None,
-                 exc_value: BaseException | None,
-                 traceback: TracebackType | None) -> None:
+    def remount_ro(self) -> None:
         if self.__mount_target is not None:
             # remount root filesystem ro
             self.__remount(self.__mount_target, ro=True)
