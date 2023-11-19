@@ -134,12 +134,12 @@ class MoodlightAnimation(AbstractAnimation):
                 return
 
             if style == _Style.FILL:
-                frame[:, :] = color
+                frame[:, :] = color.pil_tuple
                 yield frame
             elif style == _Style.RANDOM_DOT:
                 y: int = np.random.randint(0, self._height)
                 x: int = np.random.randint(0, self._width)
-                frame[y, x] = color
+                frame[y, x] = color.pil_tuple
                 yield frame
             elif style == _Style.WISH_UP_DOWN:
                 frame: NDArray[np.uint8] = np.concatenate(
