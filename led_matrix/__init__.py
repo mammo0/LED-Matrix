@@ -82,6 +82,40 @@ def _patch_open_function() -> None:
     builtins.open = alpine_open(builtins.open)
 
 
+def _patch_pathlib() -> None:
+    P = ParamSpec("P")
+    R = TypeVar("R")
+    def alpine_path_write_operation(func: Callable[P, R]) -> Callable[P, R]:
+        @functools.wraps(func)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            # the first argument is self
+            path_self: Path = args[0]  # type: ignore
+
+            if LBU_PATH in path_self.parents:
+                with AlpineLBU():
+                    return func(*args, **kwargs)
+
+            r: R = func(*args, **kwargs)
+            alpine_lbu_commit_d()
+            return r
+
+        return wrapper
+
+    # pathlib functions that perform write operations
+    Path.chmod = alpine_path_write_operation(Path.chmod)
+    Path.lchmod = alpine_path_write_operation(Path.lchmod)
+    Path.mkdir = alpine_path_write_operation(Path.mkdir)
+    Path.rename = alpine_path_write_operation(Path.rename)
+    Path.replace = alpine_path_write_operation(Path.replace)
+    Path.rmdir = alpine_path_write_operation(Path.rmdir)
+    Path.symlink_to = alpine_path_write_operation(Path.symlink_to)
+    Path.hardlink_to = alpine_path_write_operation(Path.hardlink_to)
+    Path.touch = alpine_path_write_operation(Path.touch)
+    Path.unlink = alpine_path_write_operation(Path.unlink)
+    Path.write_bytes = alpine_path_write_operation(Path.write_bytes)
+    Path.write_text = alpine_path_write_operation(Path.write_text)
+
+
 if IS_ALPINE_LINUX:
     # the 'alpine_site-packages' directory is part of the Alpine package
     # it contains all site-packages that have no own Alpine package
@@ -92,3 +126,6 @@ if IS_ALPINE_LINUX:
 
     # patch open() method
     _patch_open_function()
+
+    # patch pthlib functions that perform write operations
+    _patch_pathlib()
