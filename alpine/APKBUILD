@@ -16,7 +16,8 @@ source="led-matrix.initd \
 
 build() {
     # install the dependecies that are not part of Alpine
-    FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 pip install --root "${builddir}" $PYTHON_DEPS
+    FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 CMAKE_BUILD_PARALLEL_LEVEL=$(nproc --all) \
+        pip install --root "${builddir}" $PYTHON_DEPS
 }
 
 package() {
