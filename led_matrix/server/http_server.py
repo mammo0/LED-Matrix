@@ -12,10 +12,10 @@ import bottle
 from bottle import (FileUpload, FormsDict, HTTPResponse, redirect, request,
                     static_file, template)
 
+from led_matrix import STATIC_RESOURCES_DIR
 from led_matrix.animation.abstract import (AbstractAnimationController,
                                            AnimationParameterTypes,
                                            AnimationSettings, AnimationVariant)
-from led_matrix.common import RESOURCES_DIR
 from led_matrix.common.bottle import BottleCBVMeta, get, post
 from led_matrix.common.color import Color
 from led_matrix.common.schedule import CronStructure, ScheduleEntry
@@ -129,7 +129,7 @@ class HttpServer(metaclass=BottleCBVMeta):
     def __init__(self, main_app: MainController) -> None:
         self.__main_app: MainController = main_app
 
-        http_res_dir: Path = RESOURCES_DIR / "http"
+        http_res_dir: Path = STATIC_RESOURCES_DIR / "http"
         self.__js_dir: Path = http_res_dir / "js"
         self.__css_dir: Path = http_res_dir / "css"
         self.__fonts_dir: Path = http_res_dir / "fonts"

@@ -11,12 +11,12 @@ from freetype.ft_structs import FT_Vector
 from numpy.typing import NDArray
 from PIL import Image as pil
 from PIL.Image import Image
+from led_matrix import STATIC_RESOURCES_DIR
 
 from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationParameter,
                                            AnimationSettings, AnimationVariant)
-from led_matrix.common import RESOURCES_DIR
 
 
 @dataclass(kw_only=True)
@@ -46,7 +46,7 @@ class TextAnimation(AbstractAnimation):
         self.__steps_per_second: int = parameter.steps_per_second
         self.__pixels_per_step: int = parameter.pixels_per_step
 
-        fonts_dir: Path = RESOURCES_DIR / "fonts"
+        fonts_dir: Path = STATIC_RESOURCES_DIR / "fonts"
         self.__text_font: Face = Face(str(fonts_dir / "LiberationSans-Regular_2.1.2.ttf"))
         self.__emoji_font: Face = Face(str(fonts_dir / "joypixels-android_6.0.0.ttf"))
 
