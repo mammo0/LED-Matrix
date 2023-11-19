@@ -4,9 +4,11 @@ import shutil
 import subprocess
 import sys
 from configparser import ConfigParser, MissingSectionHeaderError
+from contextlib import AbstractContextManager
 from ctypes import CDLL, util
 from io import TextIOWrapper
 from pathlib import Path
+from types import TracebackType
 from typing import Final
 
 from led_matrix.common.log import eprint
@@ -70,10 +72,10 @@ def alpine_lbu_commit_d() -> None:
         eprint("Cannot commit file changes, because 'lbu' tool was not found!")
 
 
-class AlpineLBU:
+class AlpineLBU(AbstractContextManager):
     """
-    Use this class for writing files on an Alpine Linux diskless installation.
-    If no such installation is detected, this class will do nothing.
+    Use this context for writing files on an Alpine Linux diskless installation.
+    If no such installation is detected, this context will do nothing.
     """
     def __init__(self) -> None:
         # load system mount command
@@ -85,6 +87,17 @@ class AlpineLBU:
                                       ctypes.c_char_p)  # data
 
         self.__mount_target: str | None = None
+
+    def __enter__(self) -> None:
+        self.remount_rw()
+
+    def __exit__(self,
+                 exc_type: type[BaseException] | None,
+                 exc_value: BaseException | None,
+                 traceback: TracebackType | None) -> bool | None:
+        self.remount_ro()
+
+        return True if exc_type is not None else None
 
     def __is_root(self) -> bool:
         return os.geteuid() == 0
