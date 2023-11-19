@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass
 from enum import Enum, auto
 from io import BytesIO
@@ -16,12 +15,11 @@ from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationParameter,
                                            AnimationSettings, AnimationVariant)
-from led_matrix.common import RESOURCES_DIR
-from led_matrix.common.alpine import alpine_rw, is_alpine_linux
+from led_matrix.animations import ANIMATION_RESOURCES_DIR
 from led_matrix.common.color import Color
 from led_matrix.common.log import eprint
 
-_PICTURES_DIR = RESOURCES_DIR / "animations" / "pictures"
+_PICTURES_DIR = ANIMATION_RESOURCES_DIR / "pictures"
 
 
 PictureVariant = AnimationVariant.build_variants_from_files("PictureVariant",
@@ -206,35 +204,18 @@ class PictureController(AbstractAnimationController):
 
         file_path: Path = (_PICTURES_DIR / file_name).resolve()
 
-        def write_file():
-            with open(file_path, "wb+") as f:
-                f.write(file_content.read())
+        with open(file_path, "wb+") as f:
+            f.write(file_content.read())
 
-            global PictureVariant  # pylint: disable=W0603
-            PictureVariant = PictureVariant.refresh_variants()
-
-        if is_alpine_linux():
-            with alpine_rw():
-                write_file()
-        else:
-            write_file()
+        global PictureVariant  # pylint: disable=W0603
+        PictureVariant = PictureVariant.refresh_variants()
 
     def _remove_dynamic_variant(self, variant: AnimationVariant) -> None:
         animation_file: Path = variant.value.resolve()
 
-        # only remove directories that are in the animations directory
-        if animation_file in [p.resolve() for p in _PICTURES_DIR.iterdir()]:
-            def remove_file():
-                try:
-                    os.remove(animation_file)
-                except FileNotFoundError:
-                    pass
+        # only remove files that are in the animations directory
+        if _PICTURES_DIR in animation_file.parents:
+            animation_file.unlink(missing_ok=True)
 
-                global PictureVariant  # pylint: disable=W0603
-                PictureVariant = PictureVariant.refresh_variants()
-
-            if is_alpine_linux():
-                with alpine_rw():
-                    remove_file()
-            else:
-                remove_file()
+            global PictureVariant  # pylint: disable=W0603
+            PictureVariant = PictureVariant.refresh_variants()

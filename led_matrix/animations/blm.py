@@ -13,12 +13,11 @@ from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationParameter,
                                            AnimationSettings, AnimationVariant)
-from led_matrix.common import RESOURCES_DIR
-from led_matrix.common.alpine import alpine_rw, is_alpine_linux
+from led_matrix.animations import ANIMATION_RESOURCES_DIR
 from led_matrix.common.color import Color
 from led_matrix.common.log import eprint
 
-_BLM_ANIMATIONS_DIR = RESOURCES_DIR / "animations" / "162-blms"
+_BLM_ANIMATIONS_DIR = ANIMATION_RESOURCES_DIR / "162-blms"
 
 
 BlmVariant = AnimationVariant.build_variants_from_files(name="BlmVariant",
@@ -253,35 +252,18 @@ class BlmController(AbstractAnimationController):
 
         file_path: Path = (_BLM_ANIMATIONS_DIR / file_name).resolve()
 
-        def write_file():
-            with open(file_path, "wb+") as f:
-                f.write(file_content.read())
+        with open(file_path, "wb+") as f:
+            f.write(file_content.read())
 
-            global BlmVariant  # pylint: disable=W0603
-            BlmVariant = BlmVariant.refresh_variants()
-
-        if is_alpine_linux():
-            with alpine_rw():
-                write_file()
-        else:
-            write_file()
+        global BlmVariant  # pylint: disable=W0603
+        BlmVariant = BlmVariant.refresh_variants()
 
     def _remove_dynamic_variant(self, variant: AnimationVariant) -> None:
         animation_file: Path = variant.value.resolve()
 
-        # only remove directories that are in the animations directory
-        if animation_file in [p.resolve() for p in _BLM_ANIMATIONS_DIR.iterdir()]:
-            def remove_file():
-                try:
-                    os.remove(animation_file)
-                except FileNotFoundError:
-                    pass
+        # only remove files that are in the animations directory
+        if _BLM_ANIMATIONS_DIR in animation_file.parents:
+            animation_file.unlink(missing_ok=True)
 
-                global BlmVariant  # pylint: disable=W0603
-                BlmVariant = BlmVariant.refresh_variants()
-
-            if is_alpine_linux():
-                with alpine_rw():
-                    remove_file()
-            else:
-                remove_file()
+            global BlmVariant  # pylint: disable=W0603
+            BlmVariant = BlmVariant.refresh_variants()

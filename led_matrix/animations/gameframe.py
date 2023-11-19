@@ -18,12 +18,11 @@ from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationParameter,
                                            AnimationSettings, AnimationVariant)
-from led_matrix.common import RESOURCES_DIR
-from led_matrix.common.alpine import alpine_rw, is_alpine_linux
+from led_matrix.animations import ANIMATION_RESOURCES_DIR
 from led_matrix.common.color import Color
 from led_matrix.common.log import eprint
 
-_GAMEFRAME_ANIMATIONS_DIR = RESOURCES_DIR / "animations" / "gameframe"
+_GAMEFRAME_ANIMATIONS_DIR = ANIMATION_RESOURCES_DIR / "gameframe"
 
 
 GameframeVariant = AnimationVariant.build_variants_from_files("GameframeVariant",
@@ -341,38 +340,31 @@ class GameframeController(AbstractAnimationController):
             info: list[ZipInfo] = zip_file.infolist()
 
             if len(info) > 0:
-                def extract_zip():
-                    extract_path: Path
+                extract_path: Path
 
-                    # check if the root element is a single directory
-                    if (len(info) > 1 and info[0].is_dir()):
-                        # extract the zip-file directly
-                        extract_path = _GAMEFRAME_ANIMATIONS_DIR.resolve()
+                # check if the root element is a single directory
+                if (len(info) > 1 and info[0].is_dir()):
+                    # extract the zip-file directly
+                    extract_path = _GAMEFRAME_ANIMATIONS_DIR.resolve()
 
-                        if (_GAMEFRAME_ANIMATIONS_DIR / info[0].filename.rsplit(".", 1)[0]).exists():
-                            eprint(f"The variant '{info[0].filename.rsplit('.', 1)[0]}' already exists.")
-                            return
-                    else:
-                        # if not, try to create a directory with the file name
-                        extract_path = (_GAMEFRAME_ANIMATIONS_DIR / file_name.rsplit(".", 1)[0]).resolve()
-
-                        if extract_path.exists():
-                            eprint(f"The variant '{extract_path.name}' already exists.")
-                            return
-
-                        extract_path.mkdir(parents=True)
-
-                    # extract the zip file
-                    zip_file.extractall(path=str(extract_path))
-
-                    global GameframeVariant  # pylint: disable=W0603
-                    GameframeVariant = GameframeVariant.refresh_variants()
-
-                if is_alpine_linux():
-                    with alpine_rw():
-                        extract_zip()
+                    if (_GAMEFRAME_ANIMATIONS_DIR / info[0].filename.rsplit(".", 1)[0]).exists():
+                        eprint(f"The variant '{info[0].filename.rsplit('.', 1)[0]}' already exists.")
+                        return
                 else:
-                    extract_zip()
+                    # if not, try to create a directory with the file name
+                    extract_path = (_GAMEFRAME_ANIMATIONS_DIR / file_name.rsplit(".", 1)[0]).resolve()
+
+                    if extract_path.exists():
+                        eprint(f"The variant '{extract_path.name}' already exists.")
+                        return
+
+                    extract_path.mkdir(parents=True)
+
+                # extract the zip file
+                zip_file.extractall(path=str(extract_path))
+
+                global GameframeVariant  # pylint: disable=W0603
+                GameframeVariant = GameframeVariant.refresh_variants()
 
             else:
                 eprint("The zip-file was empty.")
@@ -381,12 +373,8 @@ class GameframeController(AbstractAnimationController):
         animation_dir: Path = variant.value.resolve()
 
         # only remove directories that are in the animations directory
-        if animation_dir in [p.resolve() for p in _GAMEFRAME_ANIMATIONS_DIR.iterdir()]:
-            if is_alpine_linux():
-                with alpine_rw():
-                    shutil.rmtree(str(animation_dir), ignore_errors=True)
-            else:
-                shutil.rmtree(str(animation_dir), ignore_errors=True)
+        if _GAMEFRAME_ANIMATIONS_DIR in animation_dir.parents:
+            shutil.rmtree(str(animation_dir), ignore_errors=True)
 
             global GameframeVariant  # pylint: disable=W0603
             GameframeVariant = GameframeVariant.refresh_variants()
