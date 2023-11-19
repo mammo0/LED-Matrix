@@ -13,7 +13,7 @@ from led_matrix.common.alpine import (IS_ALPINE_LINUX, LBU_PATH, AlpineLBU,
 
 STATIC_RESOURCES_DIR: Path
 with resources.as_file(resources.files("led_matrix")) as STATIC_RESOURCES_DIR:
-    STATIC_RESOURCES_DIR = (STATIC_RESOURCES_DIR / "resources").resolve()
+    STATIC_RESOURCES_DIR = (STATIC_RESOURCES_DIR / "static_res").resolve()
 
 
 if IS_ALPINE_LINUX:
