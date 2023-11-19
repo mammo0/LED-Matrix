@@ -16,14 +16,7 @@ with resources.as_file(resources.files("led_matrix")) as STATIC_RESOURCES_DIR:
     STATIC_RESOURCES_DIR = (STATIC_RESOURCES_DIR / "static_res").resolve()
 
 
-if IS_ALPINE_LINUX:
-    # the 'alpine_site-packages' directory is part of the Alpine package
-    # it contains all site-packages that have no own Alpine package
-    apline_site_packages: Path = STATIC_RESOURCES_DIR / "alpine_site-packages"
-
-    # add it to the PYTHONPATH
-    sys.path.append(str(apline_site_packages))
-
+def _patch_open_function() -> None:
     # this class managees rw access to the LBU directory
     alpine_lbu: AlpineLBU = AlpineLBU()
 
@@ -87,3 +80,15 @@ if IS_ALPINE_LINUX:
 
 
     builtins.open = alpine_open(builtins.open)
+
+
+if IS_ALPINE_LINUX:
+    # the 'alpine_site-packages' directory is part of the Alpine package
+    # it contains all site-packages that have no own Alpine package
+    apline_site_packages: Path = STATIC_RESOURCES_DIR / "alpine_site-packages"
+
+    # add it to the PYTHONPATH
+    sys.path.append(str(apline_site_packages))
+
+    # patch open() method
+    _patch_open_function()
