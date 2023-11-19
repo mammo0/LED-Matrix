@@ -85,7 +85,7 @@ def get_cron_selector_pattern(cron_category: str) -> str:
 
 class SettingsTabs(Enum):
     """
-    This class is ALSO used in led_matrix/resources/http/templates/settings.tpl
+    This class is ALSO used in led_matrix/static_res/http/templates/settings.tpl
     """
     MAIN = "Main"
     DEFAULT_ANIMATION = "Default Animation"
@@ -94,7 +94,7 @@ class SettingsTabs(Enum):
 
 class Input:
     """
-    This class is ONLY used in led_matrix/resources/http/templates/animation/settings.tpl
+    This class is ONLY used in led_matrix/static_res/http/templates/animation/settings.tpl
     """
     def __init__(self, value: AnimationParameterTypes) -> None:
         self.__input_type: str = "text"
@@ -161,7 +161,7 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     def __show_settings(self, tab: SettingsTabs=SettingsTabs.MAIN) -> str:
         """
-        led_matrix/resources/http/templates/settings.tpl
+        led_matrix/static_res/http/templates/settings.tpl
         """
         return template("settings",
                         active_tab=tab,
@@ -172,7 +172,7 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     def __parse_animation_form(self, form: FormsDict) -> tuple[str, AnimationSettings]:
         """
-        led_matrix/resources/http/templates/animation/settings.tpl
+        led_matrix/static_res/http/templates/animation/settings.tpl
         """
         animation_name: str | None = form.get("selected_animation_name")
 
@@ -227,7 +227,7 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     def __parse_cron_form(self, form: FormsDict, job_id: str | None=None) -> ScheduleEntry:
         """
-        led_matrix/resources/http/templates/schedule/entry.tpl
+        led_matrix/static_res/http/templates/schedule/entry.tpl
         """
         cron_structure: dict[str, str | None] = {}
         for category in CRON_DICT:
@@ -265,7 +265,7 @@ class HttpServer(metaclass=BottleCBVMeta):
     @get("/")
     def index(self) -> str:
         """
-        led_matrix/resources/http/templates/index.tpl
+        led_matrix/static_res/http/templates/index.tpl
         """
         return template("index",
                         animation_controllers=self.__main_app.available_animation_controllers,
@@ -287,7 +287,7 @@ class HttpServer(metaclass=BottleCBVMeta):
     @get("/schedule")
     def schedule_table(self) -> str:
         """
-        led_matrix/resources/http/templates/schedule/table.tpl
+        led_matrix/static_res/http/templates/schedule/table.tpl
         """
         return template("schedule/table",
                         schedule_table=self.__main_app.scheduled_animations)
@@ -295,7 +295,7 @@ class HttpServer(metaclass=BottleCBVMeta):
     @post("/schedule/new")
     def new_schedule_entry(self) -> str:
         """
-        led_matrix/resources/http/templates/schedule/entry.tpl
+        led_matrix/static_res/http/templates/schedule/entry.tpl
         """
         a_name:str
         a_settings: AnimationSettings

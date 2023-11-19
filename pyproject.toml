@@ -10,7 +10,7 @@ packages = [
     { include = "led_matrix" }
 ]
 include = [
-    { path = "led_matrix/resources", format = ["sdist", "wheel"] }
+    { path = "led_matrix/static_res", format = ["sdist", "wheel"] }
 ]
 
 

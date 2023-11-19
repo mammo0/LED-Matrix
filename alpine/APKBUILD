@@ -25,7 +25,7 @@ package() {
 
     # cp the previously installed dependencies
     python_site_path=$(python -c "from sysconfig import get_path; print(get_path('purelib'))")
-    cp -r "${builddir}/${python_site_path}" "${pkgdir}/${python_site_path}/led_matrix/resources/alpine_site-packages"
+    cp -r "${builddir}/${python_site_path}" "${pkgdir}/${python_site_path}/led_matrix/static_res/alpine_site-packages"
 
     # install the config file and the OpenRC service
     etc_dir="${pkgdir}/etc"

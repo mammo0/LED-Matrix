@@ -1,5 +1,5 @@
 # Alpine site-packages
-/led_matrix/resources/alpine_site-packages
+/led_matrix/static_res/alpine_site-packages
 
 # Alpine default config file
 /alpine/default_config.ini
