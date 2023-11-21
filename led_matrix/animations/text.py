@@ -2,7 +2,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from queue import Queue
-from typing import Callable, Generator, cast
+from typing import Callable, Final, Generator, cast
 
 import freetype
 import numpy as np
@@ -11,12 +11,19 @@ from freetype.ft_structs import FT_Vector
 from numpy.typing import NDArray
 from PIL import Image as pil
 from PIL.Image import Image
-from led_matrix import STATIC_RESOURCES_DIR
 
+from led_matrix import STATIC_RESOURCES_DIR
 from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationParameter,
                                            AnimationSettings, AnimationVariant)
+
+_FONTS_DIR: Final[Path] = STATIC_RESOURCES_DIR / "fonts"
+_TEXT_FONT: Final[Face] = Face(str(_FONTS_DIR / "LiberationSans-Regular_2.1.2.ttf"))
+_EMOJI_FONT: Final[Face] = Face(str(_FONTS_DIR / "joypixels-android_6.0.0.ttf"))
+# often only one char size is available and valid for emoji fonts
+# use the last one (should be the largest)
+_EMOJI_FONT.set_char_size(_EMOJI_FONT.available_sizes[-1].size)
 
 
 @dataclass(kw_only=True)
@@ -42,25 +49,16 @@ class TextAnimation(AbstractAnimation):
 
         self.__text: str = parameter.text
         self.__text_size: int = parameter.text_size
-        emoji_size: int = 109
         self.__steps_per_second: int = parameter.steps_per_second
         self.__pixels_per_step: int = parameter.pixels_per_step
 
-        fonts_dir: Path = STATIC_RESOURCES_DIR / "fonts"
-        self.__text_font: Face = Face(str(fonts_dir / "LiberationSans-Regular_2.1.2.ttf"))
-        self.__emoji_font: Face = Face(str(fonts_dir / "joypixels-android_6.0.0.ttf"))
+        _TEXT_FONT.set_char_size(self.__text_size * 64)
 
-        self.__text_font.set_char_size(self.__text_size * 64)
-        self.__emoji_font.set_char_size(emoji_size * 64)
         np.set_printoptions(threshold=sys.maxsize, linewidth=300)
 
         self.__frame_generator = self.__generate_frames()
 
         self._set_animation_speed(1.0 / self.__steps_per_second)
-
-    def __del__(self) -> None:
-        del self.__text_font
-        del self.__emoji_font
 
     def __render(self, text: str) -> NDArray[np.uint8]:
         xmin: int = 0
@@ -88,17 +86,17 @@ class TextAnimation(AbstractAnimation):
             y0: int
             y1: int
 
-            if self.__text_font.get_char_index(char):
-                self.__text_font.load_char(char, freetype.FT_LOAD_RENDER | freetype.FT_LOAD_TARGET_MONO)  # type: ignore # pylint: disable=E1101
+            if _TEXT_FONT.get_char_index(char):
+                _TEXT_FONT.load_char(char, freetype.FT_LOAD_RENDER | freetype.FT_LOAD_TARGET_MONO)  # type: ignore # pylint: disable=E1101
 
-                kerning = self.__text_font.get_kerning(previous_char, char)
+                kerning = _TEXT_FONT.get_kerning(previous_char, char)
                 previous_char = char
-                bitmap = self.__text_font.glyph.bitmap
+                bitmap = _TEXT_FONT.glyph.bitmap
 
-                width = self.__text_font.glyph.bitmap.width
-                rows = self.__text_font.glyph.bitmap.rows
-                top = self.__text_font.glyph.bitmap_top
-                left = self.__text_font.glyph.bitmap_left
+                width = _TEXT_FONT.glyph.bitmap.width
+                rows = _TEXT_FONT.glyph.bitmap.rows
+                top = _TEXT_FONT.glyph.bitmap_top
+                left = _TEXT_FONT.glyph.bitmap_left
 
                 pen_x += (kerning.x >> 6)
 
@@ -109,14 +107,14 @@ class TextAnimation(AbstractAnimation):
 
                 xmin, xmax = min(xmin, x0),  max(xmax, x1)
                 ymin, ymax = min(ymin, y0), max(ymax, y1)
-                pen_x += (self.__text_font.glyph.advance.x >> 6)
-                pen_y += (self.__text_font.glyph.advance.y >> 6)
+                pen_x += (_TEXT_FONT.glyph.advance.x >> 6)
+                pen_y += (_TEXT_FONT.glyph.advance.y >> 6)
                 # print(("char: {} width: {} rows: {} top: {} left: {} "
                 #        "kernx: {} xmin: {} xmax: {} ymin: {} ymax: {} "
                 #        "pen_x: {} pen_y {}").format(c, width, rows, top, left,
                 #                                     (kerning.x >> 6), xmin, xmax, ymin, ymax,
                 #                                     pen_x, pen_y))
-            elif self.__emoji_font.get_char_index(char):
+            elif _EMOJI_FONT.get_char_index(char):
                 previous_char = "\0"
 
                 width = self.__text_size
@@ -141,17 +139,17 @@ class TextAnimation(AbstractAnimation):
         for char in text:
             bitmap_array: NDArray[np.uint8]
 
-            if self.__text_font.get_char_index(char):
-                self.__text_font.load_char(char, freetype.FT_LOAD_RENDER | freetype.FT_LOAD_TARGET_MONO)  # type: ignore # pylint: disable=E1101
+            if _TEXT_FONT.get_char_index(char):
+                _TEXT_FONT.load_char(char, freetype.FT_LOAD_RENDER | freetype.FT_LOAD_TARGET_MONO)  # type: ignore # pylint: disable=E1101
 
-                kerning = self.__text_font.get_kerning(previous_char, char)
+                kerning = _TEXT_FONT.get_kerning(previous_char, char)
                 previous_char = char
-                bitmap = self.__text_font.glyph.bitmap
+                bitmap = _TEXT_FONT.glyph.bitmap
 
-                width = self.__text_font.glyph.bitmap.width
-                rows = self.__text_font.glyph.bitmap.rows
-                top = self.__text_font.glyph.bitmap_top
-                left = self.__text_font.glyph.bitmap_left
+                width = _TEXT_FONT.glyph.bitmap.width
+                rows = _TEXT_FONT.glyph.bitmap.rows
+                top = _TEXT_FONT.glyph.bitmap_top
+                left = _TEXT_FONT.glyph.bitmap_left
 
                 pen_x += (kerning.x >> 6)
 
@@ -165,9 +163,9 @@ class TextAnimation(AbstractAnimation):
 
                 text_array[y:y+rows, x:x+width] |= bitmap_array[::-1, ::1]
 
-                pen_x += (self.__text_font.glyph.advance.x >> 6)
-                pen_y += (self.__text_font.glyph.advance.y >> 6)
-            elif self.__emoji_font.get_char_index(char):
+                pen_x += (_TEXT_FONT.glyph.advance.x >> 6)
+                pen_y += (_TEXT_FONT.glyph.advance.y >> 6)
+            elif _EMOJI_FONT.get_char_index(char):
                 previous_char = "\0"
 
                 width = self.__text_size
@@ -206,9 +204,9 @@ class TextAnimation(AbstractAnimation):
         return np.array(data).reshape(bitmap.rows, bitmap.width)
 
     def __get_color_char(self, char: str) -> NDArray[np.uint8]:
-        self.__emoji_font.load_char(char, freetype.FT_LOAD_COLOR)  # type: ignore # pylint: disable=E1101
+        _EMOJI_FONT.load_char(char, freetype.FT_LOAD_COLOR)  # type: ignore # pylint: disable=E1101
 
-        bitmap: Bitmap = self.__emoji_font.glyph.bitmap
+        bitmap: Bitmap = _EMOJI_FONT.glyph.bitmap
         bitmap_array: NDArray[np.uint8] = np.array(bitmap.buffer,
                                                    dtype=np.uint8).reshape((bitmap.rows, bitmap.width, 4))
 
