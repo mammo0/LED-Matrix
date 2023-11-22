@@ -40,7 +40,11 @@ class Computer(AbstractDisplay):
 
         self.show()
 
-    def __get_led_surface(self, led_color: Color) -> Surface:
+    def __get_led_surface(self, led_color: Color) -> Surface | None:
+        if (led_color.r, led_color.g, led_color.b) == (0, 0, 0):
+            # do not simulate a black (off) LED
+            return None
+
         led_color.r = led_color.r // self.__circular_smoothness_steps
         led_color.g = led_color.g // self.__circular_smoothness_steps
         led_color.b = led_color.b // self.__circular_smoothness_steps
@@ -99,20 +103,22 @@ class Computer(AbstractDisplay):
                                  int(it[1]),
                                  int(it[2]))
 
-            row: int
-            column: int
-            (row, column) = it.multi_index
-
             # get the LED surface
-            led_surface: Surface = self.__get_led_surface(led_color=color)
+            led_surface: Surface | None = self.__get_led_surface(led_color=color)
 
-            # the position of the LED on the main surface
-            led_pos: Vector2 = Vector2((self.__margin + self.__size) * column + self.__margin,
-                                       (self.__margin + self.__size) * row + self.__margin)
+            # None means the LED is off
+            if led_surface is not None:
+                row: int
+                column: int
+                (row, column) = it.multi_index
 
-            # add the LED surface to the main one
-            self.__surface.blit(led_surface,
-                                dest=led_pos)
+                # the position of the LED on the main surface
+                led_pos: Vector2 = Vector2(x=(self.__margin + self.__size) * column + self.__margin,
+                                           y=(self.__margin + self.__size) * row + self.__margin)
+
+                # add the LED surface to the main one
+                self.__surface.blit(led_surface,
+                                    dest=led_pos)
 
             it.iternext()
 
