@@ -15,7 +15,7 @@ if IS_ALPINE_LINUX:
     LOG_FILE_PATH = Path("/") / "var" / "log" / "led-matrix"
 else:
     with resources.as_file(resources.files("led_matrix")) as LOG_FILE_PATH:
-        LOG_FILE_PATH = LOG_FILE_PATH.resolve() / "logs"
+        LOG_FILE_PATH = LOG_FILE_PATH.resolve().parent / "logs"
 # first create the logging directory
 LOG_FILE_PATH.mkdir(parents=True, exist_ok=True)
 # then define the final path to the file

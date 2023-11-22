@@ -11,7 +11,7 @@
 /led_matrix/animations/res
 
 # local logging directory
-/led_matrix/logs
+/logs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
