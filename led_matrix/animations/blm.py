@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from queue import Queue
-from typing import Callable, Generator, cast
+from typing import Callable, Generator, Optional, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -34,8 +34,8 @@ class BlmParameter(AnimationParameter):
 
 @dataclass(kw_only=True)
 class BlmSettings(AnimationSettings):
-    variant: BlmVariant | None = None  # type:ignore
-    parameter: BlmParameter = field(default_factory=BlmParameter)
+    variant: Optional[AnimationVariant] = None
+    parameter: Optional[AnimationParameter] = field(default_factory=BlmParameter)
 
 
 @dataclass(kw_only=True)

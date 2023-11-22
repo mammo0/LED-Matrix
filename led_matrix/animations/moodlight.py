@@ -2,7 +2,7 @@ import colorsys
 from dataclasses import dataclass
 from enum import Enum, auto
 from queue import Queue
-from typing import Callable, Generator
+from typing import Callable, Generator, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -33,7 +33,7 @@ class _Style(Enum):
 
 @dataclass(kw_only=True)
 class MoodlightSettings(AnimationSettings):
-    variant: AnimationVariant = MoodlightVariant.WISH_UP_DOWN
+    variant: Optional[AnimationVariant] = MoodlightVariant.WISH_UP_DOWN
 
 
 class MoodlightAnimation(AbstractAnimation):

@@ -1,21 +1,18 @@
+import math
+import time
 from dataclasses import dataclass, field
 from enum import auto
-import math
 from queue import Queue
-import time
-from typing import Callable, cast
+from typing import Callable, Optional, cast
 
+import numpy as np
 from PIL.Image import Image, new
 from PIL.ImageDraw import Draw, ImageDraw
-import numpy as np
 
-from led_matrix.animation.abstract import (
-    AbstractAnimation,
-    AbstractAnimationController,
-    AnimationParameter,
-    AnimationSettings,
-    AnimationVariant,
-)
+from led_matrix.animation.abstract import (AbstractAnimation,
+                                           AbstractAnimationController,
+                                           AnimationParameter,
+                                           AnimationSettings, AnimationVariant)
 from led_matrix.common.color import Color
 
 
@@ -37,8 +34,8 @@ class ClockParameter(AnimationParameter):
 @dataclass(kw_only=True)
 class ClockSettings(AnimationSettings):
     # default settings
-    variant: AnimationVariant = ClockVariant.ANALOG
-    parameter: AnimationParameter = field(default_factory=ClockParameter)
+    variant: Optional[AnimationVariant] = ClockVariant.ANALOG
+    parameter: Optional[AnimationParameter] = field(default_factory=ClockParameter)
 
 
 class ClockAnimation(AbstractAnimation):

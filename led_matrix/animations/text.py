@@ -2,7 +2,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from queue import Queue
-from typing import Callable, Final, Generator, cast
+from typing import Callable, Final, Generator, Optional, cast
 
 import freetype
 import numpy as np
@@ -36,7 +36,7 @@ class TextParameter(AnimationParameter):
 
 @dataclass(kw_only=True)
 class TextSettings(AnimationSettings):
-    parameter: TextParameter = field(default_factory=TextParameter)
+    parameter: Optional[AnimationParameter] = field(default_factory=TextParameter)
 
 
 class TextAnimation(AbstractAnimation):

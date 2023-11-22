@@ -4,7 +4,7 @@ from io import BytesIO
 from pathlib import Path
 from queue import Queue
 from threading import TIMEOUT_MAX
-from typing import Callable, Generator
+from typing import Callable, Generator, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -29,7 +29,7 @@ PictureVariant = AnimationVariant.build_variants_from_files("PictureVariant",
 
 @dataclass(kw_only=True)
 class PictureSettings(AnimationSettings):
-    variant: PictureVariant | None = None  # type: ignore
+    variant: Optional[AnimationVariant] = None
 
 
 class _PictureType(Enum):

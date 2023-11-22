@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from io import BytesIO
 from pathlib import Path
 from queue import Queue
-from typing import Callable, Generator, cast
+from typing import Callable, Generator, Optional, cast
 from zipfile import ZipFile, ZipInfo
 
 import numpy as np
@@ -33,13 +33,13 @@ GameframeVariant = AnimationVariant.build_variants_from_files("GameframeVariant"
 #TODO: Subfolders have not been implemented yet.
 @dataclass(kw_only=True)
 class GameframeParameter(AnimationParameter):
-    background_color = Color(0, 0, 0)
+    background_color: Color = Color(0, 0, 0)
 
 
 @dataclass(kw_only=True)
 class GameframeSettings(AnimationSettings):
-    variant: GameframeVariant | None = None  # type: ignore
-    parameter: GameframeParameter = field(default_factory=GameframeParameter)
+    variant: Optional[AnimationVariant] = None
+    parameter: Optional[AnimationParameter] = field(default_factory=GameframeParameter)
 
 
 @dataclass(kw_only=True)
