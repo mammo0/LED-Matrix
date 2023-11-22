@@ -2,6 +2,7 @@
 This module is the abstract representation of a pixel matrix display.
 """
 from abc import ABC, abstractmethod
+from typing import final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -18,6 +19,9 @@ class AbstractDisplay(ABC):
             dtype=np.uint8
         )
 
+        self.__display_brightness: float
+        self.set_brightness(config.main.brightness)
+
     @property
     def frame_buffer(self) -> NDArray[np.uint8]:
         """The buffer contains the rgb data to be displayed."""
@@ -26,11 +30,10 @@ class AbstractDisplay(ABC):
     @frame_buffer.setter
     def frame_buffer(self, value: NDArray[np.uint8]):
         if self.__buffer.shape == value.shape:
-            # del self._buffer
-            self.__buffer = value
+            # apply the brightness directly to the frame
+            self.__buffer = np.ceil(value * self.__display_brightness)
 
     def clear_buffer(self) -> None:
-        # del self._buffer
         self.__buffer = np.zeros_like(self.__buffer)
 
     @property
@@ -42,6 +45,11 @@ class AbstractDisplay(ABC):
         """Display the contents of buffer on display. Gamma correction can be
         toggled."""
 
-    @abstractmethod
+    @final
     def set_brightness(self, brightness: int) -> None:
         """Set the brightness 0 to 100 value"""
+        self.__display_brightness = self._calc_real_brightness(brightness)
+
+    @abstractmethod
+    def _calc_real_brightness(self, brightness: int) -> float:
+        raise NotImplementedError
