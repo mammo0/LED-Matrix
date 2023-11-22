@@ -16,7 +16,7 @@ from led_matrix import STATIC_RESOURCES_DIR
 from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationParameter,
-                                           AnimationSettings, AnimationVariant)
+                                           AnimationSettings)
 
 _FONTS_DIR: Final[Path] = STATIC_RESOURCES_DIR / "fonts"
 _TEXT_FONT: Final[Face] = Face(str(_FONTS_DIR / "LiberationSans-Regular_2.1.2.ttf"))
@@ -273,35 +273,12 @@ class TextAnimation(AbstractAnimation):
         return False
 
 
-class TextController(AbstractAnimationController):
-    @property
-    def animation_name(self) -> str:
-        return "text"
-
-    @property
-    def animation_class(self) -> type[AbstractAnimation]:
-        return TextAnimation
-
-    @property
-    def variant_enum(self) -> type[AnimationVariant] | None:
-        return None
-
-    @property
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        return TextParameter
-
-    @property
-    def settings_class(self) -> type[AnimationSettings]:
-        return TextSettings
-
-    @property
-    def default_settings(self) -> AnimationSettings:
-        return TextSettings()
-
-    @property
-    def is_repeat_supported(self) -> bool:
-        return True
-
-    @property
-    def accepts_dynamic_variant(self) -> bool:
-        return False
+class TextController(AbstractAnimationController,
+                     animation_name="text",
+                     animation_class=TextAnimation,
+                     settings_class=TextSettings,
+                     default_settings=TextSettings(),
+                     accepts_dynamic_variant=False,
+                     is_repeat_supported=True,
+                     parameter_class=TextParameter):
+    pass

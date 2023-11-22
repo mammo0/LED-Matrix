@@ -205,44 +205,20 @@ class BlmAnimation(AbstractAnimation):
             yield (frame.hold, array)
 
 
-class BlmController(AbstractAnimationController):
+class BlmController(AbstractAnimationController,
+                    animation_name="blinkenlights",
+                    animation_class=BlmAnimation,
+                    settings_class=BlmSettings,
+                    default_settings=BlmSettings(),
+                    accepts_dynamic_variant=True,
+                    is_repeat_supported=True,
+                    variant_enum=BlmVariant,
+                    parameter_class=BlmParameter):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
         super().__init__(width, height, frame_queue, on_finish_callable)
 
         _BLM_ANIMATIONS_DIR.mkdir(parents=True, exist_ok=True)
-
-    @property
-    def animation_name(self) -> str:
-        return "blinkenlights"
-
-    @property
-    def animation_class(self) -> type[AbstractAnimation]:
-        return BlmAnimation
-
-    @property
-    def variant_enum(self) -> type[AnimationVariant] | None:
-        return BlmVariant
-
-    @property
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        return BlmParameter
-
-    @property
-    def settings_class(self) -> type[AnimationSettings]:
-        return BlmSettings
-
-    @property
-    def default_settings(self) -> AnimationSettings:
-        return BlmSettings()
-
-    @property
-    def is_repeat_supported(self) -> bool:
-        return True
-
-    @property
-    def accepts_dynamic_variant(self) -> bool:
-        return True
 
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         # error handling

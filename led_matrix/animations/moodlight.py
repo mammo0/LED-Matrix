@@ -9,7 +9,6 @@ from numpy.typing import NDArray
 
 from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
-                                           AnimationParameter,
                                            AnimationSettings, AnimationVariant)
 from led_matrix.common.color import Color
 
@@ -158,35 +157,12 @@ class MoodlightAnimation(AbstractAnimation):
         return True
 
 
-class MoodlightController(AbstractAnimationController):
-    @property
-    def animation_name(self) -> str:
-        return "moodlight"
-
-    @property
-    def animation_class(self) -> type[AbstractAnimation]:
-        return MoodlightAnimation
-
-    @property
-    def variant_enum(self) -> type[AnimationVariant] | None:
-        return MoodlightVariant
-
-    @property
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        return None
-
-    @property
-    def settings_class(self) -> type[AnimationSettings]:
-        return MoodlightSettings
-
-    @property
-    def default_settings(self) -> AnimationSettings:
-        return MoodlightSettings()
-
-    @property
-    def is_repeat_supported(self) -> bool:
-        return False
-
-    @property
-    def accepts_dynamic_variant(self) -> bool:
-        return False
+class MoodlightController(AbstractAnimationController,
+                          animation_name="moodlight",
+                          animation_class=MoodlightAnimation,
+                          settings_class=MoodlightSettings,
+                          default_settings=MoodlightSettings(),
+                          accepts_dynamic_variant=False,
+                          is_repeat_supported=False,
+                          variant_enum=MoodlightVariant):
+    pass

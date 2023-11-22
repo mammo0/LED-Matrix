@@ -5,13 +5,9 @@ from typing import Callable, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from led_matrix.animation.abstract import (
-    AbstractAnimation,
-    AbstractAnimationController,
-    AnimationParameter,
-    AnimationSettings,
-    AnimationVariant,
-)
+from led_matrix.animation.abstract import (AbstractAnimation,
+                                           AbstractAnimationController,
+                                           AnimationSettings)
 
 
 @dataclass(kw_only=True)
@@ -46,40 +42,13 @@ class DummyAnimation(AbstractAnimation):
             self._frame_queue.put(frame)
 
 
-class DummyController(AbstractAnimationController):
-    @property
-    def animation_name(self) -> str:
-        return "dummy"
-
-    @property
-    def animation_class(self) -> type[AbstractAnimation]:
-        return DummyAnimation
-
-    @property
-    def variant_enum(self) -> type[AnimationVariant] | None:
-        return None
-
-    @property
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        return None
-
-    @property
-    def settings_class(self) -> type[AnimationSettings]:
-        return DummySettings
-
-    @property
-    def default_settings(self) -> AnimationSettings:
-        return DummySettings(variant=None,
-                             parameter=None)
-
-    @property
-    def is_repeat_supported(self) -> bool:
-        return False
-
-    @property
-    def accepts_dynamic_variant(self) -> bool:
-        return False
-
+class DummyController(AbstractAnimationController,
+                      animation_name="dummy",
+                      animation_class=DummyAnimation,
+                      settings_class=DummySettings,
+                      default_settings=DummySettings(),
+                      accepts_dynamic_variant=False,
+                      is_repeat_supported=False):
     def display_frame(self, frame: NDArray[np.uint8]) -> None:
         """
         This method is special and only available in the Dummy animation.

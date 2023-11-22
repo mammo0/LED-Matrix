@@ -12,7 +12,8 @@ from io import BytesIO
 from pathlib import Path
 from queue import Queue
 from threading import Event, Thread
-from typing import Callable, Iterator, Optional, Self, final, get_args
+from typing import (Callable, ClassVar, Iterator, Optional, Self, final,
+                    get_args)
 from uuid import UUID, uuid4
 
 from led_matrix.common.log import eprint
@@ -193,6 +194,15 @@ class AbstractAnimation(ABC, Thread):
 
 
 class AbstractAnimationController(ABC):
+    __animation_name: ClassVar[str]
+    __animation_class: type[AbstractAnimation]
+    __settings_class: type[AnimationSettings]
+    __default_settings: AnimationSettings
+    __accepts_dynamic_variant: bool
+    __is_repeat_supported: bool
+    __variant_enum: type[AnimationVariant] | None
+    __parameter_class: type[AnimationParameter] | None
+
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
         # width of frames to produce
@@ -212,34 +222,99 @@ class AbstractAnimationController(ABC):
 
         self.__animation_running_event: Event = Event()
 
+    def __init_subclass__(cls, *,
+                          animation_name: str,
+                          animation_class: type[AbstractAnimation],
+                          settings_class: type[AnimationSettings],
+                          default_settings: AnimationSettings,
+                          accepts_dynamic_variant: bool,
+                          is_repeat_supported: bool,
+                          variant_enum: type[AnimationVariant] | None=None,
+                          parameter_class: type[AnimationParameter] | None=None) -> None:
+        # pylint: disable=W0238
+        cls.__animation_name = animation_name
+        cls.__animation_class = animation_class
+        cls.__settings_class = settings_class
+        cls.__default_settings = default_settings
+        cls.__accepts_dynamic_variant = accepts_dynamic_variant
+        cls.__is_repeat_supported = is_repeat_supported
+        cls.__variant_enum = variant_enum
+        cls.__parameter_class = parameter_class
+
+    @final
     @property
-    @abstractmethod
     def animation_name(self) -> str:
         """
         @return: The name of the animation.
         """
+        return type(self).__animation_name
 
+    @final
     @property
-    @abstractmethod
     def animation_class(self) -> type[AbstractAnimation]:
         """
         @return: The animation class.
         """
+        return type(self).__animation_class
 
+    @final
     @property
-    @abstractmethod
     def variant_enum(self) -> type[AnimationVariant] | None:
         """
         @return: An enum object that holds the variants of the underlying animation. Or None if there are no variants.
         """
+        return type(self).__variant_enum
 
+    @final
     @property
-    @abstractmethod
     def accepts_dynamic_variant(self) -> bool:
         """
         @return: True if this animation supports adding and removing of new variants.
                  False if not.
         """
+        return type(self).__accepts_dynamic_variant
+
+    @final
+    @property
+    def parameter_class(self) -> type[AnimationParameter] | None:
+        """
+        @return: A subclass of AnimationParameter that holds the parameters of the underlying animation.
+                 Or None if there are no parameters.
+        """
+        return type(self).__parameter_class
+
+    @final
+    @property
+    def settings_class(self) -> type[AnimationSettings]:
+        """
+        @return: A subclass of AnimationSettings that holds the settings of the underlying animation.
+        """
+        return type(self).__settings_class
+
+    @final
+    @property
+    def default_settings(self) -> AnimationSettings:
+        """
+        @return: A subclass _AnimationSettingsStructure that holds the default settings for the underlying animation.
+        """
+        return type(self).__default_settings
+
+    @final
+    @property
+    def settings(self) -> AnimationSettings:
+        if (self._current_animation is not None and
+                self._current_animation[1].is_alive()):
+            return self._current_animation[1].settings
+
+        return self.default_settings
+
+    @final
+    @property
+    def is_repeat_supported(self) -> bool:
+        """
+        @return: True if the repeat value is supported by the animation. False otherwise.
+        """
+        return type(self).__is_repeat_supported
 
     @final
     def add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
@@ -286,43 +361,6 @@ class AbstractAnimationController(ABC):
         Animations that support removing of variants must override this method.
         """
         raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        """
-        @return: A subclass of AnimationParameter that holds the parameters of the underlying animation.
-                 Or None if there are no parameters.
-        """
-
-    @property
-    @abstractmethod
-    def settings_class(self) -> type[AnimationSettings]:
-        """
-        @return: A subclass of AnimationSettings that holds the settings of the underlying animation.
-        """
-
-    @property
-    @abstractmethod
-    def default_settings(self) -> AnimationSettings:
-        """
-        @return: A subclass _AnimationSettingsStructure that holds the default settings for the underlying animation.
-        """
-
-    @property
-    def settings(self) -> AnimationSettings:
-        if (self._current_animation is not None and
-                self._current_animation[1].is_alive()):
-            return self._current_animation[1].settings
-
-        return self.default_settings
-
-    @property
-    @abstractmethod
-    def is_repeat_supported(self) -> bool:
-        """
-        @return: True if the repeat value is supported by the animation. False otherwise.
-        """
 
     @property
     def is_running(self) -> bool:

@@ -214,35 +214,13 @@ class ClockAnimation(AbstractAnimation):
         return True
 
 
-class ClockController(AbstractAnimationController):
-    @property
-    def animation_name(self) -> str:
-        return "clock"
-
-    @property
-    def animation_class(self) -> type[AbstractAnimation]:
-        return ClockAnimation
-
-    @property
-    def variant_enum(self) -> type[AnimationVariant] | None:
-        return ClockVariant
-
-    @property
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        return ClockParameter
-
-    @property
-    def settings_class(self) -> type[AnimationSettings]:
-        return ClockSettings
-
-    @property
-    def default_settings(self) -> AnimationSettings:
-        return ClockSettings()
-
-    @property
-    def is_repeat_supported(self) -> bool:
-        return False
-
-    @property
-    def accepts_dynamic_variant(self) -> bool:
-        return False
+class ClockController(AbstractAnimationController,
+                      animation_name="clock",
+                      animation_class=ClockAnimation,
+                      settings_class=ClockSettings,
+                      default_settings=ClockSettings(),
+                      accepts_dynamic_variant=False,
+                      is_repeat_supported=False,
+                      variant_enum=ClockVariant,
+                      parameter_class=ClockParameter):
+    pass

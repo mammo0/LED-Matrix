@@ -13,7 +13,6 @@ from PIL.Image import Image
 
 from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
-                                           AnimationParameter,
                                            AnimationSettings, AnimationVariant)
 from led_matrix.animations import ANIMATION_RESOURCES_DIR
 from led_matrix.common.color import Color
@@ -157,44 +156,19 @@ class PictureAnimation(AbstractAnimation):
         # the current iteration has no frames left
         return False
 
-class PictureController(AbstractAnimationController):
+class PictureController(AbstractAnimationController,
+                        animation_name="picture",
+                        animation_class=PictureAnimation,
+                        settings_class=PictureSettings,
+                        default_settings=PictureSettings(),
+                        accepts_dynamic_variant=True,
+                        is_repeat_supported=True,
+                        variant_enum=PictureVariant):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
         super().__init__(width, height, frame_queue, on_finish_callable)
 
         _PICTURES_DIR.mkdir(parents=True, exist_ok=True)
-
-    @property
-    def animation_name(self) -> str:
-        return "picture"
-
-    @property
-    def animation_class(self) -> type[AbstractAnimation]:
-        return PictureAnimation
-
-    @property
-    def variant_enum(self) -> type[AnimationVariant] | None:
-        return PictureVariant
-
-    @property
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        return None
-
-    @property
-    def settings_class(self) -> type[AnimationSettings]:
-        return PictureSettings
-
-    @property
-    def default_settings(self) -> AnimationSettings:
-        return PictureSettings()
-
-    @property
-    def is_repeat_supported(self) -> bool:
-        return True
-
-    @property
-    def accepts_dynamic_variant(self) -> bool:
-        return True
 
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         # error handling

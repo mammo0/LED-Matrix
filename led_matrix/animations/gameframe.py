@@ -291,44 +291,20 @@ class GameframeAnimation(AbstractAnimation):
         return False
 
 
-class GameframeController(AbstractAnimationController):
+class GameframeController(AbstractAnimationController,
+                          animation_name="gameframe",
+                          animation_class=GameframeAnimation,
+                          settings_class=GameframeSettings,
+                          default_settings=GameframeSettings(),
+                          accepts_dynamic_variant=True,
+                          is_repeat_supported=True,
+                          variant_enum=GameframeVariant,
+                          parameter_class=GameframeParameter):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
         super().__init__(width, height, frame_queue, on_finish_callable)
 
         _GAMEFRAME_ANIMATIONS_DIR.mkdir(parents=True, exist_ok=True)
-
-    @property
-    def animation_name(self) -> str:
-        return "gameframe"
-
-    @property
-    def animation_class(self) -> type[AbstractAnimation]:
-        return GameframeAnimation
-
-    @property
-    def variant_enum(self) -> type[AnimationVariant] | None:
-        return GameframeVariant
-
-    @property
-    def parameter_class(self) -> type[AnimationParameter] | None:
-        return GameframeParameter
-
-    @property
-    def settings_class(self) -> type[AnimationSettings]:
-        return GameframeSettings
-
-    @property
-    def default_settings(self) -> AnimationSettings:
-        return GameframeSettings()
-
-    @property
-    def is_repeat_supported(self) -> bool:
-        return True
-
-    @property
-    def accepts_dynamic_variant(self) -> bool:
-        return True
 
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         # error handling
