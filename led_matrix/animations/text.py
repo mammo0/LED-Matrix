@@ -279,7 +279,6 @@ class TextController(AbstractAnimationController,
                      animation_name="text",
                      animation_class=TextAnimation,
                      settings_class=TextSettings,
-                     default_settings=TextSettings(),
                      accepts_dynamic_variant=False,
                      is_repeat_supported=True,
                      parameter_class=TextParameter):

@@ -205,7 +205,6 @@ class AbstractAnimationController(ABC):
     __animation_name: ClassVar[str]
     __animation_class: type[AbstractAnimation]
     __settings_class: type[AnimationSettings]
-    __default_settings: AnimationSettings
     __accepts_dynamic_variant: bool
     __is_repeat_supported: bool
     __variant_enum: type[AnimationVariant] | None
@@ -236,7 +235,6 @@ class AbstractAnimationController(ABC):
                           animation_name: str,
                           animation_class: type[AbstractAnimation],
                           settings_class: type[AnimationSettings],
-                          default_settings: AnimationSettings,
                           accepts_dynamic_variant: bool,
                           is_repeat_supported: bool,
                           variant_enum: type[AnimationVariant] | None=None,
@@ -245,7 +243,6 @@ class AbstractAnimationController(ABC):
         cls.__animation_name = animation_name
         cls.__animation_class = animation_class
         cls.__settings_class = settings_class
-        cls.__default_settings = default_settings
         cls.__accepts_dynamic_variant = accepts_dynamic_variant
         cls.__is_repeat_supported = is_repeat_supported
         cls.__variant_enum = variant_enum
@@ -312,7 +309,7 @@ class AbstractAnimationController(ABC):
         """
         @return: A subclass _AnimationSettingsStructure that holds the default settings for the underlying animation.
         """
-        return type(self).__default_settings
+        return self.settings_class()
 
     @final
     @property

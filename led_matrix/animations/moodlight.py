@@ -163,7 +163,6 @@ class MoodlightController(AbstractAnimationController,
                           animation_name="moodlight",
                           animation_class=MoodlightAnimation,
                           settings_class=MoodlightSettings,
-                          default_settings=MoodlightSettings(),
                           accepts_dynamic_variant=False,
                           is_repeat_supported=False,
                           variant_enum=MoodlightVariant):

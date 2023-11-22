@@ -161,7 +161,6 @@ class PictureController(AbstractAnimationController,
                         animation_name="picture",
                         animation_class=PictureAnimation,
                         settings_class=PictureSettings,
-                        default_settings=PictureSettings(),
                         accepts_dynamic_variant=True,
                         is_repeat_supported=True,
                         variant_enum=PictureVariant):

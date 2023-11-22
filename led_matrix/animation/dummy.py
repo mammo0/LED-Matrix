@@ -48,7 +48,6 @@ class DummyController(AbstractAnimationController,
                       animation_name="dummy",
                       animation_class=DummyAnimation,
                       settings_class=DummySettings,
-                      default_settings=DummySettings(),
                       accepts_dynamic_variant=False,
                       is_repeat_supported=False):
     def display_frame(self, frame: NDArray[np.uint8]) -> None:
