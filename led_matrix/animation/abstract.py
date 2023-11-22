@@ -3,13 +3,13 @@ This is the sceleton code for all animations.
 """
 
 from __future__ import annotations
-from logging import Logger
 
 import time
 from abc import ABC, abstractmethod
 from dataclasses import Field, dataclass, fields
 from enum import Enum
 from io import BytesIO
+from logging import Logger
 from pathlib import Path
 from queue import Queue
 from threading import Event, Thread
@@ -203,12 +203,12 @@ class AbstractAnimation(ABC, Thread):
 
 class AbstractAnimationController(ABC):
     __animation_name: ClassVar[str]
-    __animation_class: type[AbstractAnimation]
-    __settings_class: type[AnimationSettings]
-    __accepts_dynamic_variant: bool
-    __is_repeat_supported: bool
-    __variant_enum: type[AnimationVariant] | None
-    __parameter_class: type[AnimationParameter] | None
+    __animation_class: ClassVar[type[AbstractAnimation]]
+    __settings_class: ClassVar[type[AnimationSettings]]
+    __accepts_dynamic_variant: ClassVar[bool]
+    __is_repeat_supported: ClassVar[bool]
+    __variant_enum: ClassVar[type[AnimationVariant] | None]
+    __parameter_class: ClassVar[type[AnimationParameter] | None]
 
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
@@ -239,7 +239,6 @@ class AbstractAnimationController(ABC):
                           is_repeat_supported: bool,
                           variant_enum: type[AnimationVariant] | None=None,
                           parameter_class: type[AnimationParameter] | None=None) -> None:
-        # pylint: disable=W0238
         cls.__animation_name = animation_name
         cls.__animation_class = animation_class
         cls.__settings_class = settings_class
@@ -259,7 +258,7 @@ class AbstractAnimationController(ABC):
         """
         @return: The name of the animation.
         """
-        return type(self).__animation_name
+        return self.__animation_name
 
     @final
     @property
@@ -267,7 +266,7 @@ class AbstractAnimationController(ABC):
         """
         @return: The animation class.
         """
-        return type(self).__animation_class
+        return self.__animation_class
 
     @final
     @property
@@ -275,7 +274,7 @@ class AbstractAnimationController(ABC):
         """
         @return: An enum object that holds the variants of the underlying animation. Or None if there are no variants.
         """
-        return type(self).__variant_enum
+        return self.__variant_enum
 
     @final
     @property
@@ -284,7 +283,7 @@ class AbstractAnimationController(ABC):
         @return: True if this animation supports adding and removing of new variants.
                  False if not.
         """
-        return type(self).__accepts_dynamic_variant
+        return self.__accepts_dynamic_variant
 
     @final
     @property
@@ -293,7 +292,7 @@ class AbstractAnimationController(ABC):
         @return: A subclass of AnimationParameter that holds the parameters of the underlying animation.
                  Or None if there are no parameters.
         """
-        return type(self).__parameter_class
+        return self.__parameter_class
 
     @final
     @property
@@ -301,7 +300,7 @@ class AbstractAnimationController(ABC):
         """
         @return: A subclass of AnimationSettings that holds the settings of the underlying animation.
         """
-        return type(self).__settings_class
+        return self.__settings_class
 
     @final
     @property
@@ -326,7 +325,7 @@ class AbstractAnimationController(ABC):
         """
         @return: True if the repeat value is supported by the animation. False otherwise.
         """
-        return type(self).__is_repeat_supported
+        return self.__is_repeat_supported
 
     @final
     def add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
