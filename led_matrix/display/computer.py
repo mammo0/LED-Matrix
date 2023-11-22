@@ -1,5 +1,6 @@
 import numpy as np
 import pygame
+from pygame import Vector2
 from pygame.color import Color
 from pygame.event import Event
 from pygame.rect import Rect
@@ -22,11 +23,55 @@ class Computer(AbstractDisplay):
         window_size: tuple[int, int] = (width * self.__size + (width + 1) * self.__margin,
                                         height * self.__size + (height + 1) * self.__margin)
 
+        # these variables are used for simulating a LED
+        # use this to set the amount of 'segments' we rotate our blend into
+        # this helps stop blends from looking 'boxy' or like a cross.
+        self.__circular_smoothness_steps = 10
+
+        self.__led_gradient_background: Color = Color((0, 0, 0, 200))
+        self.__led_gradient_background.r = self.__led_gradient_background.r // self.__circular_smoothness_steps
+        self.__led_gradient_background.g = self.__led_gradient_background.g // self.__circular_smoothness_steps
+        self.__led_gradient_background.b = self.__led_gradient_background.b // self.__circular_smoothness_steps
+        self.__led_gradient_background.a = self.__led_gradient_background.a // self.__circular_smoothness_steps
+
         pygame.init()
         self.__surface: Surface = pygame.display.set_mode(window_size)
         pygame.display.set_caption(f"LED-Matrix {width}x{height}")
 
         self.show()
+
+    def __get_led_surface(self, led_color: Color) -> Surface:
+        led_color.r = led_color.r // self.__circular_smoothness_steps
+        led_color.g = led_color.g // self.__circular_smoothness_steps
+        led_color.b = led_color.b // self.__circular_smoothness_steps
+        led_color.a = led_color.a // self.__circular_smoothness_steps
+
+        led_surface: Surface = Surface((self.__size, self.__size), pygame.SRCALPHA)
+
+        # 4x4 - starter
+        radial_grad_starter: Surface = pygame.Surface((4, 4), pygame.SRCALPHA)
+        radial_grad_starter.fill(self.__led_gradient_background)
+        radial_grad_starter.fill(led_color, Rect(1, 1, 2, 2))
+
+        radial_grad: Surface = pygame.transform.smoothscale(radial_grad_starter,
+                                                            led_surface.get_size())
+
+        for i in range(0, self.__circular_smoothness_steps):
+            radial_grad_rot: Surface = pygame.transform.rotate(radial_grad,
+                                                               (360.0 / self.__circular_smoothness_steps) * i)
+
+            pos_rect: Rect = pygame.Rect((0, 0), led_surface.get_size())
+
+            area_rect: Rect = pygame.Rect(0, 0, *led_surface.get_size())
+            area_rect.center = radial_grad_rot.get_width()//2, radial_grad_rot.get_height()//2
+
+            led_surface.blit(radial_grad_rot,
+                             dest=pos_rect,
+                             area=area_rect,
+                             special_flags=pygame.BLEND_RGBA_ADD)
+
+        return led_surface
+
 
     def _calc_real_brightness(self, brightness: int) -> float:
         return brightness / 100
@@ -58,13 +103,16 @@ class Computer(AbstractDisplay):
             column: int
             (row, column) = it.multi_index
 
-            pygame.draw.rect(surface=self.__surface,
-                             color=color,
-                             rect=Rect((self.__margin + self.__size) * column + self.__margin,
-                                       (self.__margin + self.__size) * row + self.__margin,
-                                       self.__size,
-                                       self.__size)
-            )
+            # get the LED surface
+            led_surface: Surface = self.__get_led_surface(led_color=color)
+
+            # the position of the LED on the main surface
+            led_pos: Vector2 = Vector2((self.__margin + self.__size) * column + self.__margin,
+                                       (self.__margin + self.__size) * row + self.__margin)
+
+            # add the LED surface to the main one
+            self.__surface.blit(led_surface,
+                                dest=led_pos)
 
             it.iternext()
 
