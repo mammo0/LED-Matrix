@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from logging import Logger
 from queue import Queue
 from typing import Callable, cast
 
@@ -18,8 +19,9 @@ class DummySettings(AnimationSettings):
 class DummyAnimation(AbstractAnimation):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
-        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+        super().__init__(width, height, frame_queue, settings, logger, on_finish_callable)
 
         self.__first_run: bool = True
 

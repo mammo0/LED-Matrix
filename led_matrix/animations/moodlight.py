@@ -1,6 +1,7 @@
 import colorsys
 from dataclasses import dataclass
 from enum import Enum, auto
+from logging import Logger
 from queue import Queue
 from typing import Callable, Generator, Optional
 
@@ -38,8 +39,9 @@ class MoodlightSettings(AnimationSettings):
 class MoodlightAnimation(AbstractAnimation):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
-        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+        super().__init__(width, height, frame_queue, settings, logger, on_finish_callable)
 
         self.__colors: list[Color] = [Color(255, 0, 0),
                                       Color(255, 255, 0),

@@ -1,5 +1,6 @@
 import signal
 from importlib import resources
+from logging import Logger
 from pathlib import Path
 from queue import Queue
 from threading import Event, Lock, Thread
@@ -14,13 +15,15 @@ from simple_plugin_loader import Loader
 from led_matrix.animation.abstract import (AbstractAnimationController,
                                            AnimationSettings)
 from led_matrix.animation.controller import MainAnimationController
-from led_matrix.common.log import eprint
+from led_matrix.common.log import LOG
 from led_matrix.common.schedule import ScheduleEntry
 from led_matrix.common.threading import EventWithUnsetSignal
 from led_matrix.config import Configuration
 from led_matrix.display.abstract import AbstractDisplay
 from led_matrix.server.http_server import HttpServer
 from led_matrix.server.tpm2_net import Tpm2NetServer
+
+_log: Logger = LOG.create(__name__.title())
 
 
 # TODO:
@@ -301,7 +304,8 @@ class MainController:
                     break
 
             if not job_found:
-                eprint(f"No scheduled animation with ID '{str(schedule_job_id)}' found!")
+                _log.warning("No scheduled animation with ID '%s' found!",
+                             {str(schedule_job_id)})
             else:
                 # save the modified table
                 self.__save_schedule_table()
@@ -346,7 +350,8 @@ class MainController:
                     break
 
             if not job_found:
-                eprint(f"No scheduled animation with ID '{str(schedule_entry.job_id)}' found!")
+                _log.warning("No scheduled animation with ID '%s' found!",
+                             str(schedule_entry.job_id))
             else:
                 # save the modified table
                 self.__save_schedule_table()

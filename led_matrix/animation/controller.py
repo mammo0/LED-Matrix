@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from importlib import resources
+from logging import Logger
 from queue import Empty, LifoQueue, Queue
 from threading import Event, Thread
 from typing import cast
@@ -10,7 +11,8 @@ import numpy as np
 from numpy.typing import NDArray
 from simple_plugin_loader import Loader
 
-from led_matrix.animation.abstract import (AbstractAnimationController, AnimationParameter,
+from led_matrix.animation.abstract import (AbstractAnimationController,
+                                           AnimationParameter,
                                            AnimationSettings, AnimationVariant)
 from led_matrix.animation.dummy import DummyController
 from led_matrix.animation.event import (AnimationEvent, AnimationEventQueue,
@@ -19,13 +21,15 @@ from led_matrix.animation.event import (AnimationEvent, AnimationEventQueue,
                                         AnimationStartEvent,
                                         AnimationStopEvent, ResumeSettings,
                                         StartSettings, StopSettings)
-from led_matrix.common.log import eprint
+from led_matrix.common.log import LOG
 from led_matrix.config import Configuration
 
 
 class MainAnimationController(Thread):
     def __init__(self, config: Configuration, display_frame_queue: Queue[NDArray[np.uint8]]) -> None:
         super().__init__(daemon=True)
+
+        self.__log: Logger = LOG.create(MainAnimationController.__name__)
 
         self.__stop_event: Event = Event()
         self.__controll_queue: AnimationEventQueue = AnimationEventQueue()
@@ -101,7 +105,8 @@ class MainAnimationController(Thread):
                 self.__all_animation_controllers[event.event_settings.animation_name]
             )
         except KeyError:
-            eprint(f"The animation '{event.event_settings.animation_name}' could not be found!")
+            self.__log.error("The animation '%s' could not be found!",
+                             event.event_settings.animation_name)
         else:
             # create the animation thread instance
             animation_uuid: UUID = animation.create_animation(event.event_settings.animation_settings)
@@ -241,7 +246,8 @@ class MainAnimationController(Thread):
             # get the animation
             animation: AbstractAnimationController = self.__all_animation_controllers[animation_name]
         except KeyError:
-            eprint(f"The animation '{animation_name}' could not be found!")
+            self.__log.error("The animation '%s' could not be found!",
+                             animation_name)
             return False
 
         return animation.is_running

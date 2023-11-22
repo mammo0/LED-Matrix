@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 from io import BytesIO
+from logging import Logger
 from pathlib import Path
 from queue import Queue
 from threading import TIMEOUT_MAX
@@ -16,7 +17,6 @@ from led_matrix.animation.abstract import (AbstractAnimation,
                                            AnimationSettings, AnimationVariant)
 from led_matrix.animations import ANIMATION_RESOURCES_DIR
 from led_matrix.common.color import Color
-from led_matrix.common.log import eprint
 
 _PICTURES_DIR = ANIMATION_RESOURCES_DIR / "pictures"
 
@@ -39,8 +39,9 @@ class _PictureType(Enum):
 class PictureAnimation(AbstractAnimation):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
-        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+        super().__init__(width, height, frame_queue, settings, logger, on_finish_callable)
 
         if self._settings.variant is None:
             raise RuntimeError("Started Gameframe animation without a variant.")
@@ -70,16 +71,16 @@ class PictureAnimation(AbstractAnimation):
             self.__frame_generator = self.__get_png_frames()
 
         else:
-            eprint(f"Only PNG and GIF images supported, not '{self.__picture_path.suffix}'.")
+            self.__log.error(f"Only PNG and GIF images supported, not '{self.__picture_path.suffix}'.")
             raise ValueError
 
     def __get_animation_speed(self) -> float:
         try:
             return int(self.__image.info["duration"]) / 1000
         except KeyError:
-            eprint("GIF has no duration in info.")
+            self.__log.warning("GIF has no duration in info.")
         except (TypeError, ValueError):
-            eprint(f"Cannot convert info[duration]: {self.__image.info['duration']} to int.")
+            self.__log.warning(f"Cannot convert info[duration]: {self.__image.info['duration']} to int.")
 
         # default 15 fps
         return 1/15
@@ -173,7 +174,7 @@ class PictureController(AbstractAnimationController,
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         # error handling
         if file_name.rsplit(".", 1)[-1].lower() not in ("png", "gif"):
-            eprint("The new variant file must be a PNG or GIF file!")
+            self._log.error("The new variant file must be a PNG or GIF file!")
             return
 
         file_path: Path = (_PICTURES_DIR / file_name).resolve()

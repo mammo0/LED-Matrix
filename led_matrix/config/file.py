@@ -8,7 +8,6 @@ from typing import Any, Final, Literal, TypeVar
 from python_ini.ini_file import IniFile
 from python_ini.ini_writer import IniWriter
 
-from led_matrix.common.logging import get_logger
 from led_matrix.config.meta import (
     _APA102Meta,
     _ComputerMeta,
@@ -39,8 +38,8 @@ V = TypeVar("V", str, int, bool)
 class _ConfigReader:
     VALUE_NOT_FOUND: Final[object] = object()
 
-    def __init__(self, file_path: Path) -> None:
-        self.__log: Logger = get_logger(__name__)
+    def __init__(self, file_path: Path, logger: Logger) -> None:
+        self.__log: Logger = logger
 
         self.__r: IniFile = IniFile()
         self.__r.parse(file_path)
@@ -214,8 +213,8 @@ class _ConfigReader:
                         scheduled_animations=scheduled_animations)
 
 class _ConfigWriter:
-    def __init__(self, file_path: Path) -> None:
-        self.__log: Logger = get_logger(__name__)
+    def __init__(self, file_path: Path, logger: Logger) -> None:
+        self.__log: Logger = logger
 
         self.__file_path: Path = file_path
 
@@ -366,5 +365,6 @@ class _ConfigWriter:
         try:
             self.__w.write(str(self.__file_path))
         except OSError as e:
-            self.__log.error(e)
+            self.__log.error("Failed to save config file.",
+                             exc_info=e)
             raise e

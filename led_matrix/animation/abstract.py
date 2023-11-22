@@ -3,6 +3,7 @@ This is the sceleton code for all animations.
 """
 
 from __future__ import annotations
+from logging import Logger
 
 import time
 from abc import ABC, abstractmethod
@@ -16,8 +17,8 @@ from typing import (Callable, ClassVar, Iterator, Optional, Self, final,
                     get_args)
 from uuid import UUID, uuid4
 
-from led_matrix.common.log import eprint
 from led_matrix.common.color import Color
+from led_matrix.common.log import LOG
 from led_matrix.common.threading import EventWithUnsetSignal
 
 
@@ -84,8 +85,11 @@ class AnimationSettings:
 class AbstractAnimation(ABC, Thread):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
         super().__init__(daemon=True)
+
+        self.__log: Logger = logger
 
         self._width: int = width  # width of frames to produce
         self._height: int = height  # height of frames to produce
@@ -106,6 +110,10 @@ class AbstractAnimation(ABC, Thread):
         # default animation speed 60 fps
         self.__animation_speed: float = 1/60
 
+    @property
+    def _log(self) -> Logger:
+        return self.__log
+
     def run(self) -> None:
         while not self._stop_event.is_set():
             start_time: float = time.time()
@@ -118,9 +126,9 @@ class AbstractAnimation(ABC, Thread):
                 # add the next frame to the frame queue
                 try:
                     more: bool = self.render_next_frame()
-                except Exception as e:
-                    eprint("During the execution of the animation the following error occurred:")
-                    eprint(repr(e))
+                except Exception as e:  # pylint: disable=W0718
+                    self.__log.error("During the execution of the animation the following error occurred:",
+                                     exc_info=e)
                     break
 
                 # check if the animation has finished
@@ -214,6 +222,8 @@ class AbstractAnimationController(ABC):
         # this gets called whenever an animation stops/finishes
         self.__on_finish_callable: Callable[[], None] = on_finish_callable
 
+        self.__log: Logger = LOG.create(f"Animation: '{self.animation_name}'")
+
         self.__animation_threads: dict[UUID, AbstractAnimation] = {}
         self.__paused_animation_threads: dict[UUID, AbstractAnimation] = {}
 
@@ -240,6 +250,11 @@ class AbstractAnimationController(ABC):
         cls.__is_repeat_supported = is_repeat_supported
         cls.__variant_enum = variant_enum
         cls.__parameter_class = parameter_class
+
+    @final
+    @property
+    def _log(self) -> Logger:
+        return self.__log
 
     @final
     @property
@@ -325,7 +340,7 @@ class AbstractAnimationController(ABC):
         """
         # error handling
         if not self.accepts_dynamic_variant:
-            eprint("This animation does not support adding of new variants.")
+            self.__log.warning("This animation does not support adding of new variants.")
             return
 
         self._add_dynamic_variant(file_name, file_content)
@@ -344,7 +359,7 @@ class AbstractAnimationController(ABC):
         """
         # error handling
         if not self.accepts_dynamic_variant:
-            eprint("This animation does not support removing of variants.")
+            self.__log.warning("This animation does not support removing of variants.")
             return
 
         if self.variant_enum:
@@ -354,7 +369,8 @@ class AbstractAnimationController(ABC):
                     self._remove_dynamic_variant(variant)
                     return
 
-        eprint(f"The variant '{variant.name}' could not be found.")
+        self.__log.error("The variant '%s' could not be found.",
+                         variant.name)
 
     def _remove_dynamic_variant(self, variant: AnimationVariant) -> None:
         """
@@ -377,6 +393,7 @@ class AbstractAnimationController(ABC):
             width=self.__width, height=self.__height,
             frame_queue=self.__frame_queue,
             settings=animation_settings,
+            logger=self.__log,
             on_finish_callable=self.__animation_finished_stopped
         )
         animation_uuid: UUID = uuid4()
@@ -387,7 +404,7 @@ class AbstractAnimationController(ABC):
     def start(self, animation_uuid: UUID) -> None:
         animation_thread: AbstractAnimation | None = self.__animation_threads.get(animation_uuid, None)
         if animation_thread is None:
-            eprint("Could not find animation to start.")
+            self.__log.error("Could not find animation to start.")
             return
 
         # set the current animation thread
@@ -421,7 +438,7 @@ class AbstractAnimationController(ABC):
         try:
             animation_thread: AbstractAnimation = self.__paused_animation_threads.pop(paused_uuid)
         except KeyError:
-            eprint("Can't find an animation to resume.")
+            self.__log.error("Can't find an animation to resume.")
             return
 
         animation_thread.resume()
@@ -444,7 +461,7 @@ class AbstractAnimationController(ABC):
     def wait(self, animation_uuid: UUID) -> None:
         animation_thread: AbstractAnimation | None = self.__animation_threads.get(animation_uuid, None)
         if animation_thread is None:
-            eprint("Could not find the animation to wait for.")
+            self.__log.error("Could not find the animation to wait for.")
             return
 
         animation_thread.join()
@@ -453,12 +470,12 @@ class AbstractAnimationController(ABC):
         # variant
         if (self.variant_enum is not None and
                 not isinstance(animation_settings.variant, self.variant_enum)):
-            animation_settings.variant = self.variant_enum(animation_settings.variant)
+            animation_settings.variant = self.variant_enum(animation_settings.variant)  # pylint: disable=E1102
 
         # parameter
         if (self.parameter_class is not None and
                 isinstance(animation_settings.parameter, dict)):
-            animation_settings.parameter = self.parameter_class(**animation_settings.parameter)
+            animation_settings.parameter = self.parameter_class(**animation_settings.parameter)  # pylint: disable=E1102
 
     def __animation_finished_stopped(self) -> None:
         # release running event

@@ -2,6 +2,7 @@ import errno
 import os
 from dataclasses import dataclass, field
 from io import BytesIO, TextIOWrapper
+from logging import Logger
 from pathlib import Path
 from queue import Queue
 from typing import Callable, Generator, Optional, cast
@@ -15,7 +16,6 @@ from led_matrix.animation.abstract import (AbstractAnimation,
                                            AnimationSettings, AnimationVariant)
 from led_matrix.animations import ANIMATION_RESOURCES_DIR
 from led_matrix.common.color import Color
-from led_matrix.common.log import eprint
 
 _BLM_ANIMATIONS_DIR = ANIMATION_RESOURCES_DIR / "162-blms"
 
@@ -55,8 +55,9 @@ class _BlmFrame:
 class BlmAnimation(AbstractAnimation):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
-        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+        super().__init__(width, height, frame_queue, settings, logger, on_finish_callable)
 
         if self._settings.variant is None:
             raise RuntimeError("Started BLM animation without a variant.")
@@ -223,7 +224,7 @@ class BlmController(AbstractAnimationController,
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         # error handling
         if file_name.rsplit(".", 1)[-1].lower() != "blm":
-            eprint("The new variant file must be a blm-file!")
+            self.__log.error("The new variant file must be a blm-file!")
             return
 
         file_path: Path = (_BLM_ANIMATIONS_DIR / file_name).resolve()

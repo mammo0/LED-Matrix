@@ -1,5 +1,6 @@
 import sys
 from dataclasses import dataclass, field
+from logging import Logger
 from pathlib import Path
 from queue import Queue
 from typing import Callable, Final, Generator, Optional, cast
@@ -42,8 +43,9 @@ class TextSettings(AnimationSettings):
 class TextAnimation(AbstractAnimation):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
-        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+        super().__init__(width, height, frame_queue, settings, logger, on_finish_callable)
 
         parameter: TextParameter = cast(TextParameter, self._settings.parameter)
 

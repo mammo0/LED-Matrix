@@ -2,6 +2,7 @@ import math
 import time
 from dataclasses import dataclass, field
 from enum import auto
+from logging import Logger
 from queue import Queue
 from typing import Callable, Optional, cast
 
@@ -41,8 +42,9 @@ class ClockSettings(AnimationSettings):
 class ClockAnimation(AbstractAnimation):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
-        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+        super().__init__(width, height, frame_queue, settings, logger, on_finish_callable)
 
         parameter: ClockParameter = cast(ClockParameter, self._settings.parameter)
 
@@ -94,7 +96,7 @@ class ClockAnimation(AbstractAnimation):
     def __analog_create_clock_image(self, hour: int, minute: int) -> Image:
         middle_point: tuple[int, int] = (self.__analog_middle_x, self.__analog_middle_y)
 
-        image = self.__background_image.copy()
+        image: Image = self.__background_image.copy()
 
         draw: ImageDraw = Draw(image)
         draw.line([middle_point, self.__analog_minute_point(minute)],

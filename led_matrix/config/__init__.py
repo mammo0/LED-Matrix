@@ -10,7 +10,7 @@ import jsons
 from led_matrix.animation.abstract import (AbstractAnimationController,
                                            AnimationParameter,
                                            AnimationVariant)
-from led_matrix.common.logging import get_logger
+from led_matrix.common.log import LOG
 from led_matrix.common.schedule import ScheduleEntry
 from led_matrix.config.file import _ConfigReader, _ConfigWriter
 from led_matrix.config.json import json_serialize
@@ -24,20 +24,20 @@ class Configuration(Settings):
     config_file_path: InitVar[Path]
 
     def __post_init__(self, config_file_path: Path) -> None:
-        log: Logger = get_logger(__name__)
+        log: Logger = LOG.create(Configuration.__name__)
 
         # register jsons (de-)serializers
         self.__schedule_deserializer_fork: type = jsons.fork()
         register_serializers()
         register_deserializers(self.__schedule_deserializer_fork)
 
-        self.__writer: _ConfigWriter = _ConfigWriter(config_file_path)
+        self.__writer: _ConfigWriter = _ConfigWriter(config_file_path, logger=log)
 
         if not config_file_path.exists():
             log.warning("No configuration file found. Using the default settings.")
         else:
             # load the configuration
-            reader: _ConfigReader = _ConfigReader(config_file_path)
+            reader: _ConfigReader = _ConfigReader(config_file_path, logger=log)
             saved_settings: Settings = reader.read()
             self.main = saved_settings.main
             self.default_animation = saved_settings.default_animation

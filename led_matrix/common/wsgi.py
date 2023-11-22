@@ -4,7 +4,8 @@ from typing import Any
 from wsgiref.simple_server import WSGIServer
 
 from bottle import WSGIRefServer, run
-from led_matrix.common.logging import get_logger
+
+from led_matrix.common.log import LOG
 
 
 class CustomWSGIRefServer(WSGIRefServer):
@@ -13,7 +14,7 @@ class CustomWSGIRefServer(WSGIRefServer):
 
         self.quiet: bool = options.get("quiet", False)
 
-        self.__log: Logger = get_logger(name=WSGIRefServer.__name__)
+        self.__log: Logger = LOG.create(name=WSGIRefServer.__name__)
         self.__server: WSGIServer | None = None
         self.__server_started: Event = Event()
 

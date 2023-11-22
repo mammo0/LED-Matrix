@@ -4,6 +4,7 @@ import shutil
 from configparser import ConfigParser
 from dataclasses import InitVar, dataclass, field
 from io import BytesIO
+from logging import Logger
 from pathlib import Path
 from queue import Queue
 from typing import Callable, Generator, Optional, cast
@@ -20,7 +21,6 @@ from led_matrix.animation.abstract import (AbstractAnimation,
                                            AnimationSettings, AnimationVariant)
 from led_matrix.animations import ANIMATION_RESOURCES_DIR
 from led_matrix.common.color import Color
-from led_matrix.common.log import eprint
 
 _GAMEFRAME_ANIMATIONS_DIR = ANIMATION_RESOURCES_DIR / "gameframe"
 
@@ -82,8 +82,9 @@ class _GameframeConfig:
 class GameframeAnimation(AbstractAnimation):
     def __init__(self, width: int, height: int,
                  frame_queue: Queue, settings: AnimationSettings,
+                 logger: Logger,
                  on_finish_callable: Callable[[], None]) -> None:
-        super().__init__(width, height, frame_queue, settings, on_finish_callable)
+        super().__init__(width, height, frame_queue, settings, logger, on_finish_callable)
 
         if self._settings.variant is None:
             raise RuntimeError("Started Gameframe animation without a variant.")
@@ -309,7 +310,7 @@ class GameframeController(AbstractAnimationController,
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         # error handling
         if file_name.rsplit(".", 1)[-1].lower() != "zip":
-            eprint("The new variant file must be a zip-file!")
+            self._log.error("The new variant file must be a zip-file!")
             return
 
         with ZipFile(file_content, "r") as zip_file:
@@ -324,14 +325,16 @@ class GameframeController(AbstractAnimationController,
                     extract_path = _GAMEFRAME_ANIMATIONS_DIR.resolve()
 
                     if (_GAMEFRAME_ANIMATIONS_DIR / info[0].filename.rsplit(".", 1)[0]).exists():
-                        eprint(f"The variant '{info[0].filename.rsplit('.', 1)[0]}' already exists.")
+                        self._log.warning("The variant '%s' already exists.",
+                                          info[0].filename.rsplit('.', 1)[0])
                         return
                 else:
                     # if not, try to create a directory with the file name
                     extract_path = (_GAMEFRAME_ANIMATIONS_DIR / file_name.rsplit(".", 1)[0]).resolve()
 
                     if extract_path.exists():
-                        eprint(f"The variant '{extract_path.name}' already exists.")
+                        self._log.warning("The variant '%s' already exists.",
+                                          extract_path.name)
                         return
 
                     extract_path.mkdir(parents=True)
@@ -343,7 +346,7 @@ class GameframeController(AbstractAnimationController,
                 GameframeVariant = GameframeVariant.refresh_variants()
 
             else:
-                eprint("The zip-file was empty.")
+                self._log.error("The zip-file was empty.")
 
     def _remove_dynamic_variant(self, variant: AnimationVariant) -> None:
         animation_dir: Path = variant.value.resolve()

@@ -7,11 +7,10 @@ from configparser import ConfigParser, MissingSectionHeaderError
 from contextlib import AbstractContextManager
 from ctypes import CDLL, util
 from io import TextIOWrapper
+from logging import Logger
 from pathlib import Path
 from types import TracebackType
 from typing import Final
-
-from led_matrix.common.log import eprint
 
 _ETC_DIR: Final[Path] = Path("/") / "etc"
 _OS_RELEASE_FILE: Final[Path] = _ETC_DIR / "os-release"
@@ -58,18 +57,23 @@ if IS_ALPINE_LINUX and "LBU_MEDIA" in _ALPINE_LBU_CONF:
     LBU_PATH = _ALPINE_MEDIA_DIR / _ALPINE_LBU_CONF["LBU_MEDIA"]
 
 
+from led_matrix.common.log import LOG  # pylint: disable=C0413
+_log: Logger = LOG.create(__name__.title())
+
+
 def alpine_lbu_commit_d() -> None:
     if not IS_ALPINE_LINUX:
-        eprint("Not running on Alpine Linux. So 'lbu' is not available.")
+        _log.warning("Not running on Alpine Linux. So 'lbu' is not available.")
         return
 
     if shutil.which("lbu") is not None:
         try:
             subprocess.run(["lbu", "commit", "-d"], stdout=sys.stdout, stderr=sys.stderr, check=True)
-        except subprocess.CalledProcessError:
-            eprint("Failed to commit file changes with 'lbu'! See output above.")
+        except subprocess.CalledProcessError as e:
+            _log.error("Failed to commit file changes with 'lbu'!",
+                        exc_info=e)
     else:
-        eprint("Cannot commit file changes, because 'lbu' tool was not found!")
+        _log.error("Cannot commit file changes, because 'lbu' tool was not found!")
 
 
 class AlpineLBU(AbstractContextManager):
@@ -81,10 +85,10 @@ class AlpineLBU(AbstractContextManager):
         # load system mount command
         self.__libc: CDLL = ctypes.CDLL(util.find_library("c"), use_errno=True)
         self.__libc.mount.argtypes = (ctypes.c_char_p,  # source
-                                      ctypes.c_char_p,  # target
-                                      ctypes.c_char_p,  # filesystemtype
-                                      ctypes.c_ulong,   # mountflags
-                                      ctypes.c_char_p)  # data
+                                    ctypes.c_char_p,  # target
+                                    ctypes.c_char_p,  # filesystemtype
+                                    ctypes.c_ulong,   # mountflags
+                                    ctypes.c_char_p)  # data
 
         self.__mount_target: str | None = None
 
@@ -92,9 +96,9 @@ class AlpineLBU(AbstractContextManager):
         self.remount_rw()
 
     def __exit__(self,
-                 exc_type: type[BaseException] | None,
-                 exc_value: BaseException | None,
-                 traceback: TracebackType | None) -> bool | None:
+                exc_type: type[BaseException] | None,
+                exc_value: BaseException | None,
+                traceback: TracebackType | None) -> bool | None:
         self.remount_ro()
 
         return True if exc_type is not None else None
@@ -110,26 +114,28 @@ class AlpineLBU(AbstractContextManager):
 
         # call mount
         ret: int = self.__libc.mount("".encode(),  # on remount source is ignored
-                                     target.encode(),
-                                     "".encode(),  # on remount filesystemtype is ignored
-                                     mountflags,
-                                     "".encode())
+                                    target.encode(),
+                                    "".encode(),  # on remount filesystemtype is ignored
+                                    mountflags,
+                                    "".encode())
         if ret != 0:
             errno: int = ctypes.get_errno()
             raise OSError(errno, f"Error re-mounting '{target}' {'RO' if ro else 'RW'}: {os.strerror(errno)}")
 
     def remount_rw(self) -> None:
         if not IS_ALPINE_LINUX:
-            eprint("Not running on Alpine Linux. So no changes to the filesystem will be made.")
+            _log.warning("Not running on Alpine Linux. So no changes to the filesystem will be made.")
             return
 
         if LBU_PATH is None:
-            eprint("No Alpine Linux diskless installation detected. So no changes to the filesystem will be made.")
+            _log.warning("No Alpine Linux diskless installation detected. "
+                         "So no changes to the filesystem will be made.")
             return
 
         if not self.__is_root():
-            raise RuntimeError(
-                "To enable disk write access on Alpine Linux in diskless mode root permissions are necessary!"
+            _log.critical(
+                "To enable disk write access on Alpine Linux in diskless mode root permissions are necessary!",
+                exc_info=RuntimeError()
             )
 
         self.__mount_target = str(LBU_PATH)
