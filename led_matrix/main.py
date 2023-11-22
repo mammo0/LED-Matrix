@@ -415,7 +415,7 @@ class MainController:
         # run until '__quit' method was called
         while not MainController.__quit_signal.is_set():
             # check if there is a frame that needs to be displayed
-            if not self.__frame_queue.empty():
+            if self.__frame_queue.qsize() != 0:
                 # get frame and display it
                 self.__display.frame_buffer = self.__frame_queue.get()
                 self.__frame_queue.task_done()

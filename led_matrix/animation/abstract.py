@@ -11,7 +11,7 @@ from enum import Enum
 from io import BytesIO
 from logging import Logger
 from pathlib import Path
-from queue import Queue
+from queue import Empty, Queue
 from threading import Event, Thread
 from typing import (Callable, ClassVar, Iterator, Optional, Self, final,
                     get_args)
@@ -171,6 +171,16 @@ class AbstractAnimation(ABC, Thread):
 
     def stop_and_wait(self) -> None:
         self._stop_event.set()
+
+        # the current running animation could still try to insert new frames onto the frame queue
+        # but if we reach this point, no more frames should be generated
+        # to release the queue lock it must be cleared
+        while self._frame_queue.qsize() != 0:
+            try:
+                self._frame_queue.get_nowait()
+            except Empty:
+                break
+
         self.join()
 
     def is_next_iteration(self) -> bool:
