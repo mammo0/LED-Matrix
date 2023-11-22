@@ -42,9 +42,11 @@ class AnimationVariant(Enum):
     def refresh_variants(cls) -> type[Self]:
         search_dir: Path | None = getattr(cls, "__search_dir__", None)
         glob_str: str | None = getattr(cls, "__glob_str__", None)
+
         if glob_str is None or search_dir is None:
-            # should not happen
-            raise RuntimeError
+            # this happens if no dynamic variant was built with the 'build_variants_from_files' method above
+            # so, can't refresh anything
+            return cls
 
         return cls.build_variants_from_files(name=cls.__name__,
                                              search_dir=search_dir,
