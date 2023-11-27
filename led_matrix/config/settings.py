@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from ipaddress import IPv4Address, IPv6Address
+from typing import Any
 
 import tzlocal
 from astral import LocationInfo
@@ -27,6 +28,9 @@ class MainSettings:
 
     tpm2net_server: bool = False
 
+    # this is required for the variable settings (see __setattr__ method)
+    __initialized: bool = field(default=False, init=False, repr=False, hash=False, compare=False)
+
     def __post_init__(self) -> None:
         self.__location: LocationInfo
         region: str
@@ -51,11 +55,14 @@ class MainSettings:
 
         self.refresh_variable_settings()
 
-        self.__num_of_pxels: int = self.display_width * self.display_height
+        # mark the class as initialized
+        self.__initialized = True
 
     def refresh_variable_settings(self) -> None:
         self.__calc_sunset_sunrise()
         self.__calc_brightness()
+
+        self.__num_of_pxels: int = self.display_width * self.display_height
 
     def __calc_sunset_sunrise(self) -> None:
         s: dict[str, datetime] = sun(self.__location.observer, date=datetime.now().date())
@@ -72,6 +79,18 @@ class MainSettings:
             self.__brightness = self.day_brightness
         else:
             self.__brightness = self.night_brightness
+
+    def __setattr__(self, name: str, val: Any) -> None:
+        super().__setattr__(name, val)
+
+        # recalculate variable settings
+        if (
+            # only if the class is initialized
+            self.__initialized and
+            # and the variable settings are affected
+            name in ("day_brightness", "night_brightness", "display_width", "display_height")
+        ):
+            self.refresh_variable_settings()
 
     @property
     def brightness(self) -> int:
