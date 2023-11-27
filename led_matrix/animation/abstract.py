@@ -413,6 +413,8 @@ class AbstractAnimationController(ABC):
             self.__log.error("Could not find animation to start.")
             return
 
+        self.__log.info("Starting animation")
+
         # set the current animation thread
         self._current_animation = (animation_uuid, animation_thread)
 
@@ -436,6 +438,8 @@ class AbstractAnimationController(ABC):
             # unset the current animation
             self._current_animation = None
 
+            self.__log.info("Paused animation")
+
             return uuid
 
         return None
@@ -446,6 +450,8 @@ class AbstractAnimationController(ABC):
         except KeyError:
             self.__log.error("Can't find an animation to resume.")
             return
+
+        self.__log.info("Resuming animation")
 
         animation_thread.resume()
         self.__animation_running_event.set()
@@ -463,6 +469,11 @@ class AbstractAnimationController(ABC):
             self.__animation_running_event.clear()
             self.__animation_threads.pop(self._current_animation[0])
             self._current_animation = None
+
+            self.__log.info("Stopping animation")
+
+        else:
+            self.__log.warning("Can't stop animation, because it's not running")
 
     def wait(self, animation_uuid: UUID) -> None:
         animation_thread: AbstractAnimation | None = self.__animation_threads.get(animation_uuid, None)

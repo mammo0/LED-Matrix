@@ -35,6 +35,8 @@ class MainController:
     __reload_signal: EventWithUnsetSignal = EventWithUnsetSignal()
 
     def __init__(self, config_file_path: Path) -> None:
+        _log.info("Initialize LED-Matrix")
+
         # catch SIGINT, SIGQUIT and SIGTERM
         signal.signal(signal.SIGINT, self.__quit)
         signal.signal(signal.SIGQUIT, self.__quit)
@@ -81,6 +83,8 @@ class MainController:
         self.__tpm2_net_server: Tpm2NetServer | None = None
 
     def __create_scheduler(self) -> BackgroundScheduler:
+        _log.info("Initialize animation scheduler")
+
         # start with an empty table
         self.__schedule_table = []
 
@@ -117,6 +121,8 @@ class MainController:
         return scheduler
 
     def __initialize_display(self) -> AbstractDisplay:
+        _log.info("Initialize display")
+
         with resources.as_file(resources.files("led_matrix.display")) as displays_dir:
             # load display plugins
             display_loader: Loader = Loader()
@@ -134,6 +140,8 @@ class MainController:
         return display
 
     def __refresh_sunrise_sunset(self):
+        _log.info("Refreshing sunrise sunset times")
+
         self.__config.main.refresh_variable_settings()
 
         # apply sunrise / sunset times
@@ -141,6 +149,8 @@ class MainController:
         self.__sunset_job.reschedule(trigger=DateTrigger(run_date=self.__config.main.sunset))
 
     def __start_servers(self) -> None:
+        _log.info("Starting servers")
+
         # HTTP server
         if (
             self.__config.main.http_server and
@@ -157,6 +167,8 @@ class MainController:
             Thread(target=self.__tpm2_net_server.serve_forever, daemon=True).start()
 
     def __stop_servers(self) -> None:
+        _log.info("Stopping servers")
+
         # stop only the servers that are started
         # except on reload, then do not stop the HTTP
         if not self.__reload_signal.is_set():
@@ -170,6 +182,8 @@ class MainController:
             self.__tpm2_net_server.server_close()
 
     def __save_schedule_table(self) -> None:
+        _log.info("Saving schedule table to config file")
+
         # this method should be surrounded by a lock
         # save the table in the config
         self.__config.set_scheduled_animations_table(self.__schedule_table)
@@ -181,7 +195,7 @@ class MainController:
 
     @classmethod
     def __quit(cls, *_) -> None:
-        print("Exiting...")
+        _log.info("Exiting application")
         MainController.__quit_signal.set()
 
     @property
@@ -200,7 +214,7 @@ class MainController:
         return self.__frame_queue
 
     def __reload(self, *_) -> None:
-        print("Reloading...")
+        _log.info("Reloading application")
 
         # set the reload and quit signal to exit mainloop
         MainController.__reload_signal.set()
@@ -267,6 +281,9 @@ class MainController:
             # save the new entry in the config
             self.__save_schedule_table()
 
+        _log.info("Scheduled animation '%s'",
+                  entry.animation_name)
+
     def stop_animation(self,
                        animation_name: str | None=None,
                        blocking: bool=False):
@@ -290,7 +307,7 @@ class MainController:
             job_found: bool = False
 
             i: int
-            entry: ScheduleEntry
+            entry: ScheduleEntry | None = None
             for i, entry in enumerate(self.__schedule_table):
                 if entry.job_id == schedule_job_id:
                     job_found = True
@@ -307,6 +324,10 @@ class MainController:
                 # save the modified table
                 self.__save_schedule_table()
 
+            if entry is not None:
+                _log.info("Removed scheduled animation '%s'",
+                          entry.animation_name)
+
     def modify_scheduled_animation(self, schedule_entry: ScheduleEntry) -> None:
         """
         Modify a scheduled animation.
@@ -318,7 +339,7 @@ class MainController:
             job_found: bool = False
 
             i: int
-            entry: ScheduleEntry
+            entry: ScheduleEntry | None = None
             for i, entry in enumerate(self.__schedule_table):
                 if entry.job_id == schedule_entry.job_id:
                     job_found = True
@@ -352,6 +373,10 @@ class MainController:
             else:
                 # save the modified table
                 self.__save_schedule_table()
+
+            if entry is not None:
+                _log.info("Modified scheduled animation '%s'",
+                          entry.animation_name)
 
     @property
     def available_animation_controllers(self) -> dict[str, AbstractAnimationController]:
@@ -394,6 +419,9 @@ class MainController:
         """
         Directly apply the given brightness value on the current display.
         """
+        _log.info("Change display brightness to %d%%",
+                  brightness)
+
         # apply to the current display
         self.__display.set_brightness(brightness)
 

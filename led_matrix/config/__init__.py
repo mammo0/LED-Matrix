@@ -24,20 +24,20 @@ class Configuration(Settings):
     config_file_path: InitVar[Path]
 
     def __post_init__(self, config_file_path: Path) -> None:
-        log: Logger = LOG.create(Configuration.__name__)
+        self.__log: Logger = LOG.create(Configuration.__name__)
 
         # register jsons (de-)serializers
         self.__schedule_deserializer_fork: type = jsons.fork()
         register_serializers()
         register_deserializers(self.__schedule_deserializer_fork)
 
-        self.__writer: _ConfigWriter = _ConfigWriter(config_file_path, logger=log)
+        self.__writer: _ConfigWriter = _ConfigWriter(config_file_path, logger=self.__log)
 
         if not config_file_path.exists():
-            log.warning("No configuration file found. Using the default settings.")
+            self.__log.warning("No configuration file found. Using the default settings.")
         else:
             # load the configuration
-            reader: _ConfigReader = _ConfigReader(config_file_path, logger=log)
+            reader: _ConfigReader = _ConfigReader(config_file_path, logger=self.__log)
             saved_settings: Settings = reader.read()
             self.main = saved_settings.main
             self.default_animation = saved_settings.default_animation
@@ -45,8 +45,12 @@ class Configuration(Settings):
             self.computer = saved_settings.computer
             self.scheduled_animations = saved_settings.scheduled_animations
 
+            self.__log.info("Successfully loaded configuration")
+
     def save(self) -> None:
         self.__writer.write(config=self)
+
+        self.__log.info("Saved new configuration")
 
     def get_default_animation_parameter(self,
                                         parameter_cls: type[AnimationParameter] | None) -> AnimationParameter | None:
