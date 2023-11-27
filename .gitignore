@@ -10,9 +10,6 @@
 # local animation resources
 /led_matrix/animations/res
 
-# local logging directory
-/logs
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

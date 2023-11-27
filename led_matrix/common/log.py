@@ -1,35 +1,33 @@
-from __future__ import annotations
-
 import logging
-from importlib import resources
-from logging import Formatter, Logger
+import sys
+from logging import Formatter, Logger, StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import Any
 
 from led_matrix.common.alpine import IS_ALPINE_LINUX
 
-# logging file
-LOG_FILE_PATH: Path
-if IS_ALPINE_LINUX:
-    LOG_FILE_PATH = Path("/") / "var" / "log" / "led-matrix"
-else:
-    with resources.as_file(resources.files("led_matrix")) as LOG_FILE_PATH:
-        LOG_FILE_PATH = LOG_FILE_PATH.resolve().parent / "logs"
-# first create the logging directory
-LOG_FILE_PATH.mkdir(parents=True, exist_ok=True)
-# then define the final path to the file
-LOG_FILE_PATH = LOG_FILE_PATH / "led-matrix.log"
-
 
 class _LOGMeta(type):
     def __init__(cls, name: str, bases: tuple[type, ...], classdict: dict[str, Any]) -> None:
         super().__init__(name, bases, classdict)
 
-        cls._handler: TimedRotatingFileHandler = TimedRotatingFileHandler(LOG_FILE_PATH,
+        cls._handler: StreamHandler
+        if IS_ALPINE_LINUX:
+            log_file_path: Path = Path("/") / "var" / "log" / "led-matrix"
+
+            # first create the logging directory
+            log_file_path.mkdir(parents=True, exist_ok=True)
+            # then define the final path to the file
+            log_file_path = log_file_path / "led-matrix.log"
+
+            cls._handler = TimedRotatingFileHandler(log_file_path,
                                                     when="H",
                                                     backupCount=7,
                                                     encoding="utf-8")
+        else:
+            cls._handler = StreamHandler(stream=sys.stdout)
+
         cls._handler.setFormatter(
             Formatter(fmt="%(asctime)s - %(levelname)-8s :: %(name)s :: %(message)s")
         )
