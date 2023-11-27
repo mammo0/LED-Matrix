@@ -49,6 +49,9 @@ class MainController:
         # this is the queue that holds the frames to display
         self.__frame_queue: Queue[NDArray[np.uint8]] = Queue(maxsize=1)
 
+        # create the display object
+        self.__display: AbstractDisplay = self.__initialize_display()
+
         # animation controller
         # gets initialized in mainloop method
         self.__animation_controller: MainAnimationController = MainAnimationController(
@@ -65,17 +68,13 @@ class MainController:
         self.__brightness_scheduler: BackgroundScheduler = BackgroundScheduler()
         self.__sunrise_job = self.__brightness_scheduler.add_job(func=self.apply_brightness)
         self.__sunset_job = self.__brightness_scheduler.add_job(func=self.apply_brightness)
-        self.__brightness_scheduler.add_job(func=self.__refresh_sunreise_sunset,
+        self.__brightness_scheduler.add_job(func=self.__refresh_sunrise_sunset,
                                             trigger=CronTrigger(hour="0,12",
                                                                 minute=0,
                                                                 second=0))
-        self.__refresh_sunreise_sunset()
+        self.__refresh_sunrise_sunset()
         self.apply_brightness()
         self.__brightness_scheduler.start()
-
-        # create the display object
-        self.__display: AbstractDisplay
-        self.__initialize_display()
 
         # server interfaces
         self.__http_server: HttpServer | None = None
@@ -117,7 +116,7 @@ class MainController:
 
         return scheduler
 
-    def __initialize_display(self) -> None:
+    def __initialize_display(self) -> AbstractDisplay:
         with resources.as_file(resources.files("led_matrix.display")) as displays_dir:
             # load display plugins
             display_loader: Loader = Loader()
@@ -125,14 +124,16 @@ class MainController:
 
         # create it
         try:
-            self.__display = display_loader.plugins[self.__config.main.hardware.name.casefold()](
+            display: AbstractDisplay = display_loader.plugins[self.__config.main.hardware.name.casefold()](
                 config=self.__config
             )
-            self.__clear_display()
+            display.clear()
         except KeyError as e:
             raise RuntimeError(f"Display hardware '{self.__config.main.hardware.name}' not known.") from e
 
-    def __refresh_sunreise_sunset(self):
+        return display
+
+    def __refresh_sunrise_sunset(self):
         self.__config.main.refresh_variable_settings()
 
         # apply sunrise / sunset times
@@ -173,10 +174,6 @@ class MainController:
         # save the table in the config
         self.__config.set_scheduled_animations_table(self.__schedule_table)
         self.__config.save()
-
-    def __clear_display(self) -> None:
-        self.__display.clear_buffer()
-        self.__display.show()
 
     @classmethod
     def quit(cls) -> None:
@@ -397,9 +394,8 @@ class MainController:
         """
         Directly apply the given brightness value on the current display.
         """
-        # apply to the current display if it's already initialized
-        if getattr(self, f"_{self.__class__.__name__}__display", None) is not None:
-            self.__display.set_brightness(brightness)
+        # apply to the current display
+        self.__display.set_brightness(brightness)
 
     def mainloop(self) -> None:
         # start the animation controller
@@ -431,7 +427,7 @@ class MainController:
 
         self.__animation_scheduler.shutdown()
         self.__animation_controller.stop()
-        self.__clear_display()
+        self.__display.clear()
 
         # stop the server interfaces
         self.__stop_servers()
@@ -448,7 +444,7 @@ class MainController:
             self.__animation_scheduler = self.__create_scheduler()
 
             # re-initialize the display
-            self.__initialize_display()
+            self.__display = self.__initialize_display()
 
             # clear quit signal
             # the reload signal gets cleared after the first frame is displayed again

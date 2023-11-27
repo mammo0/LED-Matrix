@@ -46,6 +46,12 @@ class AbstractDisplay(ABC):
         toggled."""
 
     @final
+    def clear(self) -> None:
+        """Clear display"""
+        self.clear_buffer()
+        self.show()
+
+    @final
     def set_brightness(self, brightness: int) -> None:
         """Set the brightness 0 to 100 value"""
         self.__display_brightness = self._calc_real_brightness(brightness)
