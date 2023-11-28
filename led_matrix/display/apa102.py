@@ -56,10 +56,12 @@ if sys.platform == "linux":
 
             # setup datastructures for fast lookup of led
             # led index for given coordinate
-            self.__pixel_coord_to_led_index: NDArray[np.int_]
-            self.__virtual_to_physical_byte_indices: NDArray[np.int_]
-            (self.__pixel_coord_to_led_index,
-            self.__virtual_to_physical_byte_indices) = self.__create_pixel_to_led_index_datastructures()
+            self.__pixel_coord_to_led_index: NDArray[np.uint]
+            self.__virtual_to_physical_byte_indices: NDArray[np.uint]
+            (
+                self.__pixel_coord_to_led_index,
+                self.__virtual_to_physical_byte_indices
+            ) = self.__create_pixel_to_led_index_datastructures()
 
             # create gamma correction values
             gamma = DEFAULT_GAMMA
@@ -71,17 +73,17 @@ if sys.platform == "linux":
         def __get_gamma8_array(gamma) -> NDArray[np.uint8]:
             gamma8: NDArray[np.uint8] = np.zeros(256, dtype=np.uint8)
 
-            i: NDArray[np.int_]
+            i: NDArray[np.uint8]
             for i in np.arange(256, dtype=np.uint8):
                 gamma8[i] = (255 * ((i/255) ** gamma) + 0.5).astype(np.uint8)
 
             return gamma8
 
-        def __create_pixel_to_led_index_datastructures(self) -> tuple[NDArray[np.int_], NDArray[np.int_]]:
-            pixel_coord_to_led_index: NDArray[np.int_] = np.zeros((self.__height, self.__width),
-                                                                  dtype=np.int_)
-            virtual_to_physical_byte_indices: NDArray[np.int_] = np.zeros((self.__height, self.__width, 4),
-                                                                          dtype=np.int_)
+        def __create_pixel_to_led_index_datastructures(self) -> tuple[NDArray[np.uint], NDArray[np.uint]]:
+            pixel_coord_to_led_index: NDArray[np.uint] = np.zeros((self.__height, self.__width),
+                                                                  dtype=np.uint)
+            virtual_to_physical_byte_indices: NDArray[np.uint] = np.zeros((self.__height, self.__width, 4),
+                                                                          dtype=np.uint)
 
             outer: int
             inner: int
