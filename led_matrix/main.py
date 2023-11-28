@@ -195,7 +195,7 @@ class MainController:
 
     @classmethod
     def __quit(cls, *_) -> None:
-        _log.info("Exiting application")
+        _log.info("Exit request received. Start cleaning up...")
         MainController.__quit_signal.set()
 
     @property
@@ -480,3 +480,5 @@ class MainController:
 
             # restart mainloop
             self.mainloop()
+        else:
+            _log.info("Cleanup finished. Exiting now")
