@@ -21,12 +21,6 @@ ENV BUILD_DIR=/build
 WORKDIR "$BUILD_DIR"
 
 
-# create a new user for the build process
-RUN getent group ${BUILD_GID} || addgroup -g ${BUILD_GID} bgroup && \
-    group_name=$(getent group 100 | sed "s/:.*//") && \
-    getent passwd ${BUILD_UID} || adduser -u ${BUILD_UID} -D -H -G ${group_name} buser
-
-
 # add build files
 ADD dist/*.whl "$BUILD_DIR"
 ADD alpine/* "$BUILD_DIR"
