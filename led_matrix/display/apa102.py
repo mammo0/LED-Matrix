@@ -28,8 +28,6 @@ if sys.platform == "linux":
         def __init__(self, config: Settings) -> None:
             super().__init__(config=config)
 
-            self.__brightness: int = MAX_BRIGHTNESS
-
             # init SPI interface
             self.__spi: SpiDev = SpiDev()
             self.__spi.open(0, 1)
@@ -48,7 +46,13 @@ if sys.platform == "linux":
             # end frame is >= (n/2) bits of 1, where n is the number of LEDs
             self.__end_frame: Final[list[int]] = [0xff] * ((config.main.num_of_pixels + 15) // (2 * 8))
             # each frame starts with 111 and 5 bits that set the brightness
-            self.__led_frame_start: Final[int] = 0b11100000
+            self.__led_frame_empty_start_byte: Final[int] = 0b11100000
+            self.__led_frame_start_array: NDArray[np.uint8] = np.full(
+                shape=(self.__height, self.__width, 1),
+                # default full brightness (all 8 bits set)
+                fill_value=0b11111111,
+                dtype=np.uint8
+            )
 
             # setup datastructures for fast lookup of led
             # led index for given coordinate
@@ -58,6 +62,9 @@ if sys.platform == "linux":
                 self.__pixel_coord_to_led_index,
                 self.__virtual_to_physical_byte_indices
             ) = self.__create_pixel_to_led_index_datastructures()
+
+            # brightness offset
+            self.__brightness_ceiling_offset: float = 0.
 
             # create gamma correction values
             self.__gamma8 = self.__get_gamma8_array(DEFAULT_GAMMA)
@@ -214,13 +221,21 @@ if sys.platform == "linux":
 
             return ret
 
-        def __get_brightness_array(self) -> NDArray[np.uint8]:
-            led_frame_first_byte = (self.__brightness & ~self.__led_frame_start) | self.__led_frame_start
+        def __build_apa102_frame(self) -> NDArray[np.uint8]:
+            # if there is a brightness offset,
+            # lower the color values proportionately
+            led_frame_with_brightness: NDArray[np.uint8]
+            if self.__brightness_ceiling_offset > 0:
+                led_frame_with_brightness = (
+                    # current value   -
+                    self.frame_buffer - \
+                    #       (one brightness step of the current value   * brightness offset in percent    )
+                    np.ceil(((self.frame_buffer / (MAX_BRIGHTNESS + 1)) * self.__brightness_ceiling_offset))
+                ).astype(np.uint8)
+            else:
+                led_frame_with_brightness: NDArray[np.uint8] = self.frame_buffer
 
-            ret: NDArray[np.uint8] = np.array([led_frame_first_byte] * self._config.main.num_of_pixels,
-                                            dtype=np.uint8)
-
-            return ret.reshape((self.__height, self.__width, 1))
+            return np.concatenate((self.__led_frame_start_array, led_frame_with_brightness), axis=2)
 
         def __gamma_correct_buffer(self) -> None:
             x: tuple[NDArray[np.uint8], ...]
@@ -233,14 +248,25 @@ if sys.platform == "linux":
         def set_brightness(self, brightness: int) -> None:
             # set the brightness level for the LEDs
             logarithmic_percentage: float = (math.pow(10, (brightness / 100)) - 1) / 9
-            self.__brightness = math.ceil(logarithmic_percentage * MAX_BRIGHTNESS)
+            abs_brightness: float = logarithmic_percentage * MAX_BRIGHTNESS
+
+            # this value is used for the in the start byte of the LED array
+            led_brightness: int = math.ceil(abs_brightness)
+
+            # this value represents the offset that is lost due to ceiling the brightness value
+            # 1 < self.__brightness_ceiling_offset <= 0
+            self.__brightness_ceiling_offset = led_brightness - abs_brightness
+
+            # set LED frame start byte according to the brightness
+            self.__led_frame_start_array &= (
+                (led_brightness & ~self.__led_frame_empty_start_byte) | self.__led_frame_empty_start_byte
+            )
 
         def show(self, gamma: bool=False) -> None:
             if gamma:
                 self.__gamma_correct_buffer()
 
-            apa102_led_frames: NDArray[np.uint8] = np.concatenate((self.__get_brightness_array(), self.frame_buffer),
-                                                                axis=2)
+            apa102_led_frames: NDArray[np.uint8] = self.__build_apa102_frame()
             reindexed_frames: NDArray[np.uint8] = apa102_led_frames.take(self.__virtual_to_physical_byte_indices)
 
             to_send: list[int] = (
