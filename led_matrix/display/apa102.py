@@ -20,13 +20,16 @@ if sys.platform == "linux":
 
 
     SPI_MAX_SPEED_HZ: Final[int] = 16000000  # 500000 is library default as it seems
-    # MAX_BRIGHTNESS: Final[int] = 31  # brightness is controlled by AbstractDisplay class
+    MAX_BRIGHTNESS: Final[int] = 31
     DEFAULT_GAMMA: Final[float] = 2.22
 
 
     class Apa102(AbstractDisplay):
         def __init__(self, config: Settings) -> None:
             super().__init__(config=config)
+
+            self.__brightness: int
+            self.set_brightness(config.main.brightness)
 
             # init SPI interface
             self.__spi: SpiDev = SpiDev()
@@ -46,13 +49,7 @@ if sys.platform == "linux":
             # end frame is >= (n/2) bits of 1, where n is the number of LEDs
             self.__end_frame: Final[list[int]] = [0xff] * ((config.main.num_of_pixels + 15) // (2 * 8))
             # each frame starts with 111 and 5 bits that set the brightness
-            # since the brightness is controlled in the AbstractDisplay class,
-            # always use the full brighness (all bits are set)
-            led_frame_start: Final[int] = 0b11111111
-            self.__led_frame_start_array: Final[NDArray[np.uint8]] = np.array(
-                [led_frame_start] * config.main.num_of_pixels,
-                dtype=np.uint8
-            ).reshape((self.__height, self.__width, 1))
+            self.__led_frame_start: Final[int] = 0b11100000
 
             # setup datastructures for fast lookup of led
             # led index for given coordinate
@@ -218,8 +215,13 @@ if sys.platform == "linux":
 
             return ret
 
-        def _calc_real_brightness(self, brightness: int) -> float:
-            return (math.pow(10, (brightness / 100)) - 1) / 9
+        def __get_brightness_array(self) -> NDArray[np.uint8]:
+            led_frame_first_byte = (self.__brightness & ~self.__led_frame_start) | self.__led_frame_start
+
+            ret: NDArray[np.uint8] = np.array([led_frame_first_byte] * self._config.main.num_of_pixels,
+                                            dtype=np.uint8)
+
+            return ret.reshape((self.__height, self.__width, 1))
 
         def __gamma_correct_buffer(self) -> None:
             x: tuple[NDArray[np.uint8], ...]
@@ -229,12 +231,17 @@ if sys.platform == "linux":
                                order='F'):
                 x[...] = self.__gamma8[x]  # type: ignore
 
+        def set_brightness(self, brightness: int) -> None:
+            # set the brightness level for the LEDs
+            logarithmic_percentage: float = (math.pow(10, (brightness / 100)) - 1) / 9
+            self.__brightness = math.ceil(logarithmic_percentage * MAX_BRIGHTNESS)
+
         def show(self, gamma: bool=False) -> None:
             if gamma:
                 self.__gamma_correct_buffer()
 
-            apa102_led_frames: NDArray[np.uint8] = np.concatenate((self.__led_frame_start_array, self.frame_buffer),
-                                                                  axis=2)
+            apa102_led_frames: NDArray[np.uint8] = np.concatenate((self.__get_brightness_array(), self.frame_buffer),
+                                                                axis=2)
             reindexed_frames: NDArray[np.uint8] = apa102_led_frames.take(self.__virtual_to_physical_byte_indices)
 
             to_send: list[int] = (

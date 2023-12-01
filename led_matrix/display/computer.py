@@ -15,6 +15,9 @@ class Computer(AbstractDisplay):
     def __init__(self, config: Settings) -> None:
         super().__init__(config=config)
 
+        self.__brightness: float
+        self.set_brightness(config.main.brightness)
+
         width: int = config.main.display_width
         height: int = config.main.display_height
         self.__margin: int = config.computer.margin
@@ -76,9 +79,9 @@ class Computer(AbstractDisplay):
 
         return led_surface
 
-
-    def _calc_real_brightness(self, brightness: int) -> float:
-        return brightness / 100
+    def set_brightness(self, brightness: int) -> None:
+        # expecting float brightness 0 .. 1.0
+        self.__brightness = brightness / 100
 
     def show(self, gamma: bool=False) -> None:
         event: Event
@@ -99,9 +102,9 @@ class Computer(AbstractDisplay):
                                    self.frame_buffer[..., 1],
                                    self.frame_buffer[..., 2]], flags=['multi_index'])
         while not it.finished:
-            color: Color = Color(int(it[0]),
-                                 int(it[1]),
-                                 int(it[2]))
+            color: Color = Color(int(it[0] * self.__brightness),
+                                 int(it[1] * self.__brightness),
+                                 int(it[2] * self.__brightness))
 
             # get the LED surface
             led_surface: Surface | None = self.__get_led_surface(led_color=color)

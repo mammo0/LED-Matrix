@@ -19,9 +19,6 @@ class AbstractDisplay(ABC):
             dtype=np.uint8
         )
 
-        self.__display_brightness: float
-        self.set_brightness(config.main.brightness)
-
     @property
     def frame_buffer(self) -> NDArray[np.uint8]:
         """The buffer contains the rgb data to be displayed."""
@@ -30,8 +27,7 @@ class AbstractDisplay(ABC):
     @frame_buffer.setter
     def frame_buffer(self, value: NDArray[np.uint8]):
         if self.__buffer.shape == value.shape:
-            # apply the brightness directly to the frame
-            self.__buffer = np.ceil(value * self.__display_brightness).astype(np.uint8)
+            self.__buffer = value
 
     def clear_buffer(self) -> None:
         self.__buffer = np.zeros_like(self.__buffer)
@@ -52,11 +48,7 @@ class AbstractDisplay(ABC):
         self.clear_buffer()
         self.show()
 
-    @final
+    @abstractmethod
     def set_brightness(self, brightness: int) -> None:
         """Set the brightness 0 to 100 value"""
-        self.__display_brightness = self._calc_real_brightness(brightness)
-
-    @abstractmethod
-    def _calc_real_brightness(self, brightness: int) -> float:
         raise NotImplementedError
