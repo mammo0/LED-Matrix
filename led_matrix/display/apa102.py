@@ -56,8 +56,8 @@ if sys.platform == "linux":
 
             # setup datastructures for fast lookup of led
             # led index for given coordinate
-            self.__pixel_coord_to_led_index: NDArray[np.uint]
-            self.__virtual_to_physical_byte_indices: NDArray[np.uint]
+            self.__pixel_coord_to_led_index: NDArray[np.int_]
+            self.__virtual_to_physical_byte_indices: NDArray[np.int_]
             (
                 self.__pixel_coord_to_led_index,
                 self.__virtual_to_physical_byte_indices
@@ -79,11 +79,11 @@ if sys.platform == "linux":
 
             return gamma8
 
-        def __create_pixel_to_led_index_datastructures(self) -> tuple[NDArray[np.uint], NDArray[np.uint]]:
-            pixel_coord_to_led_index: NDArray[np.uint] = np.zeros((self.__height, self.__width),
-                                                                  dtype=np.uint)
-            virtual_to_physical_byte_indices: NDArray[np.uint] = np.zeros((self.__height, self.__width, 4),
-                                                                          dtype=np.uint)
+        def __create_pixel_to_led_index_datastructures(self) -> tuple[NDArray[np.int_], NDArray[np.int_]]:
+            pixel_coord_to_led_index: NDArray[np.int_] = np.zeros((self.__height, self.__width),
+                                                                  dtype=np.int_)
+            virtual_to_physical_byte_indices: NDArray[np.int_] = np.zeros((self.__height, self.__width, 4),
+                                                                          dtype=np.int_)
 
             outer: int
             inner: int
