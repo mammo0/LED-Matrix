@@ -64,8 +64,7 @@ if sys.platform == "linux":
             ) = self.__create_pixel_to_led_index_datastructures()
 
             # create gamma correction values
-            gamma = DEFAULT_GAMMA
-            self.__gamma8 = self.__get_gamma8_array(gamma)
+            self.__gamma8 = self.__get_gamma8_array(DEFAULT_GAMMA)
 
             self.show()
 
@@ -225,9 +224,9 @@ if sys.platform == "linux":
         def __gamma_correct_buffer(self) -> None:
             x: tuple[NDArray[np.uint8], ...]
             for x in np.nditer(self.frame_buffer,
-                            op_flags=[['readwrite']],
-                            flags=['external_loop', 'buffered'],
-                            order='F'):
+                               op_flags=[['readwrite']],
+                               flags=['external_loop', 'buffered'],
+                               order='F'):
                 x[...] = self.__gamma8[x]  # type: ignore
 
         def show(self, gamma: bool=False) -> None:
