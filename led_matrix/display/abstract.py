@@ -31,7 +31,7 @@ class AbstractDisplay(ABC):
     def frame_buffer(self, value: NDArray[np.uint8]):
         if self.__buffer.shape == value.shape:
             # apply the brightness directly to the frame
-            self.__buffer = np.ceil(value * self.__display_brightness)
+            self.__buffer = np.ceil(value * self.__display_brightness).astype(np.uint8)
 
     def clear_buffer(self) -> None:
         self.__buffer = np.zeros_like(self.__buffer)
@@ -44,6 +44,7 @@ class AbstractDisplay(ABC):
     def show(self, gamma: bool=False) -> None:
         """Display the contents of buffer on display. Gamma correction can be
         toggled."""
+        raise NotImplementedError
 
     @final
     def clear(self) -> None:
