@@ -15,8 +15,7 @@ class Computer(AbstractDisplay):
     def __init__(self, config: Settings) -> None:
         super().__init__(config=config)
 
-        self.__brightness: float
-        self.set_brightness(config.main.brightness)
+        self.__brightness: float = 100.
 
         width: int = config.main.display_width
         height: int = config.main.display_height

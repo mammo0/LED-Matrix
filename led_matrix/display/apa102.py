@@ -28,8 +28,7 @@ if sys.platform == "linux":
         def __init__(self, config: Settings) -> None:
             super().__init__(config=config)
 
-            self.__brightness: int
-            self.set_brightness(config.main.brightness)
+            self.__brightness: int = MAX_BRIGHTNESS
 
             # init SPI interface
             self.__spi: SpiDev = SpiDev()
