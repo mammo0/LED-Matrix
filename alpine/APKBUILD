@@ -1,3 +1,4 @@
+# Maintainer: Marc Ammon <marc.ammon@hotmail.de>
 pkgname="led-matrix"
 pkgver=${PKG_VER}
 pkgrel=${PKG_REL}
