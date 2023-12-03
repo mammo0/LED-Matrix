@@ -461,6 +461,8 @@ class MainController:
         self.__stop_servers()
 
         if MainController.__reload_signal.is_set():
+            _log.info("Reloading application")
+
             # reload settings
             self.__config = Configuration(config_file_path=self.__config_file_path)
 
