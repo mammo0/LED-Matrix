@@ -27,7 +27,7 @@ build() {
     SKBUILD_CONFIGURE_OPTIONS="-DCMakePythonDistributions_SUPERBUILD=0 -DBUILD_CMAKE_FROM_SOURCE=OFF -DCMakeProject_BINARY_DISTRIBUTION_DIR=${builddir}/cmake-bin/usr" \
     # build fretype-py with libpng support
     FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 CMAKE_BUILD_PARALLEL_LEVEL=$(nproc --all) \
-        pip install --root "${builddir}" $PYTHON_DEPS
+        pip -v install --root "${builddir}" $PYTHON_DEPS
 }
 
 package() {
