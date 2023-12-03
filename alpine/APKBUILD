@@ -14,8 +14,18 @@ source="led-matrix.initd \
         default_config.ini \
         ${WHL_FILE}"
 
+prepare() {
+    # do not build cmake from source again (dependency of freetype-py), instead use the binaries provided by Alpine
+    echo "Fetching Alpine cmake binaries..."
+    mkdir -p "${builddir}/cmake-bin"
+    apk fetch -s cmake | tar -C "${builddir}/cmake-bin" -zxf -
+}
+
 build() {
     # install the dependecies that are not part of Alpine
+    # use downloaded binaries from prepare() method above
+    SKBUILD_CONFIGURE_OPTIONS="-DCMakePythonDistributions_SUPERBUILD=0 -DBUILD_CMAKE_FROM_SOURCE=OFF -DCMakeProject_BINARY_DISTRIBUTION_DIR=${builddir}/cmake-bin/usr" \
+    # build fretype-py with libpng support
     FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 CMAKE_BUILD_PARALLEL_LEVEL=$(nproc --all) \
         pip install --root "${builddir}" $PYTHON_DEPS
 }
