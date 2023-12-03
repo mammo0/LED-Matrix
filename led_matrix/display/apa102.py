@@ -258,7 +258,7 @@ if sys.platform == "linux":
             self.__brightness_ceiling_offset = led_brightness - abs_brightness
 
             # set LED frame start byte according to the brightness
-            self.__led_frame_start_array &= (
+            self.__led_frame_start_array.fill(
                 (led_brightness & ~self.__led_frame_empty_start_byte) | self.__led_frame_empty_start_byte
             )
 
