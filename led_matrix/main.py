@@ -475,6 +475,7 @@ class MainController:
 
             # re-initialize the display
             self.__display = self.__initialize_display()
+            self.apply_brightness()
 
             # clear quit signal
             # the reload signal gets cleared after the first frame is displayed again
