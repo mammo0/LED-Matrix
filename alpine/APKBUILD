@@ -16,6 +16,10 @@ source="led-matrix.initd \
         ${WHL_FILE}"
 
 prepare() {
+    # should be called according to Alpine docs
+    # https://wiki.alpinelinux.org/wiki/APKBUILD_Reference#prepare()
+    default_prepare
+
     # do not build cmake from source again (dependency of freetype-py), instead use the binaries provided by Alpine
     echo "Fetching Alpine cmake binaries..."
     mkdir -p "${builddir}/cmake-bin"
