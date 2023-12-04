@@ -1,4 +1,5 @@
 import signal
+from datetime import datetime
 from importlib import resources
 from logging import Logger
 from pathlib import Path
@@ -6,6 +7,7 @@ from queue import Queue
 from threading import Event, Lock, Thread
 
 import numpy as np
+from apscheduler.job import Job
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
@@ -68,13 +70,17 @@ class MainController:
 
         # the nighttime scheduler
         self.__brightness_scheduler: BackgroundScheduler = BackgroundScheduler()
-        self.__sunrise_job = self.__brightness_scheduler.add_job(func=self.apply_brightness)
-        self.__sunset_job = self.__brightness_scheduler.add_job(func=self.apply_brightness)
-        self.__brightness_scheduler.add_job(func=self.__refresh_sunrise_sunset,
+        self.__sunrise_job: Job = self.__brightness_scheduler.add_job(func=self.apply_brightness,
+                                                                      # prevent running now
+                                                                      trigger=DateTrigger(datetime.min))
+        self.__sunset_job: Job = self.__brightness_scheduler.add_job(func=self.apply_brightness,
+                                                                     # prevent running now
+                                                                     trigger=DateTrigger(datetime.min))
+        self.__brightness_scheduler.add_job(func=self.__refresh_sun_scheduler,
                                             trigger=CronTrigger(hour="0,12",
                                                                 minute=0,
                                                                 second=0))
-        self.__refresh_sunrise_sunset()
+        self.__refresh_sun_scheduler()
         self.apply_brightness()
         self.__brightness_scheduler.start()
 
@@ -139,10 +145,10 @@ class MainController:
 
         return display
 
-    def __refresh_sunrise_sunset(self):
+    def __refresh_sun_scheduler(self):
         _log.info("Refreshing sunrise sunset times")
 
-        self.__config.main.refresh_variable_settings()
+        self.__config.main.refresh_sunset_sunrise()
 
         # apply sunrise / sunset times
         self.__sunrise_job.reschedule(trigger=DateTrigger(run_date=self.__config.main.sunrise))
