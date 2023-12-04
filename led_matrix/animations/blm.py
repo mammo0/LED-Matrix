@@ -231,15 +231,9 @@ class BlmController(AbstractAnimationController,
         with open(file_path, "wb+") as f:
             f.write(file_content.read())
 
-        global BlmVariant  # pylint: disable=W0603
-        BlmVariant = BlmVariant.refresh_variants()
-
     def _remove_dynamic_variant(self, variant: AnimationVariant) -> None:
         animation_file: Path = variant.value.resolve()
 
         # only remove files that are in the animations directory
         if _BLM_ANIMATIONS_DIR in animation_file.parents:
             animation_file.unlink(missing_ok=True)
-
-            global BlmVariant  # pylint: disable=W0603
-            BlmVariant = BlmVariant.refresh_variants()

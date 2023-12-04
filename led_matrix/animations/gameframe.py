@@ -341,9 +341,6 @@ class GameframeController(AbstractAnimationController,
                 # extract the zip file
                 zip_file.extractall(path=str(extract_path))
 
-                global GameframeVariant  # pylint: disable=W0603
-                GameframeVariant = GameframeVariant.refresh_variants()
-
             else:
                 self._log.error("The zip-file was empty.")
 
@@ -353,6 +350,3 @@ class GameframeController(AbstractAnimationController,
         # only remove directories that are in the animations directory
         if _GAMEFRAME_ANIMATIONS_DIR in animation_dir.parents:
             shutil.rmtree(str(animation_dir), ignore_errors=True)
-
-            global GameframeVariant  # pylint: disable=W0603
-            GameframeVariant = GameframeVariant.refresh_variants()

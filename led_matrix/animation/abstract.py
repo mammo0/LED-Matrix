@@ -337,6 +337,11 @@ class AbstractAnimationController(ABC):
         """
         return self.__is_repeat_supported
 
+    def __refresh_variant_enum(self) -> None:
+        # this method should be called whenever a dynamic variant has changed
+        if self.__variant_enum is not None:
+            type(self).__variant_enum = self.__variant_enum.refresh_variants()
+
     @final
     def add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         """
@@ -350,6 +355,9 @@ class AbstractAnimationController(ABC):
             return
 
         self._add_dynamic_variant(file_name, file_content)
+
+        # refresh the variant enum class
+        self.__refresh_variant_enum()
 
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         """
@@ -373,6 +381,10 @@ class AbstractAnimationController(ABC):
                 if (v.name == variant.name and
                         v.value == v.value):
                     self._remove_dynamic_variant(variant)
+
+                    # refresh the variant enum class
+                    self.__refresh_variant_enum()
+
                     return
 
         self.__log.error("The variant '%s' could not be found.",

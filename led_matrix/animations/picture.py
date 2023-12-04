@@ -181,15 +181,9 @@ class PictureController(AbstractAnimationController,
         with open(file_path, "wb+") as f:
             f.write(file_content.read())
 
-        global PictureVariant  # pylint: disable=W0603
-        PictureVariant = PictureVariant.refresh_variants()
-
     def _remove_dynamic_variant(self, variant: AnimationVariant) -> None:
         animation_file: Path = variant.value.resolve()
 
         # only remove files that are in the animations directory
         if _PICTURES_DIR in animation_file.parents:
             animation_file.unlink(missing_ok=True)
-
-            global PictureVariant  # pylint: disable=W0603
-            PictureVariant = PictureVariant.refresh_variants()
