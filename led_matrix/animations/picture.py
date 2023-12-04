@@ -71,16 +71,16 @@ class PictureAnimation(AbstractAnimation):
             self.__frame_generator = self.__get_png_frames()
 
         else:
-            self.__log.error(f"Only PNG and GIF images supported, not '{self.__picture_path.suffix}'.")
+            self._log.error(f"Only PNG and GIF images supported, not '{self.__picture_path.suffix}'.")
             raise ValueError
 
     def __get_animation_speed(self) -> float:
         try:
             return int(self.__image.info["duration"]) / 1000
         except KeyError:
-            self.__log.warning("GIF has no duration in info.")
+            self._log.warning("GIF has no duration in info.")
         except (TypeError, ValueError):
-            self.__log.warning(f"Cannot convert info[duration]: {self.__image.info['duration']} to int.")
+            self._log.warning(f"Cannot convert info[duration]: {self.__image.info['duration']} to int.")
 
         # default 15 fps
         return 1/15

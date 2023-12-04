@@ -223,7 +223,7 @@ class BlmController(AbstractAnimationController,
     def _add_dynamic_variant(self, file_name: str, file_content: BytesIO) -> None:
         # error handling
         if file_name.rsplit(".", 1)[-1].lower() != "blm":
-            self.__log.error("The new variant file must be a blm-file!")
+            self._log.error("The new variant file must be a blm-file!")
             return
 
         file_path: Path = (_BLM_ANIMATIONS_DIR / file_name).resolve()
