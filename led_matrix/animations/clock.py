@@ -115,7 +115,7 @@ class ClockAnimation(AbstractAnimation):
         point_end: tuple[int, int]
 
         # left upper line
-        if digit in (4, 5, 6, 7, 8, 9, 0):
+        if digit in (4, 5, 6, 8, 9, 0):
             point_begin = (x, y)
             point_end = (x, y + self.__middle_calculation(height))
             draw.line([point_begin, point_end], fill=color)
