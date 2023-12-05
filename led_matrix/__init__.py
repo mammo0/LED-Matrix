@@ -1,5 +1,6 @@
 import builtins
 import functools
+import logging
 import os
 import sys
 from importlib import resources
@@ -10,6 +11,11 @@ from typing import Any, Callable, ParamSpec, TypeVar, cast
 
 from led_matrix.common.alpine import (IS_ALPINE_LINUX, LBU_PATH, AlpineLBU,
                                       alpine_lbu_commit_d)
+from led_matrix.common.log import LOG
+
+# apply custom handler to apscheduler
+logging.getLogger("apscheduler").addHandler(LOG.handler)
+
 
 STATIC_RESOURCES_DIR: Path
 with resources.as_file(resources.files("led_matrix")) as STATIC_RESOURCES_DIR:
