@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from importlib import resources
 from logging import Logger
 from queue import Empty, LifoQueue, Queue
