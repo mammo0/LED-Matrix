@@ -79,7 +79,7 @@ class MainAnimationController(Thread):
             repeat=config.default_animation.repeat
         )
 
-    def __on_last_element_processed(self):
+    def __on_last_element_processed(self) -> AnimationEvent:
         # check for paused animations
         try:
             animation_to_resume, resume_thread_uuid = self.__pause_queue.get_nowait()
@@ -288,7 +288,7 @@ class MainAnimationController(Thread):
                     # after the animation was stopped check if this was the last task (for now)
                     if self.__controll_queue.is_last_task_running:
                         # if so, resume an paused animations or start the default one
-                        new_event = self.__on_last_element_processed()
+                        new_event: AnimationEvent = self.__on_last_element_processed()
                         # link the new event to the old one
                         # this is needed for a blocking stop event
                         event.chain(new_event)
