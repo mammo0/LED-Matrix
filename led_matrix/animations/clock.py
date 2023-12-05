@@ -114,40 +114,44 @@ class ClockAnimation(AbstractAnimation):
         point_begin: tuple[int, int]
         point_end: tuple[int, int]
 
-        if digit in [4, 5, 6, 7, 8, 9, 0]:
-            # draw left upper
+        # left upper line
+        if digit in (4, 5, 6, 7, 8, 9, 0):
             point_begin = (x, y)
             point_end = (x, y + self.__middle_calculation(height))
             draw.line([point_begin, point_end], fill=color)
-        if digit in [2, 6, 8, 0]:
-            # draw left lower
+
+        # left lower line
+        if digit in (2, 6, 8, 0):
             point_begin = (x, y + self.__middle_calculation(height))
             point_end = (x, y + height - 1)
             draw.line([point_begin, point_end], fill=color)
 
-        if digit in [1, 2, 3, 4, 7, 8, 9, 0]:
-            # draw right upper
+        # right upper line
+        if digit in (1, 2, 3, 4, 7, 8, 9, 0):
             point_begin = (x + width - 1, y)
             point_end = (x + width - 1, y + self.__middle_calculation(height))
             draw.line([point_begin, point_end], fill=color)
-        if digit in [1, 3, 4, 5, 6, 7, 8, 9, 0]:
-            # draw right lower
+
+        # right lower line
+        if digit in (1, 3, 4, 5, 6, 7, 8, 9, 0):
             point_begin = (x + width - 1, y + self.__middle_calculation(height))
             point_end = (x + width - 1, y + height - 1)
             draw.line([point_begin, point_end], fill=color)
 
-        if digit in [2, 3, 5, 6, 7, 8, 9, 0]:
-            # draw top
+        # top line
+        if digit in (2, 3, 5, 6, 7, 8, 9, 0):
             point_begin = (x, y)
             point_end = (x + width - 1, y)
             draw.line([point_begin, point_end], fill=color)
-        if digit in [2, 3, 5, 6, 8, 9, 0]:
-            # draw bottom
+
+        # bottom line
+        if digit in (2, 3, 5, 6, 8, 9, 0):
             point_begin = (x, y + height - 1)
             point_end = (x + width - 1, y + height - 1)
             draw.line([point_begin, point_end], fill=color)
-        if digit in [2, 3, 4, 5, 6, 8, 9]:
-            # draw middle
+
+        # middle line
+        if digit in (2, 3, 4, 5, 6, 8, 9):
             point_begin = (x, y + self.__middle_calculation(height))
             point_end = (x + width - 1, y + self.__middle_calculation(height))
             draw.line([point_begin, point_end], fill=color)
