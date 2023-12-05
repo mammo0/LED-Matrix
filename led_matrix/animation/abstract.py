@@ -401,9 +401,6 @@ class AbstractAnimationController(ABC):
         """
         For settings see _AnimationSettingsStructure.
         """
-        # parse the parameters
-        self._validate_animation_settings(animation_settings)
-
         animation_thread: AbstractAnimation = self.animation_class(
             width=self.__width, height=self.__height,
             frame_queue=self.__frame_queue,
@@ -491,17 +488,6 @@ class AbstractAnimationController(ABC):
             return
 
         animation_thread.join()
-
-    def _validate_animation_settings(self, animation_settings: AnimationSettings) -> None:
-        # variant
-        if (self.variant_enum is not None and
-                not isinstance(animation_settings.variant, self.variant_enum)):
-            animation_settings.variant = self.variant_enum(animation_settings.variant)  # pylint: disable=E1102
-
-        # parameter
-        if (self.parameter_class is not None and
-                isinstance(animation_settings.parameter, dict)):
-            animation_settings.parameter = self.parameter_class(**animation_settings.parameter)  # pylint: disable=E1102
 
     def __animation_finished_stopped(self) -> None:
         # release running event
