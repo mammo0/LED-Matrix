@@ -459,7 +459,10 @@ class MainController:
                 # to limit CPU usage do not go faster than 60 "fps" on empty queue
                 MainController.__quit_signal.wait(1/60)
 
-        self.__animation_scheduler.shutdown()
+        # first shutdown the animation scheduler, so no new animations will be started
+        # do not wait for the scheduler executor; this causes a deadlock if a scheduled animation is currently running
+        self.__animation_scheduler.shutdown(wait=False)
+        # stop the animation controller (including any currently running animation)
         self.__animation_controller.stop()
         self.__display.clear()
 
