@@ -25,7 +25,7 @@ from led_matrix.display.abstract import AbstractDisplay
 from led_matrix.server.http_server import HttpServer
 from led_matrix.server.tpm2_net import Tpm2NetServer
 
-_log: Logger = LOG.create(__name__.title())
+_log: Logger = LOG.create("Main")
 
 
 # TODO:
