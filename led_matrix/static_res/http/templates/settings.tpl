@@ -1,3 +1,4 @@
+% from led_matrix.config.types import ColorTemp
 % from led_matrix.server.http_server import SettingsTabs
 
 % setdefault('page_title', 'Settings')
@@ -32,42 +33,20 @@
                 <div class="card border-0">
                     <div class="card-body border-left border-right">
                         <form id="main_settings_form" method="post" action="/settings/{{SettingsTabs.MAIN.name.lower()}}" autocomplete="off">
-                            <div class="form-group">
-                                <label for="setting_day_brightness_container">Day Brightness</label>
-                                <div id="setting_day_brightness_container" class="slider-container d-flex align-items-center">
-                                    <input id="setting_day_brightness_slider"
-                                           class="custom-range slider flex-grow-1 mr-2"
-                                           style="width:1px"
-                                           name="day_brightness_value"
-                                           type="range"
-                                           min="0" max="100" value="{{config.main.day_brightness}}">
-                                    <span class="pr-2">
-                                        <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
-                                    </span>
-                                    <a class="btn btn-success" onclick="preview_brightness(setting_day_brightness_slider.value);">Preview</a>
-                                </div>
-                            </div>
+                            <label for="setting_day">Daytime</label>
+                            <ul id="setting_day" class="list-group">
+                                % include("settings/day_night.tpl", type="day")
+                            </ul>
                             <div class="form-group">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="setting_night_brightness_enabled" name="setting_night_brightness_enabled_value" {{"checked" if config.main.night_brightness != -1 else ""}}>
                                     <label class="form-check-label" for="setting_night_brightness_enabled">
-                                        Night Brightness
+                                        Nighttime
                                     </label>
                                 </div>
-                                <div id="setting_night_brightness_container" class="{{"d-none" if config.main.night_brightness == -1 else ""}}">
-                                    <div class="slider-container d-flex align-items-center">
-                                        <input id="setting_night_brightness_slider"
-                                               class="custom-range slider flex-grow-1 mr-2"
-                                               style="width:1px"
-                                               name="night_brightness_value"
-                                               type="range"
-                                               min="0" max="100" value="{{config.main.night_brightness}}">
-                                        <span class="pr-2">
-                                            <span class="slider-value badge badge-warning" style="font-size:3ex;width:3em"></span>
-                                        </span>
-                                        <a class="btn btn-success" onclick="preview_brightness(setting_night_brightness_slider.value);">Preview</a>
-                                    </div>
-                                </div>
+                                <ul id="setting_night" class="list-group {{'d-none' if config.main.night_brightness == -1 else ''}}">
+                                    % include("settings/day_night.tpl", type="night")
+                                </ul>
                             </div>
 
                             <div class="form-group">
@@ -107,7 +86,7 @@
                 <div class="card border-0">
                     <div class="card-body border-left border-right border-bottom rounded-bottom">
                         <%
-                            include("animation/variant_upload.tpl", animation_controllers=animation_controllers)
+                            include("settings/variant_upload.tpl", animation_controllers=animation_controllers)
                         %>
                     </div>
                 </div>
@@ -129,13 +108,22 @@
         post_request("/settings/preview_brightness", form_data);
     }
 
+    function preview_color_temp(color_temp){
+        // create a dynamic form object, that contains only the new color temperature value
+        let form_data = new FormData();
+        form_data.append("preview_color_temp_value", color_temp);
+
+        // send the request
+        post_request("/settings/preview_color_temp", form_data);
+    }
+
     window.addEventListener("load", function(){
         // toggle night brightness slider visibiltiy with checkbox
         setting_night_brightness_enabled.onchange = function() {
             if(this.checked)
-                setting_night_brightness_container.classList.remove("d-none");
+                setting_night.classList.remove("d-none");
             else
-                setting_night_brightness_container.classList.add("d-none");
+                setting_night.classList.add("d-none");
         }
 
         // keep the dropdown tab selection in sync with the real tabs

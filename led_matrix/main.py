@@ -21,6 +21,7 @@ from led_matrix.common.log import LOG
 from led_matrix.common.schedule import ScheduleEntry
 from led_matrix.common.threading import EventWithUnsetSignal
 from led_matrix.config import Configuration
+from led_matrix.config.types import ColorTemp
 from led_matrix.display.abstract import AbstractDisplay
 from led_matrix.server.http_server import HttpServer
 from led_matrix.server.tpm2_net import Tpm2NetServer
@@ -69,20 +70,20 @@ class MainController:
         self.__schedule_lock: Lock = Lock()
 
         # the nighttime scheduler
-        self.__brightness_scheduler: BackgroundScheduler = BackgroundScheduler()
-        self.__sunrise_job: Job = self.__brightness_scheduler.add_job(func=self.apply_brightness,
-                                                                      # prevent running now
-                                                                      trigger=DateTrigger(datetime.min))
-        self.__sunset_job: Job = self.__brightness_scheduler.add_job(func=self.apply_brightness,
-                                                                     # prevent running now
-                                                                     trigger=DateTrigger(datetime.min))
-        self.__brightness_scheduler.add_job(func=self.__refresh_sun_scheduler,
-                                            trigger=CronTrigger(hour="0,12",
-                                                                minute=0,
-                                                                second=0))
+        self.__sun_scheduler: BackgroundScheduler = BackgroundScheduler()
+        self.__sunrise_job: Job = self.__sun_scheduler.add_job(func=self.apply_day_night,
+                                                               # prevent running now
+                                                               trigger=DateTrigger(datetime.min))
+        self.__sunset_job: Job = self.__sun_scheduler.add_job(func=self.apply_day_night,
+                                                              # prevent running now
+                                                              trigger=DateTrigger(datetime.min))
+        self.__sun_scheduler.add_job(func=self.__refresh_sun_scheduler,
+                                     trigger=CronTrigger(hour="0,12",
+                                                         minute=0,
+                                                         second=0))
         self.__refresh_sun_scheduler()
-        self.apply_brightness()
-        self.__brightness_scheduler.start()
+        self.apply_day_night()
+        self.__sun_scheduler.start()
 
         # server interfaces
         self.__http_server: HttpServer | None = None
@@ -415,11 +416,12 @@ class MainController:
         """
         return self.__animation_controller.current_animation_name
 
-    def apply_brightness(self) -> None:
+    def apply_day_night(self) -> None:
         """
-        Applies the brightness based on the current time.
+        Applies the brightness and color temperature based on the current time.
         """
         self.preview_brightness(self.__config.main.brightness)
+        self.preview_color_temp(self.__config.main.color_temp)
 
     def preview_brightness(self, brightness: int) -> None:
         """
@@ -430,6 +432,16 @@ class MainController:
 
         # apply to the current display
         self.__display.set_brightness(brightness)
+
+    def preview_color_temp(self, color_temp: ColorTemp) -> None:
+        """
+        Directly apply the given colort temperature on the current display.
+        """
+        _log.info("Change color temperature to %s",
+                  color_temp.title)
+
+        # apply to the current display
+        self.__display.set_color_temp(color_temp)
 
     def mainloop(self) -> None:
         # start the animation controller
@@ -484,7 +496,7 @@ class MainController:
 
             # re-initialize the display
             self.__display = self.__initialize_display()
-            self.apply_brightness()
+            self.apply_day_night()
 
             # clear quit signal
             # the reload signal gets cleared after the first frame is displayed again

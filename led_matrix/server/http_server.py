@@ -20,6 +20,7 @@ from led_matrix.common.bottle import BottleCBVMeta, get, post
 from led_matrix.common.color import Color
 from led_matrix.common.schedule import CronStructure, ScheduleEntry
 from led_matrix.common.wsgi import CustomWSGIRefServer
+from led_matrix.config.types import ColorTemp
 
 if TYPE_CHECKING:
     from led_matrix.main import MainController
@@ -362,19 +363,29 @@ class HttpServer(metaclass=BottleCBVMeta):
         form: FormsDict = self.__get_form()
 
         if SettingsTabs[tab.upper()] == SettingsTabs.MAIN:
-            # get the day and night brightness value
+            # get the day and night brightness and color temperature values
             day_brightness: int = form.get("day_brightness_value", type=int,
                                            default=self.__main_app.config.main.day_brightness)
+            day_color_temp: ColorTemp = ColorTemp[form.get("day_color_temp_value", type=str,
+                                                           default=self.__main_app.config.main.day_color_temp.name)]
+
             night_brightness: int
+            night_color_temp: ColorTemp
             if form.get("setting_night_brightness_enabled_value", default=False, type=bool):
                 night_brightness = form.get("night_brightness_value", type=int,
                                             default=self.__main_app.config.main.night_brightness)
+                night_color_temp = ColorTemp[form.get("night_color_temp_value", type=str,
+                                                      default=self.__main_app.config.main.night_color_temp.name)]
             else:
                 night_brightness = -1
-            # apply it
+                night_color_temp = self.__main_app.config.main.night_color_temp
+
+            # apply both
             self.__main_app.config.main.day_brightness = day_brightness
+            self.__main_app.config.main.day_color_temp = day_color_temp
             self.__main_app.config.main.night_brightness = night_brightness
-            self.__main_app.apply_brightness()
+            self.__main_app.config.main.night_color_temp = night_color_temp
+            self.__main_app.apply_day_night()
 
             # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
             enable_tpm2net: bool = form.get("enable_tpm2net", default=False, type=bool)
@@ -410,7 +421,7 @@ class HttpServer(metaclass=BottleCBVMeta):
     @get("/settings/reset/<tab>")
     def reset_settings(self, tab: str) -> None:
         # reset the brightness value
-        self.__main_app.apply_brightness()
+        self.__main_app.apply_day_night()
 
         # for all other values a simple reload should be sufficient
         redirect(f"/settings/{tab}")
@@ -423,6 +434,15 @@ class HttpServer(metaclass=BottleCBVMeta):
                               default=-1)
         if value > -1:
             self.__main_app.preview_brightness(value)
+
+    @post("/settings/preview_color_temp")
+    def set_color_temp(self) -> None:
+        form: FormsDict = self.__get_form()
+
+        value: str | None = form.get("preview_color_temp_value", type=str,
+                                     default=None)
+        if value is not None:
+            self.__main_app.preview_color_temp(ColorTemp[value])
 
     @get(f"/settings/{SettingsTabs.VARIANT_UPLOAD.name.lower()}/<animation_name>/delete/<variant_name>")
     def delete_variant(self, animation_name: str, variant_name: str) -> None:

@@ -8,29 +8,14 @@ from typing import Any, Final, Literal, TypeVar
 from python_ini.ini_file import IniFile
 from python_ini.ini_writer import IniWriter
 
-from led_matrix.config.meta import (
-    _APA102Meta,
-    _ComputerMeta,
-    _DefaultAnimationMeta,
-    _MainSettingsMeta,
-    _ScheduledAnimationsMeta,
-)
-from led_matrix.config.settings import (
-    APA102,
-    Computer,
-    DefaultAnimation,
-    MainSettings,
-    ScheduledAnimations,
-    Settings,
-)
-from led_matrix.config.types import (
-    Hardware,
-    LEDColorType,
-    LEDOrientation,
-    LEDOrigin,
-    LEDWireMode,
-)
-
+from led_matrix.config.meta import (_APA102Meta, _ComputerMeta,
+                                    _DefaultAnimationMeta, _MainSettingsMeta,
+                                    _ScheduledAnimationsMeta)
+from led_matrix.config.settings import (APA102, Computer, DefaultAnimation,
+                                        MainSettings, ScheduledAnimations,
+                                        Settings)
+from led_matrix.config.types import (ColorTemp, Hardware, LEDColorType,
+                                     LEDOrientation, LEDOrigin, LEDWireMode)
 
 V = TypeVar("V", str, int, bool)
 
@@ -109,6 +94,12 @@ class _ConfigReader:
             night_brightness: int = self.__get_value(_MainSettingsMeta.NIGHT_BRIGHTNESS,
                                                      target_type=int,
                                                      default_value=MainSettings.night_brightness)
+            day_color_temp: ColorTemp = ColorTemp[self.__get_value(_MainSettingsMeta.DAY_COLOR_TEMP,
+                                                                   target_type=str,
+                                                                   default_value=MainSettings.day_color_temp.name)]
+            night_color_temp: ColorTemp = ColorTemp[self.__get_value(_MainSettingsMeta.NIGHT_COLOR_TEMP,
+                                                                     target_type=str,
+                                                                     default_value=MainSettings.night_color_temp.name)]
             http_server: bool = self.__get_value(_MainSettingsMeta.HTTP_SERVER,
                                                  target_type=bool,
                                                  default_value=MainSettings.http_server)
@@ -129,6 +120,8 @@ class _ConfigReader:
                             display_height=display_height,
                             day_brightness=day_brightness,
                             night_brightness=night_brightness,
+                            day_color_temp=day_color_temp,
+                            night_color_temp=night_color_temp,
                             http_server=http_server,
                             http_server_port=http_server_port,
                             http_server_listen_ip=http_server_listen_ip,
@@ -251,6 +244,19 @@ class _ConfigWriter:
         self.__w.comment("Possible values: 0 < = x <= 100")
         self.__w.comment("                -1: disable")
         self.__w.key(name=_MainSettingsMeta.NIGHT_BRIGHTNESS, varg=main_config.night_brightness)
+
+        self.__w.comment()
+        self.__w.comment("Set a color temperature [Default: 'K_6000']")
+        self.__w.comment("Possible values: 'K_1900' (Candle)")
+        self.__w.comment("                 'K_2600' (40W Bulb)")
+        self.__w.comment("                 'K_2850' (100W Bulb)")
+        self.__w.comment("                 'K_3200' (Halogen)")
+        self.__w.comment("                 'K_5200' (Carbon Arc)")
+        self.__w.comment("                 'K_6000' (Unchanged)")
+        self.__w.key(name=_MainSettingsMeta.DAY_COLOR_TEMP, varg=main_config.day_color_temp.name)
+        self.__w.comment("Set a color temperature value for night times [Default: 'K_3200']")
+        self.__w.comment("NOTE: Only respected when night brightness is enabled above")
+        self.__w.key(name=_MainSettingsMeta.NIGHT_COLOR_TEMP, varg=main_config.night_color_temp.name)
 
         self.__w.comment()
         self.__w.comment("(De-)Activate the server interfaces that control the matrix.")

@@ -8,6 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from led_matrix.config.settings import Settings
+from led_matrix.config.types import ColorTemp
 
 
 class AbstractDisplay(ABC):
@@ -19,6 +20,8 @@ class AbstractDisplay(ABC):
             dtype=np.uint8
         )
 
+        self.__color_temp: ColorTemp = ColorTemp.K_6000
+
     @property
     def frame_buffer(self) -> NDArray[np.uint8]:
         """The buffer contains the rgb data to be displayed."""
@@ -27,6 +30,14 @@ class AbstractDisplay(ABC):
     @frame_buffer.setter
     def frame_buffer(self, value: NDArray[np.uint8]):
         if self.__buffer.shape == value.shape:
+            # check if the color temperature should be changed
+            if self.__color_temp != ColorTemp.K_6000:
+                # iterate over the last axis (2) which contains the color values
+                i: tuple[int, ...]
+                for i in np.ndindex(value.shape[:2]):
+                    # apply the color temperature
+                    value[i] = np.ceil(value[i] * self.__color_temp.value).astype(np.uint8)
+
             self.__buffer = value
 
     def clear_buffer(self) -> None:
@@ -52,3 +63,7 @@ class AbstractDisplay(ABC):
     def set_brightness(self, brightness: int) -> None:
         """Set the brightness 0 to 100 value"""
         raise NotImplementedError
+
+    @final
+    def set_color_temp(self, color_temp: ColorTemp) -> None:
+        self.__color_temp = color_temp

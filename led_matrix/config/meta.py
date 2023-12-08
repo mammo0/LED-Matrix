@@ -16,6 +16,9 @@ class _MainSettingsMeta(_Meta):
     DAY_BRIGHTNESS: Final[str] = "DayBrightness"
     NIGHT_BRIGHTNESS: Final[str] = "NightBrightness"
 
+    DAY_COLOR_TEMP: Final[str] = "DayColorTemperature"
+    NIGHT_COLOR_TEMP: Final[str] = "NightColorTemperature"
+
     HTTP_SERVER: Final[str] = "HttpServer"
     HTTP_SERVER_PORT: Final[str] = "HttpServerPort"
     HTTP_SERVER_LISTEN_IP: Final[str] = "HttpServerListenIP"

@@ -7,8 +7,8 @@ from astral import LocationInfo
 from astral.geocoder import GroupInfo, database, lookup, lookup_in_group
 from astral.sun import sun
 
-from led_matrix.config.types import (Hardware, LEDColorType, LEDOrientation,
-                                     LEDOrigin, LEDWireMode)
+from led_matrix.config.types import (ColorTemp, Hardware, LEDColorType,
+                                     LEDOrientation, LEDOrigin, LEDWireMode)
 
 
 @dataclass(kw_only=True)
@@ -20,6 +20,9 @@ class MainSettings:
 
     day_brightness: int = 85
     night_brightness: int = -1
+
+    day_color_temp: ColorTemp = ColorTemp.K_6000
+    night_color_temp: ColorTemp = ColorTemp.K_3200
 
     http_server: bool = True
     http_server_port: int = 8080
@@ -61,15 +64,26 @@ class MainSettings:
         self.__sunset = s["sunset"]
 
     @property
-    def brightness(self) -> int:
-        if (
+    def __is_day_time(self) -> bool:
+        return (
             self.night_brightness == -1
             or
             self.__sunrise <= datetime.now(tz=tzlocal.get_localzone()) <= self.__sunset
-        ):
+        )
+
+    @property
+    def brightness(self) -> int:
+        if self.__is_day_time:
             return self.day_brightness
 
         return self.night_brightness
+
+    @property
+    def color_temp(self) -> ColorTemp:
+        if self.__is_day_time:
+            return self.day_color_temp
+
+        return self.night_color_temp
 
     @property
     def num_of_pixels(self) -> int:
