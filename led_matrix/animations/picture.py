@@ -181,9 +181,15 @@ class PictureController(AbstractAnimationController,
         with open(file_path, "wb+") as f:
             f.write(file_content.read())
 
+        self._log.info("Added variant file '%s'",
+                       file_name)
+
     def _remove_dynamic_variant(self, variant: AnimationVariant) -> None:
         animation_file: Path = variant.value.resolve()
 
         # only remove files that are in the animations directory
         if _PICTURES_DIR in animation_file.parents:
             animation_file.unlink(missing_ok=True)
+
+            self._log.info("Remove variant file '%s'",
+                           animation_file.name)

@@ -341,6 +341,9 @@ class GameframeController(AbstractAnimationController,
                 # extract the zip file
                 zip_file.extractall(path=str(extract_path))
 
+                self._log.info("Added variant directory '%s'",
+                               extract_path.name)
+
             else:
                 self._log.error("The zip-file was empty.")
 
@@ -350,3 +353,6 @@ class GameframeController(AbstractAnimationController,
         # only remove directories that are in the animations directory
         if _GAMEFRAME_ANIMATIONS_DIR in animation_dir.parents:
             shutil.rmtree(str(animation_dir), ignore_errors=True)
+
+            self._log.info("Removed variant directory '%s'",
+                           animation_dir.name)
