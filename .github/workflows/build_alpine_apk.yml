@@ -24,7 +24,7 @@ jobs:
               platforms: arm
         - name: Set up Python
           # by default uses the .python-version file
-          uses: actions/setup-python@v4
+          uses: actions/setup-python@v5
         - name: Set up Poetry
           uses: abatilo/actions-poetry@v2
         - name: Install Dynamic versioning plugin for Poetry
