@@ -26,7 +26,7 @@ jobs:
           # by default uses the .python-version file
           uses: actions/setup-python@v5
         - name: Set up Poetry
-          uses: abatilo/actions-poetry@v2
+          uses: abatilo/actions-poetry@v3
         - name: Install Dynamic versioning plugin for Poetry
           run: |
               poetry self add "poetry-dynamic-versioning[plugin]"
