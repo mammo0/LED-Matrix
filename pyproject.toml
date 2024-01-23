@@ -27,14 +27,14 @@ freetype-py = {git = "https://github.com/mammo0/freetype-py.git", branch = "led-
 simple-plugin-loader = "^3.0.0"
 
 [tool.poetry.group.alpine.dependencies]
-numpy = "=1.24.4"
-pillow = "=9.5.0"
+numpy = "=1.25.2"
+pillow = "=10.1.0"
 bottle = "=0.12.25"
 apscheduler = "=3.10.1"
-tzlocal = "=4.3"
+tzlocal = "=5.1"
 
 [tool.poetry.group.config.dependencies]
-tzlocal = "=4.3"
+tzlocal = "=5.1"
 python-ini = "^1.1.0"
 jsons = "^1.6.3"
 astral = "^3.2"
