@@ -138,9 +138,10 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
                 self.server.tmp_buffer_index = 0
 
             upper: int = min(self.server.tmp_buffer.size,
-                        self.server.tmp_buffer_index + frame_size)
-            arange: NDArray[np.uint] = np.arange(self.server.tmp_buffer_index,
-                                                 upper)
+                             self.server.tmp_buffer_index + frame_size)
+            arange: NDArray[np.int_] = np.arange(self.server.tmp_buffer_index,
+                                                 upper,
+                                                 dtype=np.int_)
             np.put(self.server.tmp_buffer, arange, list(data[6:-1]))
 
             self.server.tmp_buffer_index += frame_size
