@@ -7,6 +7,7 @@ from queue import Queue
 from threading import Event, Lock, Thread
 
 import numpy as np
+import pytz
 from apscheduler.job import Job
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -71,12 +72,16 @@ class MainController:
 
         # the nighttime scheduler
         self.__sun_scheduler: BackgroundScheduler = BackgroundScheduler()
-        self.__sunrise_job: Job = self.__sun_scheduler.add_job(func=self.apply_day_night,
-                                                               # prevent running now
-                                                               trigger=DateTrigger(datetime.min))
-        self.__sunset_job: Job = self.__sun_scheduler.add_job(func=self.apply_day_night,
-                                                              # prevent running now
-                                                              trigger=DateTrigger(datetime.min))
+        self.__sunrise_job: Job = self.__sun_scheduler.add_job(
+            func=self.apply_day_night,
+            # prevent running now
+            trigger=DateTrigger(datetime.min.replace(tzinfo=pytz.UTC))
+        )
+        self.__sunset_job: Job = self.__sun_scheduler.add_job(
+            func=self.apply_day_night,
+            # prevent running now
+            trigger=DateTrigger(datetime.min.replace(tzinfo=pytz.UTC))
+        )
         self.__sun_scheduler.add_job(func=self.__refresh_sun_scheduler,
                                      trigger=CronTrigger(hour="0,12",
                                                          minute=0,
