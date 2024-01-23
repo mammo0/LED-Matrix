@@ -61,7 +61,7 @@ apk add --allow-untrusted <package_name>.apk
 
 6. Test the installation:
 ```shell
-led-matrix --config-file /etc/led-matrix.ini
+led-matrix /etc/led-matrix.ini
 ```
 If everything runs without errors, stop the execution with `Ctrl-C`. *If there are errors, feel free to open an issue with an detailed error report on GitHub.*
 
