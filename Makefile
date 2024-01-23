@@ -22,6 +22,7 @@ build-alpine-package:
 				 --build-arg BUILD_UID=`id -u` \
 			     --build-arg BUILD_GID=`id -g` \
 				 --build-arg PYTHON_DEPS="$(INSTALL_DEPS)" \
+				 --platform "linux/arm/v6" \
 			     -t $(D_BUILD_IMAGE_TAG) .
 	docker run --rm -v $(BASE_DIR)/dist:/out $(D_BUILD_IMAGE_TAG)
 
