@@ -26,7 +26,7 @@ class Tpm2NetServer(socketserver.UDPServer):
         self.__display_height: int = self.__main_app.config.main.display_height
 
         self.__dummy_animation: DummyController = cast(DummyController,
-                                                       self.__main_app.available_animation_controllers["dummy"])
+                                                       self.__main_app.all_animation_controllers["dummy"])
 
         self.__tmp_buffer: NDArray[np.uint8] = np.zeros((self.__display_height, self.__display_width, 3),
                                                         dtype=np.uint8)

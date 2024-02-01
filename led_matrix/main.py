@@ -105,7 +105,7 @@ class MainController:
 
         # load saved jobs
         saved_jobs: list[ScheduleEntry] = (
-            self.__config.get_scheduled_animations_table(self.available_animation_controllers)
+            self.__config.get_scheduled_animations_table(self.all_animation_controllers)
         )
 
         entry: ScheduleEntry
@@ -391,7 +391,7 @@ class MainController:
                           entry.animation_name)
 
     @property
-    def available_animation_controllers(self) -> dict[str, AbstractAnimationController]:
+    def all_animation_controllers(self) -> dict[str, AbstractAnimationController]:
         """
         Get a dict of the available animations.
         @return: Key: the animation name

@@ -169,7 +169,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                         # provide the main config
                         config=self.__main_app.config,
                         # provide the animations
-                        animation_controllers=self.__main_app.available_animation_controllers)
+                        animation_controllers=self.__main_app.all_animation_controllers)
 
     def __parse_animation_form(self, form: FormsDict) -> tuple[str, AnimationSettings]:
         """
@@ -179,7 +179,7 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         if animation_name is not None:
             animation_controller: AbstractAnimationController = (
-                self.__main_app.available_animation_controllers[animation_name]
+                self.__main_app.all_animation_controllers[animation_name]
             )
 
             # create new instance of the animation settings
@@ -269,7 +269,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         led_matrix/static_res/http/templates/index.tpl
         """
         return template("index",
-                        animation_controllers=self.__main_app.available_animation_controllers,
+                        animation_controllers=self.__main_app.all_animation_controllers,
                         current_animation_name=self.__main_app.current_animation_name)
 
     @post("/")
@@ -306,7 +306,7 @@ class HttpServer(metaclass=BottleCBVMeta):
                                             animation_settings=a_settings)
 
         return template("schedule/entry",
-                        animation_controllers=self.__main_app.available_animation_controllers,
+                        animation_controllers=self.__main_app.all_animation_controllers,
                         entry=temp_schedule_entry)
 
     @post("/schedule/create")
@@ -324,7 +324,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         for entry in table:
             if entry.job_id == job_id:
                 return template("schedule/entry",
-                                animation_controllers=self.__main_app.available_animation_controllers,
+                                animation_controllers=self.__main_app.all_animation_controllers,
                                 entry=entry,
                                 is_modify=True)
 
@@ -446,7 +446,7 @@ class HttpServer(metaclass=BottleCBVMeta):
 
     @get(f"/settings/{SettingsTabs.VARIANT_UPLOAD.name.lower()}/<animation_name>/delete/<variant_name>")
     def delete_variant(self, animation_name: str, variant_name: str) -> None:
-        animation: AbstractAnimationController = self.__main_app.available_animation_controllers[animation_name]
+        animation: AbstractAnimationController = self.__main_app.all_animation_controllers[animation_name]
         if animation.variant_enum is not None:
             variant: AnimationVariant = animation.variant_enum[variant_name]
 
@@ -472,7 +472,7 @@ class HttpServer(metaclass=BottleCBVMeta):
         uploaded_file: FileUpload | None = self.__get_files().get(f"variant_upload_{animation_name}_value")
 
         if uploaded_file is not None:
-            animation: AbstractAnimationController = self.__main_app.available_animation_controllers[animation_name]
+            animation: AbstractAnimationController = self.__main_app.all_animation_controllers[animation_name]
 
             animation.add_dynamic_variant(file_name=uploaded_file.filename,
                                           file_content=uploaded_file.file)
