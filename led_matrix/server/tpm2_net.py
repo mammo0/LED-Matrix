@@ -3,10 +3,10 @@
 
 from __future__ import annotations
 
-import socketserver
 import time
-from socketserver import BaseServer
-from threading import Timer
+from socket import socket
+from socketserver import BaseRequestHandler, UDPServer
+from threading import Lock, Timer
 from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
@@ -18,17 +18,16 @@ if TYPE_CHECKING:
     from led_matrix.main import MainController
 
 
-class Tpm2NetServer(socketserver.UDPServer):
+class Tpm2NetServer(UDPServer):
     def __init__(self, main_app: MainController):
         self.__main_app: MainController = main_app
-
-        self.__display_width: int = self.__main_app.config.main.display_width
-        self.__display_height: int = self.__main_app.config.main.display_height
 
         self.__dummy_animation: DummyController = cast(DummyController,
                                                        self.__main_app.all_animation_controllers[DUMMY_ANIMATION_NAME])
 
-        self.__tmp_buffer: NDArray[np.uint8] = np.zeros((self.__display_height, self.__display_width, 3),
+        self.__tmp_buffer: NDArray[np.uint8] = np.zeros((self.__main_app.config.main.display_height,
+                                                         self.__main_app.config.main.display_width,
+                                                         3),
                                                         dtype=np.uint8)
         self.__tmp_buffer_index: int = 0
 
@@ -38,72 +37,18 @@ class Tpm2NetServer(socketserver.UDPServer):
         self.__misbehaving: bool = False
 
         self.__timeout: int = 3  # seconds
-        self.__last_time_received: float | None = None
-        self.__timeout_timer: Timer | None = None
+        self.__time_lock: Lock = Lock()
+        self.__last_received_time: float | None = None
 
-        super().__init__(('', 65506), Tpm2NetHandler, bind_and_activate=True)
+        super().__init__(('', 65506), BaseRequestHandler, bind_and_activate=True)
 
-    @property
-    def main_app(self) -> MainController:
-        return self.__main_app
+    def process_request(self, request: tuple[bytes, socket], client_address: Any) -> None:
+        """
+        Override BaseServer.process_request() method.
 
-    @property
-    def dummy_animation(self) -> DummyController:
-        return self.__dummy_animation
-
-    @property
-    def tmp_buffer(self) -> NDArray[np.uint8]:
-        return self.__tmp_buffer
-
-    @property
-    def tmp_buffer_index(self) -> int:
-        return self.__tmp_buffer_index
-
-    @tmp_buffer_index.setter
-    def tmp_buffer_index(self, value: int) -> None:
-        self.__tmp_buffer_index = value
-
-    @property
-    def is_misbehaving(self) -> bool:
-        return self.__misbehaving
-
-    @is_misbehaving.setter
-    def is_misbehaving(self, value: bool) -> None:
-        self.__misbehaving = value
-
-    def update_time(self) -> None:
-        if self.__last_time_received is None and self.__timeout_timer is None:
-            self.__timeout_timer = Timer(0.5, self.__check_for_timeout)
-            self.__timeout_timer.start()
-
-        # to detect timeout store current time
-        self.__last_time_received = time.time()
-
-    def __check_for_timeout(self) -> None:
-        if self.__last_time_received is not None:
-            if self.__last_time_received + self.__timeout < time.time():
-                # stop dummy animation
-                self.__main_app.stop_animation(self.__dummy_animation.animation_name)
-
-                self.__last_time_received = None
-                self.__timeout_timer = None
-                self.__misbehaving = False
-            else:
-                # restart a timer
-                self.__timeout_timer = None
-                self.__timeout_timer = Timer(0.5, self.__check_for_timeout)
-                self.__timeout_timer.start()
-
-
-class Tpm2NetHandler(socketserver.BaseRequestHandler):
-    def __init__(self, request: Any, client_address: Any, server: BaseServer) -> None:
-        super().__init__(request, client_address, server)
-
-        # for type checking
-        self.server: Tpm2NetServer = cast(Tpm2NetServer, self.server)
-
-    def handle(self) -> None:
-        data: bytearray = self.request[0].strip()
+        UDPServer.shutdown_request() does nothing, so it's not needed to be called in the process_request() method.
+        """
+        data: bytes = request[0].strip()
         data_length: int = len(data)
 
         # check packet start byte 0x9C
@@ -122,32 +67,33 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
 
         if packet_type == 0xDA:  # data frame
             # tell main_app that tpm2_net data is received
-            if not self.server.dummy_animation.is_running:
+            if not self.__dummy_animation.is_running:
                 # use dummy animation, because the frame_queue gets filled here
-                self.server.main_app.start_animation(
-                    animation_name=self.server.dummy_animation.animation_name,
-                    animation_settings=self.server.dummy_animation.default_settings,
+                self.__main_app.start_animation(
+                    animation_name=self.__dummy_animation.animation_name,
+                    animation_settings=self.__dummy_animation.default_settings,
                     pause_current_animation=True
                 )
 
-            self.server.update_time()
-
             if packet_number == 0:
-                self.server.is_misbehaving = True
-            if packet_number == (1 if not self.server.is_misbehaving else 0):
-                self.server.tmp_buffer_index = 0
+                self.__misbehaving = True
+            if packet_number == (1 if not self.__misbehaving else 0):
+                self.__tmp_buffer_index = 0
 
-            upper: int = min(self.server.tmp_buffer.size,
-                             self.server.tmp_buffer_index + frame_size)
-            arange: NDArray[np.int_] = np.arange(self.server.tmp_buffer_index,
+            upper: int = min(self.__tmp_buffer.size,
+                             self.__tmp_buffer_index + frame_size)
+            arange: NDArray[np.int_] = np.arange(self.__tmp_buffer_index,
                                                  upper,
                                                  dtype=np.int_)
-            np.put(self.server.tmp_buffer, arange, list(data[6:-1]))
+            np.put(self.__tmp_buffer, arange, list(data[6:-1]))
 
-            self.server.tmp_buffer_index += frame_size
+            self.__tmp_buffer_index += frame_size
 
-            if packet_number == (number_of_packets if not self.server.is_misbehaving else number_of_packets - 1):
-                self.server.dummy_animation.display_frame(self.server.tmp_buffer.copy())
+            if packet_number == (number_of_packets if not self.__misbehaving else number_of_packets - 1):
+                self.__dummy_animation.display_frame(self.__tmp_buffer.copy())
+
+            # set the flag that a data package was received and processed
+            self.__package_received_and_processed()
 
         elif data[1] == 0xC0:  # command
             # NOT IMPLEMENTED
@@ -157,3 +103,41 @@ class Tpm2NetHandler(socketserver.BaseRequestHandler):
             return
         else:  # no valid tmp2 packet type
             return
+
+    def __package_received_and_processed(self) -> None:
+        with self.__time_lock:
+            # save the current timestamp
+            if self.__last_received_time is None:
+                self.__last_received_time = time.time()
+
+                # also start the timeout timer
+                Timer(self.__timeout, self.__check_for_timeout).start()
+            else:
+                self.__last_received_time = time.time()
+
+    def __clear_last_received_time(self) -> None:
+        with self.__time_lock:
+            self.__last_received_time = None
+
+    def __check_for_timeout(self) -> None:
+        # get the current time
+        current_time: float = time.time()
+        # and the timestamp of the last received package
+        last_received_time: float | None = self.__last_received_time
+
+        if last_received_time is not None:
+            time_diff: float = current_time - last_received_time
+
+            # check if the time difference
+            if time_diff >= self.__timeout:
+                # stop dummy animation
+                self.__main_app.stop_animation(self.__dummy_animation.animation_name)
+
+                self.__clear_last_received_time()
+                self.__misbehaving = False
+
+            # restart the timeout timer
+            elif time_diff == 0:
+                Timer(self.__timeout, self.__check_for_timeout).start()
+            else:
+                Timer(time_diff, self.__check_for_timeout).start()
