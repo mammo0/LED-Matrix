@@ -36,9 +36,10 @@ class MainAnimationController(Thread):
         # the current running animation
         self.__current_animation_controller: AbstractAnimationController | None = None
 
-        # the dummy animation is always present as a fallback
+        # dictionary for all available animation controllers
         self.__all_animation_controllers: dict[str, AbstractAnimationController] = {}
 
+        # the dummy animation is always present
         dummy_animation: DummyController = DummyController(width=config.main.display_width,
                                                            height=config.main.display_height,
                                                            frame_queue=display_frame_queue,
@@ -51,7 +52,8 @@ class MainAnimationController(Thread):
             animation_loader.load_plugins(path=str(animations_dir.resolve()),
                                           plugin_base_class=AbstractAnimationController)
 
-        # use module names to identify the animations not the class names
+
+
         animation_cls: type[AbstractAnimationController]
         for animation_cls in animation_loader.plugins.values():
             animation_controller: AbstractAnimationController = animation_cls(
@@ -63,19 +65,27 @@ class MainAnimationController(Thread):
             self.__all_animation_controllers[animation_controller.animation_name] = animation_controller
 
         # load the default animation
-        self.__default_animation_name: str = config.default_animation.animation_name
-        default_animation_controller: AbstractAnimationController = (
-            self.__all_animation_controllers[self.__default_animation_name]
-        )
+        self.__default_animation_name: str
+        self.__default_animation_settings: AnimationSettings
+        try:
+            self.__default_animation_name = config.default_animation.animation_name
+            default_animation_controller: AbstractAnimationController = (
+                self.__all_animation_controllers[self.__default_animation_name]
+            )
 
-        dvariant_type: type[AnimationVariant] | None = default_animation_controller.variant_enum
-        dparameter_type: type[AnimationParameter] | None = default_animation_controller.parameter_class
+            dvariant_type: type[AnimationVariant] | None = default_animation_controller.variant_enum
+            dparameter_type: type[AnimationParameter] | None = default_animation_controller.parameter_class
 
-        self.__default_animation_settings: AnimationSettings = AnimationSettings(
-            variant=config.get_default_animation_variant(dvariant_type),
-            parameter=config.get_default_animation_parameter(dparameter_type),
-            repeat=config.default_animation.repeat
-        )
+            self.__default_animation_settings = AnimationSettings(
+                variant=config.get_default_animation_variant(dvariant_type),
+                parameter=config.get_default_animation_parameter(dparameter_type),
+                repeat=config.default_animation.repeat
+            )
+        except KeyError:
+            # use the dummy animation as a fallback for the default animation
+            self.__default_animation_name = dummy_animation.animation_name
+            self.__default_animation_settings = dummy_animation.default_settings
+
 
     def __on_last_element_processed(self) -> AnimationEvent:
         # check for paused animations
