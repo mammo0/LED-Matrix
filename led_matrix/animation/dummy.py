@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from logging import Logger
 from queue import Queue
-from typing import Callable, cast
+from typing import Callable, Final, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -9,6 +9,8 @@ from numpy.typing import NDArray
 from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationSettings)
+
+DUMMY_ANIMATION_NAME: Final[str] = "dummy"
 
 
 @dataclass(kw_only=True)
@@ -45,7 +47,7 @@ class DummyAnimation(AbstractAnimation):
 
 
 class DummyController(AbstractAnimationController,
-                      animation_name="dummy",
+                      animation_name=DUMMY_ANIMATION_NAME,
                       animation_class=DummyAnimation,
                       settings_class=DummySettings,
                       accepts_dynamic_variant=False,

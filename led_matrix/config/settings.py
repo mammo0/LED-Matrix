@@ -7,6 +7,7 @@ from astral import LocationInfo
 from astral.geocoder import GroupInfo, database, lookup, lookup_in_group
 from astral.sun import sun
 
+from led_matrix.animation.dummy import DUMMY_ANIMATION_NAME
 from led_matrix.config.types import (ColorTemp, Hardware, LEDColorType,
                                      LEDOrientation, LEDOrigin, LEDWireMode)
 
@@ -100,7 +101,7 @@ class MainSettings:
 
 @dataclass(kw_only=True)
 class DefaultAnimation:
-    animation_name: str = "dummy"
+    animation_name: str = DUMMY_ANIMATION_NAME
     variant_as_str: str = "null"
     parameter_as_json_str: str = "null"
     repeat: int = 0

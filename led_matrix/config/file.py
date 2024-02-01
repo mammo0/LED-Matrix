@@ -8,6 +8,7 @@ from typing import Any, Final, Literal, TypeVar
 from python_ini.ini_file import IniFile
 from python_ini.ini_writer import IniWriter
 
+from led_matrix.animation.dummy import DUMMY_ANIMATION_NAME
 from led_matrix.config.meta import (_APA102Meta, _ComputerMeta,
                                     _DefaultAnimationMeta, _MainSettingsMeta,
                                     _ScheduledAnimationsMeta)
@@ -277,7 +278,7 @@ class _ConfigWriter:
         self.__w.section(name=_DefaultAnimationMeta.SECTION_NAME)
         self.__w.comment("Default animation that is displayed on start/idle.")
         self.__w.comment("The value is equal to the name of the Python module in the 'animation' directory.")
-        self.__w.comment("Default start animation is 'dummy' (blank display).")
+        self.__w.comment(f"Default start animation is '{DUMMY_ANIMATION_NAME}' (blank display).")
         self.__w.key(name=_DefaultAnimationMeta.ANIMATION, varg=animation_config.animation_name)
 
         self.__w.comment()
