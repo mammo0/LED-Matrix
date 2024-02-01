@@ -7,7 +7,7 @@ from astral import LocationInfo
 from astral.geocoder import GroupInfo, database, lookup, lookup_in_group
 from astral.sun import sun
 
-from led_matrix.animation.dummy import DUMMY_ANIMATION_NAME
+from led_matrix.animation import DUMMY_ANIMATION_NAME
 from led_matrix.config.types import (ColorTemp, Hardware, LEDColorType,
                                      LEDOrientation, LEDOrigin, LEDWireMode)
 

@@ -8,7 +8,7 @@ from typing import Any, Final, Literal, TypeVar
 from python_ini.ini_file import IniFile
 from python_ini.ini_writer import IniWriter
 
-from led_matrix.animation.dummy import DUMMY_ANIMATION_NAME
+from led_matrix.animation import DUMMY_ANIMATION_NAME
 from led_matrix.config.meta import (_APA102Meta, _ComputerMeta,
                                     _DefaultAnimationMeta, _MainSettingsMeta,
                                     _ScheduledAnimationsMeta)

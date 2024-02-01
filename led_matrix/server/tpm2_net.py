@@ -12,7 +12,8 @@ from typing import TYPE_CHECKING, Any, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from led_matrix.animation.dummy import DUMMY_ANIMATION_NAME, DummyController
+from led_matrix.animation import DUMMY_ANIMATION_NAME
+from led_matrix.animation.dummy import DummyController
 
 if TYPE_CHECKING:
     from led_matrix.main import MainController

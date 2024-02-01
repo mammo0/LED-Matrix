@@ -1,16 +1,15 @@
 from dataclasses import dataclass
 from logging import Logger
 from queue import Queue
-from typing import Callable, Final, cast
+from typing import Callable, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
+from led_matrix.animation import DUMMY_ANIMATION_NAME
 from led_matrix.animation.abstract import (AbstractAnimation,
                                            AbstractAnimationController,
                                            AnimationSettings)
-
-DUMMY_ANIMATION_NAME: Final[str] = "dummy"
 
 
 @dataclass(kw_only=True)
