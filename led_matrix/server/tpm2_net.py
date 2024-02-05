@@ -3,11 +3,13 @@
 
 from __future__ import annotations
 
+import operator
 import time
+from functools import reduce
 from socket import socket
 from socketserver import BaseRequestHandler, UDPServer
-from threading import Lock, Timer
-from typing import TYPE_CHECKING, Any, cast
+from threading import Timer
+from typing import TYPE_CHECKING, Any, Final, Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -26,10 +28,9 @@ class Tpm2NetServer(UDPServer):
         self.__dummy_animation: DummyController = cast(DummyController,
                                                        self.__main_app.all_animation_controllers[DUMMY_ANIMATION_NAME])
 
-        self.__tmp_buffer: NDArray[np.uint8] = np.zeros((self.__main_app.config.main.display_height,
-                                                         self.__main_app.config.main.display_width,
-                                                         3),
-                                                        dtype=np.uint8)
+        self.__tmp_buffer_shape: Final[tuple[int, int, Literal[3]]] = (self.__main_app.config.main.display_height,
+                                                                       self.__main_app.config.main.display_width,
+                                                                       3)
         self.__tmp_buffer_index: int = 0
 
         # glediator is ok
@@ -38,7 +39,6 @@ class Tpm2NetServer(UDPServer):
         self.__misbehaving: bool = False
 
         self.__timeout: int = 3  # seconds
-        self.__time_lock: Lock = Lock()
         self.__last_received_time: float | None = None
 
         super().__init__(('', 65506), BaseRequestHandler, bind_and_activate=True)
@@ -73,7 +73,8 @@ class Tpm2NetServer(UDPServer):
                 self.__main_app.start_animation(
                     animation_name=self.__dummy_animation.animation_name,
                     animation_settings=self.__dummy_animation.default_settings,
-                    pause_current_animation=True
+                    pause_current_animation=True,
+                    block_until_started=True
                 )
 
             if packet_number == 0:
@@ -81,17 +82,16 @@ class Tpm2NetServer(UDPServer):
             if packet_number == (1 if not self.__misbehaving else 0):
                 self.__tmp_buffer_index = 0
 
-            upper: int = min(self.__tmp_buffer.size,
+            upper: int = min(reduce(operator.mul, self.__tmp_buffer_shape),
                              self.__tmp_buffer_index + frame_size)
-            arange: NDArray[np.int_] = np.arange(self.__tmp_buffer_index,
-                                                 upper,
-                                                 dtype=np.int_)
-            np.put(self.__tmp_buffer, arange, list(data[6:-1]))
+            tmp_buffer: NDArray[np.uint8] = np.frombuffer(data,
+                                                          dtype=np.uint8,
+                                                          count=upper, offset=6).reshape(self.__tmp_buffer_shape)
 
             self.__tmp_buffer_index += frame_size
 
             if packet_number == (number_of_packets if not self.__misbehaving else number_of_packets - 1):
-                self.__dummy_animation.display_frame(self.__tmp_buffer.copy())
+                self.__dummy_animation.display_frame(tmp_buffer)
 
             # set the flag that a data package was received and processed
             self.__package_received_and_processed()
@@ -106,19 +106,17 @@ class Tpm2NetServer(UDPServer):
             return
 
     def __package_received_and_processed(self) -> None:
-        with self.__time_lock:
-            # save the current timestamp
-            if self.__last_received_time is None:
-                self.__last_received_time = time.time()
+        # save the current timestamp
+        if self.__last_received_time is None:
+            self.__last_received_time = time.time()
 
-                # also start the timeout timer
-                Timer(self.__timeout, self.__check_for_timeout).start()
-            else:
-                self.__last_received_time = time.time()
+            # also start the timeout timer
+            Timer(self.__timeout, self.__check_for_timeout).start()
+        else:
+            self.__last_received_time = time.time()
 
     def __clear_last_received_time(self) -> None:
-        with self.__time_lock:
-            self.__last_received_time = None
+        self.__last_received_time = None
 
     def __check_for_timeout(self) -> None:
         # get the current time
@@ -138,7 +136,7 @@ class Tpm2NetServer(UDPServer):
                 self.__misbehaving = False
 
             # restart the timeout timer
-            elif time_diff == 0:
+            elif time_diff < 1:
                 Timer(self.__timeout, self.__check_for_timeout).start()
             else:
                 Timer(time_diff, self.__check_for_timeout).start()
