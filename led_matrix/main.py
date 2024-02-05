@@ -476,15 +476,15 @@ class MainController:
                 # to limit CPU usage do not go faster than 60 "fps" on empty queue
                 MainController.__quit_signal.wait(1/60)
 
-        # first shutdown the animation scheduler, so no new animations will be started
+        # first stop the server interfaces
+        self.__stop_servers()
+
+        # then shutdown the animation scheduler, so no new animations will be started
         # do not wait for the scheduler executor; this causes a deadlock if a scheduled animation is currently running
         self.__animation_scheduler.shutdown(wait=False)
         # stop the animation controller (including any currently running animation)
         self.__animation_controller.stop()
         self.__display.clear()
-
-        # stop the server interfaces
-        self.__stop_servers()
 
         if MainController.__reload_signal.is_set():
             _log.info("Reloading application")
