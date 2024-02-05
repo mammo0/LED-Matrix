@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Python: LED-Matrix",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "led_matrix",
             "args": ["config.ini"],
