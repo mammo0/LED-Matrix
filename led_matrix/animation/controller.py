@@ -101,9 +101,14 @@ class MainAnimationController(Thread):
         return self.__create_resume_event(animation_controller_to_resume=animation_to_resume,
                                           resume_thread_uuid=resume_thread_uuid)
 
-    def __on_animation_finished(self) -> None:
+    def __on_animation_finished(self, finished_animation_controller: AbstractAnimationController) -> None:
         # whenever an animation stops or finishes check if there are unfinished jobs
         if not self.__controll_queue.are_tasks_remaining:
+            # if the current animation controller is the one that finished, clear it
+            # this avoids that the next start event will try to stop it
+            if self.__current_animation_controller == finished_animation_controller:
+                self.__current_animation_controller = None
+
             self.__on_last_element_processed()
 
     def __start_animation(self, event: AnimationStartEvent) -> None:

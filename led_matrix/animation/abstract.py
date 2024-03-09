@@ -218,7 +218,7 @@ class AbstractAnimationController(ABC):
     __parameter_class: ClassVar[type[AnimationParameter] | None]
 
     def __init__(self, width: int, height: int,
-                 frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
+                 frame_queue: Queue, on_finish_callable: Callable[["AbstractAnimationController"], None]) -> None:
         # width of frames to produce
         self.__width: int = width
         # height of frames to produce
@@ -226,7 +226,7 @@ class AbstractAnimationController(ABC):
         # queue to put frames onto
         self.__frame_queue: Queue = frame_queue
         # this gets called whenever an animation stops/finishes
-        self.__on_finish_callable: Callable[[], None] = on_finish_callable
+        self.__on_finish_callable: Callable[[AbstractAnimationController], None] = on_finish_callable
 
         self.__log: Logger = LOG.create(f"Animation: '{self.animation_name}'")
 
@@ -494,4 +494,4 @@ class AbstractAnimationController(ABC):
         self.__animation_running_event.clear()
 
         # call finished callable
-        self.__on_finish_callable()
+        self.__on_finish_callable(self)

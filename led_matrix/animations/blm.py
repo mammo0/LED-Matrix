@@ -215,7 +215,7 @@ class BlmController(AbstractAnimationController,
                     variant_enum=BlmVariant,
                     parameter_class=BlmParameter):
     def __init__(self, width: int, height: int,
-                 frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
+                 frame_queue: Queue, on_finish_callable: Callable[[AbstractAnimationController], None]) -> None:
         super().__init__(width, height, frame_queue, on_finish_callable)
 
         _BLM_ANIMATIONS_DIR.mkdir(parents=True, exist_ok=True)

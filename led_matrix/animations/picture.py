@@ -165,7 +165,7 @@ class PictureController(AbstractAnimationController,
                         is_repeat_supported=True,
                         variant_enum=PictureVariant):
     def __init__(self, width: int, height: int,
-                 frame_queue: Queue, on_finish_callable: Callable[[], None]) -> None:
+                 frame_queue: Queue, on_finish_callable: Callable[[AbstractAnimationController], None]) -> None:
         super().__init__(width, height, frame_queue, on_finish_callable)
 
         _PICTURES_DIR.mkdir(parents=True, exist_ok=True)
