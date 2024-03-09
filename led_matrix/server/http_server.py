@@ -5,6 +5,7 @@ from dataclasses import Field, replace
 from datetime import datetime
 from enum import Enum
 from ipaddress import IPv4Address, IPv6Address
+from logging import Logger
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
@@ -18,6 +19,7 @@ from led_matrix.animation.abstract import (AbstractAnimationController,
                                            AnimationSettings, AnimationVariant)
 from led_matrix.common.bottle import BottleCBVMeta, get, post
 from led_matrix.common.color import Color
+from led_matrix.common.log import LOG
 from led_matrix.common.schedule import CronStructure, ScheduleEntry
 from led_matrix.common.wsgi import CustomWSGIRefServer
 from led_matrix.config.types import ColorTemp
@@ -130,24 +132,31 @@ class HttpServer(metaclass=BottleCBVMeta):
     def __init__(self, main_app: MainController) -> None:
         self.__main_app: MainController = main_app
 
+        self.__log: Logger = LOG.create(HttpServer.__name__)
+
         http_res_dir: Path = STATIC_RESOURCES_DIR / "http"
         self.__js_dir: Path = http_res_dir / "js"
         self.__css_dir: Path = http_res_dir / "css"
         self.__fonts_dir: Path = http_res_dir / "fonts"
         bottle.TEMPLATE_PATH = [(http_res_dir / "templates").resolve()]
 
-        port: int = self.__main_app.config.main.http_server_port
-        host: IPv4Address | IPv6Address = self.__main_app.config.main.http_server_listen_ip
+        self.__port: int = self.__main_app.config.main.http_server_port
+        self.__host: IPv4Address | IPv6Address = self.__main_app.config.main.http_server_listen_ip
 
-        self.__wsgi_server: CustomWSGIRefServer = CustomWSGIRefServer(host=str(host),
-                                                                      port=port,
+        self.__wsgi_server: CustomWSGIRefServer = CustomWSGIRefServer(host=str(self.__host),
+                                                                      port=self.__port,
                                                                       quiet=True)
 
     def start(self) -> None:
         self.__wsgi_server.start()
 
+        self.__log.info("Listening on http://%s:%d",
+                        self.__host, self.__port)
+
     def stop(self) -> None:
         self.__wsgi_server.stop()
+
+        self.__log.info("Server stopped")
 
     def __get_form(self) -> FormsDict:
         form: FormsDict = cast(FormsDict, request.forms)

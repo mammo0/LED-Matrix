@@ -6,6 +6,7 @@ from __future__ import annotations
 import operator
 import time
 from functools import reduce
+from logging import Logger
 from socket import socket
 from socketserver import BaseRequestHandler, UDPServer
 from threading import Timer
@@ -16,6 +17,7 @@ from numpy.typing import NDArray
 
 from led_matrix.animation import DUMMY_ANIMATION_NAME
 from led_matrix.animation.dummy import DummyController
+from led_matrix.common.log import LOG
 
 if TYPE_CHECKING:
     from led_matrix.main import MainController
@@ -24,6 +26,8 @@ if TYPE_CHECKING:
 class Tpm2NetServer(UDPServer):
     def __init__(self, main_app: MainController):
         self.__main_app: MainController = main_app
+
+        self.__log: Logger = LOG.create(Tpm2NetServer.__name__)
 
         self.__dummy_animation: DummyController = cast(DummyController,
                                                        self.__main_app.all_animation_controllers[DUMMY_ANIMATION_NAME])
@@ -42,6 +46,16 @@ class Tpm2NetServer(UDPServer):
         self.__last_received_time: float | None = None
 
         super().__init__(('', 65506), BaseRequestHandler, bind_and_activate=True)
+
+    def serve_forever(self, poll_interval: float = 0.5) -> None:
+        self.__log.info("Server running")
+
+        super().serve_forever(poll_interval)
+
+    def shutdown(self) -> None:
+        super().shutdown()
+
+        self.__log.info("Server stopped")
 
     def process_request(self, request: tuple[bytes, socket], client_address: Any) -> None:
         """
