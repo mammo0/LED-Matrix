@@ -21,7 +21,7 @@ from led_matrix.animation.abstract import (AbstractAnimation,
 
 _FONTS_DIR: Final[Path] = STATIC_RESOURCES_DIR / "fonts"
 _TEXT_FONT: Final[Face] = Face(str(_FONTS_DIR / "LiberationSans-Regular_2.1.2.ttf"))
-_EMOJI_FONT: Final[Face] = Face(str(_FONTS_DIR / "twemoji-14.0.2.ttf"))
+_EMOJI_FONT: Final[Face] = Face(str(_FONTS_DIR / "Twemoji-15.0.3.ttf"))
 # often only one char size is available and valid for emoji fonts
 # use the last one (should be the largest)
 _EMOJI_FONT.set_char_size(_EMOJI_FONT.available_sizes[-1].size)
