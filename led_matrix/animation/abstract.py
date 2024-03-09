@@ -137,6 +137,8 @@ class AbstractAnimation(ABC, Thread):
                         # start a new iteration
                         continue
 
+                    # the animation has finished
+                    self.__on_finish_callable()
                     # stop here
                     break
             else:
@@ -147,9 +149,6 @@ class AbstractAnimation(ABC, Thread):
             wait_time: float = self.__animation_speed - (time.time() - start_time)
             if wait_time > 0:
                 self._stop_event.wait(wait_time)
-
-        # now the animation has stopped, so call the finish callable
-        self.__on_finish_callable()
 
     def _set_animation_speed(self, animation_speed: float) -> None:
         self.__animation_speed = animation_speed
@@ -406,7 +405,7 @@ class AbstractAnimationController(ABC):
             frame_queue=self.__frame_queue,
             settings=animation_settings,
             logger=self.__log,
-            on_finish_callable=self.__animation_finished_stopped
+            on_finish_callable=self.__animation_finished
         )
         animation_uuid: UUID = uuid4()
         self.__animation_threads[animation_uuid] = animation_thread
@@ -476,7 +475,7 @@ class AbstractAnimationController(ABC):
             self.__animation_threads.pop(self._current_animation[0])
             self._current_animation = None
 
-            self.__log.info("Stopping animation")
+            self.__log.info("Stopped animation")
 
         else:
             self.__log.warning("Can't stop animation, because it's not running")
@@ -489,7 +488,9 @@ class AbstractAnimationController(ABC):
 
         animation_thread.join()
 
-    def __animation_finished_stopped(self) -> None:
+    def __animation_finished(self) -> None:
+        self.__log.info("Animation finished")
+
         # release running event
         self.__animation_running_event.clear()
 
