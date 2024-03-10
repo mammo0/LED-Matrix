@@ -27,8 +27,8 @@ class AbstractDisplay(ABC):
         """The buffer contains the rgb data to be displayed."""
         return self.__buffer
 
-    @frame_buffer.setter
-    def frame_buffer(self, value: NDArray[np.uint8]):
+    @final
+    def update_frame_buffer(self, value: NDArray[np.uint8]) -> bool:
         if self.__buffer.shape == value.shape:
             # check if the color temperature should be changed
             if self.__color_temp != ColorTemp.K_6000:
@@ -38,7 +38,17 @@ class AbstractDisplay(ABC):
                     # apply the color temperature
                     value[i] = np.ceil(value[i] * self.__color_temp.value).astype(np.uint8)
 
+            # stop here if the buffer does not change
+            if np.array_equal(self.__buffer, value):
+                return False
+
+            # apply the new value
             self.__buffer = value
+            # and return True, because it has changed
+            return True
+
+        # nothing changed here
+        return False
 
     def clear_buffer(self) -> None:
         self.__buffer = np.zeros_like(self.__buffer)

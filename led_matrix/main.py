@@ -463,10 +463,13 @@ class MainController:
         while not MainController.__quit_signal.is_set():
             # check if there is a frame that needs to be displayed
             if self.__frame_queue.qsize() != 0:
-                # get frame and display it
-                self.__display.frame_buffer = self.__frame_queue.get()
+                # get frame
+                frame_changed: bool = self.__display.update_frame_buffer(self.__frame_queue.get())
                 self.__frame_queue.task_done()
-                self.__display.show(gamma=True)
+
+                # if it has changed, display it
+                if frame_changed:
+                    self.__display.show(gamma=True)
 
                 # after the first frame is displayed, clear the reload signal
                 if first_loop:
