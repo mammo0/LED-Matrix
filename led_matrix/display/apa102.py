@@ -221,25 +221,25 @@ if sys.platform == "linux":
 
             return ret
 
-        def __build_apa102_frame(self) -> NDArray[np.uint8]:
+        def __build_apa102_frame(self, frame_buffer: NDArray[np.uint8]) -> NDArray[np.uint8]:
             # if there is a brightness offset,
             # lower the color values proportionately
             led_frame_with_brightness: NDArray[np.uint8]
             if self.__brightness_ceiling_offset > 0:
                 led_frame_with_brightness = (
                     # current value   -
-                    self.frame_buffer - \
+                    frame_buffer - \
                     #       (one brightness step of the current value   * brightness offset in percent    )
-                    np.ceil(((self.frame_buffer / (MAX_BRIGHTNESS + 1)) * self.__brightness_ceiling_offset))
+                    np.ceil(((frame_buffer / (MAX_BRIGHTNESS + 1)) * self.__brightness_ceiling_offset))
                 ).astype(np.uint8)
             else:
-                led_frame_with_brightness: NDArray[np.uint8] = self.frame_buffer
+                led_frame_with_brightness: NDArray[np.uint8] = frame_buffer
 
             return np.concatenate((self.__led_frame_start_array, led_frame_with_brightness), axis=2)
 
-        def __gamma_correct_buffer(self) -> None:
+        def __correct_gamma(self, rw_buffer: NDArray[np.uint8]) -> None:
             x: tuple[NDArray[np.uint8], ...]
-            for x in np.nditer(self.frame_buffer,
+            for x in np.nditer(rw_buffer,
                                op_flags=[['readwrite']],
                                flags=['external_loop', 'buffered'],
                                order='F'):
@@ -263,10 +263,14 @@ if sys.platform == "linux":
             )
 
         def show(self, gamma: bool=False) -> None:
+            buffer: NDArray[np.uint8]
             if gamma:
-                self.__gamma_correct_buffer()
+                buffer = np.copy(self.frame_buffer)
+                self.__correct_gamma(buffer)
+            else:
+                buffer = self.frame_buffer
 
-            apa102_led_frames: NDArray[np.uint8] = self.__build_apa102_frame()
+            apa102_led_frames: NDArray[np.uint8] = self.__build_apa102_frame(buffer)
             reindexed_frames: NDArray[np.uint8] = apa102_led_frames.take(self.__virtual_to_physical_byte_indices)
 
             to_send: list[int] = (
