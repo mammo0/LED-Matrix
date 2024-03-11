@@ -45,7 +45,7 @@ jobs:
               echo "release_num=${GITHUB_REF_NAME##*.}" >> $GITHUB_OUTPUT
         - name: Create GH Release
           if: startsWith(github.event.ref, 'refs/tags')
-          uses: softprops/action-gh-release@v1
+          uses: softprops/action-gh-release@v2
           env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
