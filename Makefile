@@ -1,6 +1,6 @@
 BASE_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-D_BUILD_IMAGE_TAG=led-matrix_apk_builder:latest
+D_BUILD_IMAGE_TAG=localhost/led-matrix_apk_builder:latest
 CONFIG_FILE=$(BASE_DIR)/config.ini
 
 
