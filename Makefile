@@ -16,7 +16,9 @@ build-alpine-package: WHL_FILE:=$(shell echo led_matrix-`poetry version | cut -d
 build-alpine-package:
 	poetry build -f wheel
 
+# create a clean config
 	poetry install --only config
+	rm -f alpine/default_config.ini
 	poetry run create-config alpine/default_config.ini
 
 	docker build --build-arg WHL_FILE=$(WHL_FILE) \
