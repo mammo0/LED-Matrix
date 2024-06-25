@@ -13,7 +13,9 @@ ARG BUILD_GID
 
 # install Alpine SDK for bulding packages
 RUN apk update && \
-    apk add alpine-sdk
+    apk add alpine-sdk \
+            # required for abuild-keygen -i to work
+            sudo
 
 
 # set build directory
@@ -27,7 +29,7 @@ ADD alpine/* "$BUILD_DIR"
 
 
 # build the package
-RUN abuild-keygen -a -n && \
+RUN abuild-keygen -a -i -n && \
     abuild -F checksum && \
     abuild -F -r && \
     # copy the created package back to the build directory
