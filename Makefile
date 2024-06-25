@@ -4,6 +4,9 @@ D_BUILD_IMAGE_TAG=localhost/led-matrix_apk_builder:latest
 CONFIG_FILE=$(BASE_DIR)/config.ini
 
 
+.PHONY: develop production config run build-alpine-package
+
+
 build-alpine-package: ALL_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --with config | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
 build-alpine-package: ALPINE_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --only alpine | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
 build-alpine-package: INSTALL_DEPS:=$(filter-out $(ALPINE_DEPS), $(ALL_DEPS))
