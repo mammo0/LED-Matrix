@@ -30,9 +30,9 @@ build-alpine-package:
 	docker run --rm -v $(BASE_DIR)/dist:/out $(D_BUILD_IMAGE_TAG)
 
 # target alias for creating the config file
-config:
+config $(CONFIG_FILE):
 	poetry install --only config
-	@# create or update the config file if necessary
+# create or update the config file if necessary
 	poetry run create-config $(CONFIG_FILE)
 
 develop: config
@@ -43,5 +43,5 @@ production: config
 	poetry install --without dev --sync
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry run pip install --force git+https://github.com/mammo0/freetype-py.git@led-matrix
 
-run:
+run: $(CONFIG_FILE)
 	poetry run led-matrix $(CONFIG_FILE)
