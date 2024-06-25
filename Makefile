@@ -7,13 +7,14 @@ CONFIG_FILE=$(BASE_DIR)/config.ini
 .PHONY: develop production config run build-alpine-package
 
 
-build-alpine-package: ALL_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --with config | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
-build-alpine-package: ALPINE_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --only alpine | sed "s/ ; .*//" | tr -d " " | tr "\n" " ")
-build-alpine-package: INSTALL_DEPS:=$(filter-out $(ALPINE_DEPS), $(ALL_DEPS))
-build-alpine-package: PKG_VER:=$(shell poetry version | cut -d " " -f2 | sed "s/\.post/_p/")
-build-alpine-package: PKG_REL:=0
-build-alpine-package: WHL_FILE:=$(shell echo led_matrix-`poetry version | cut -d " " -f2`-py3-none-any.whl)
 build-alpine-package:
+# define build arguments
+	$(eval ALL_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --with config | sed "s/ ; .*//" | tr -d " " | tr "\n" " "))
+	$(eval ALPINE_DEPS:=$(shell poetry export -f requirements.txt --without-hashes --only alpine | sed "s/ ; .*//" | tr -d " " | tr "\n" " "))
+	$(eval INSTALL_DEPS:=$(filter-out $(ALPINE_DEPS), $(ALL_DEPS)))
+	$(eval PKG_VER:=$(shell poetry version | cut -d " " -f2 | sed "s/\.post/_p/"))
+	$(eval WHL_FILE:=$(shell echo led_matrix-`poetry version | cut -d " " -f2`-py3-none-any.whl))
+
 	poetry build -f wheel
 
 # create a clean config
@@ -23,7 +24,7 @@ build-alpine-package:
 
 	docker build --build-arg WHL_FILE=$(WHL_FILE) \
 				 --build-arg PKG_VER=$(PKG_VER) \
-				 --build-arg PKG_REL=$(PKG_REL) \
+				 --build-arg PKG_REL=0 \
 				 --build-arg BUILD_UID=`id -u` \
 			     --build-arg BUILD_GID=`id -g` \
 				 --build-arg PYTHON_DEPS="$(INSTALL_DEPS)" \
