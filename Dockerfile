@@ -13,7 +13,9 @@ ARG BUILD_GID
 
 # install Alpine SDK for bulding packages
 RUN apk update && \
-    apk add alpine-sdk \
+    apk upgrade --no-cache && \
+    apk add --no-cache \
+            alpine-sdk \
             # required for abuild-keygen -i to work
             sudo
 
