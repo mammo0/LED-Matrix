@@ -22,7 +22,7 @@ led-matrix = "led_matrix.cli:run"
 [tool.poetry.dependencies]
 python = "~3.11"
 spidev = { version = "^3.6", markers = "sys_platform == 'linux'"}
-imageio = "^2.34.2"
+imageio = "^2.35.1"
 freetype-py = {git = "https://github.com/mammo0/freetype-py.git", branch = "led-matrix"}
 simple-plugin-loader = "^3.0.0"
 
