@@ -40,7 +40,7 @@ jsons = "^1.6.3"
 astral = "^3.2"
 
 [tool.poetry.group.dev.dependencies]
-pygame = "^2.6.0"
+pygame = "^2.6.1"
 
 
 [tool.poetry-dynamic-versioning]
