@@ -8,8 +8,7 @@ license="GPL-3.0-only"
 
 arch="armhf"
 options="!check"
-# py3-setuptools is a missing dependency from apscheduler
-depends="openrc py3-numpy py3-pillow py3-bottle py3-apscheduler py3-setuptools py3-tzlocal"
+depends="openrc py3-numpy py3-pillow py3-bottle py3-apscheduler py3-tzlocal"
 makedepends="linux-headers ninja python3-dev py3-pip py3-installer"
 source="led-matrix.initd \
         default_config.ini \
