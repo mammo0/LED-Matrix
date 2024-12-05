@@ -10,26 +10,13 @@ arch="armhf"
 options="!check"
 # py3-setuptools is a missing dependency from apscheduler
 depends="openrc py3-numpy py3-pillow py3-bottle py3-apscheduler py3-setuptools py3-tzlocal"
-makedepends="linux-headers cmake ninja python3-dev py3-pip py3-installer"
+makedepends="linux-headers ninja python3-dev py3-pip py3-installer"
 source="led-matrix.initd \
         default_config.ini \
         ${WHL_FILE}"
 
-prepare() {
-    # should be called according to Alpine docs
-    # https://wiki.alpinelinux.org/wiki/APKBUILD_Reference#prepare()
-    default_prepare
-
-    # do not build cmake from source again (dependency of freetype-py), instead use the binaries provided by Alpine
-    echo "Fetching Alpine cmake binaries..."
-    mkdir -p "${builddir}/cmake-bin"
-    apk fetch -s cmake | tar -C "${builddir}/cmake-bin" -zxf -
-}
-
 build() {
     # install the dependecies that are not part of Alpine
-    # use downloaded binaries from prepare() method above
-    CMAKE_ARGS="-DCMakePythonDistributions_SUPERBUILD=0 -DBUILD_CMAKE_FROM_SOURCE=OFF -DCMakeProject_BINARY_DISTRIBUTION_DIR=${builddir}/cmake-bin/usr" \
     FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 CMAKE_BUILD_PARALLEL_LEVEL=$(nproc --all) \
         pip -v install --root "${builddir}" $PYTHON_DEPS
 }
