@@ -36,7 +36,11 @@ class MainSettings:
         region: str
         city: str
         try:
-            region, city = tzlocal.get_localzone_name().split("/", maxsplit=1)
+            localzone_name: str | None = tzlocal.get_localzone_name()
+            if not localzone_name:
+                raise ValueError
+
+            region, city = localzone_name.split("/", maxsplit=1)
         except  ValueError:
             self.__location = LocationInfo()
         else:
