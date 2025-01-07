@@ -26,7 +26,7 @@ jobs:
           # by default uses the .python-version file
           uses: actions/setup-python@v5
         - name: Set up Poetry
-          uses: abatilo/actions-poetry@v3
+          uses: abatilo/actions-poetry@v4
           with:
             poetry-plugins: |
               poetry-plugin-export
