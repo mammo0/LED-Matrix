@@ -362,7 +362,7 @@ version = "78.1.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
-groups = ["alpine", "dev"]
+groups = ["alpine"]
 files = [
     {file = "setuptools-78.1.1-py3-none-any.whl", hash = "sha256:c3a9c4211ff4c309edb8b8c4f1cbfa7ae324c4ba9f91ff254e3d305b9fd54561"},
     {file = "setuptools-78.1.1.tar.gz", hash = "sha256:fcc17fd9cd898242f6b4adfaca46137a9edef687f43e6f78469692a5e70d851d"},
@@ -418,15 +418,15 @@ files = [
 
 [[package]]
 name = "spidev"
-version = "3.7"
+version = "3.8"
 description = "Python bindings for Linux SPI access through spidev"
 optional = false
 python-versions = "*"
 groups = ["main"]
 markers = "sys_platform == \"linux\""
 files = [
-    {file = "spidev-3.7-cp39-cp39-linux_armv7l.whl", hash = "sha256:6f9a51d72eac0785d3b7a839c5ee1b6a16a9b711fe053d56adecdf18786e2550"},
-    {file = "spidev-3.7.tar.gz", hash = "sha256:ce628a5ff489f45132679879bff5f455a66abf9751af01843850155b06ae92f0"},
+    {file = "spidev-3.8-cp39-cp39-linux_armv7l.whl", hash = "sha256:07d0da112ca944df41f080811bb123b910df63bb38b66712289bc4fd9d682185"},
+    {file = "spidev-3.8.tar.gz", hash = "sha256:2bc02fb8c6312d519ebf1f4331067427c0921d3f77b8bcaf05189a2e8b8382c0"},
 ]
 
 [[package]]
@@ -477,4 +477,4 @@ devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pyte
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.11"
-content-hash = "ae2d7ee5eae850d9929aeca2b2743dfeac0bf94ef31b662862b5999a92f6d913"
+content-hash = "cdb3107b63dbabc8c5c76b1b97e2b1f8bfd27b889b33a6a0dbc244ced65ab10f"
