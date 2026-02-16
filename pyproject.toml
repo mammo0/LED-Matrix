@@ -1,38 +1,46 @@
-[tool.poetry]
+[project]
 name = "LED-Matrix"
-version = "0.0.0"
+dynamic = [ "version" ]
 description = "APA102 based LED-Matrix controlled by Raspberry Pi on Alpine Linux written in Python."
+authors = [
+    { name = "mammo0", email = "marc.ammon@hotmail.de" }
+]
 readme = "README.md"
 license = "GPL-3.0-only"
-authors = ["Marc Ammon <marc.ammon@hotmail.de>"]
-homepage = "https://github.com/mammo0/LED-Matrix"
 
-include = [
-    { path = "led_matrix/static_res", format = ["sdist", "wheel"] }
+requires-python = ">=3.12,<4.0"
+
+dependencies = [
+    "spidev (>=3.8,<4.0) ; sys_platform == 'linux'",
+    "imageio (>=2.37.0,<3.0.0)",
+    "freetype-py @ git+https://github.com/mammo0/freetype-py.git@led-matrix",
+    "simple-plugin-loader (>=3.0.0,<4.0.0)",
 ]
 
 
-[tool.poetry.scripts]
+[project.urls]
+homepage = "https://github.com/mammo0/LED-Matrix"
+
+[project.scripts]
 create-config = "led_matrix.config:create_initial_config"
 led-matrix = "led_matrix.cli:run"
 
 
-[tool.poetry.dependencies]
-python = "~3.11"
-spidev = { version = "^3.8", markers = "sys_platform == 'linux'"}
-imageio = "^2.37.2"
-freetype-py = {git = "https://github.com/mammo0/freetype-py.git", branch = "led-matrix"}
-simple-plugin-loader = "^3.0.0"
+[tool.poetry]
+include = [
+    { path = "led_matrix/static_res", format = ["sdist", "wheel"] }
+]
+version = "0.0.0"
 
 [tool.poetry.group.alpine.dependencies]
-numpy = "=1.25.2"
-pillow = "=10.3.0"
+numpy = "=2.3.5"
+pillow = "=11.3.0"
 bottle = "=0.12.25"
-apscheduler = "=3.10.1"
-tzlocal = "=5.1"
+apscheduler = "=3.10.4"
+tzlocal = "=5.3.1"
 
 [tool.poetry.group.config.dependencies]
-tzlocal = "=5.1"
+tzlocal = "=5.3.1"
 python-ini = "^1.1.0"
 jsons = "^1.6.3"
 astral = "^3.2"
