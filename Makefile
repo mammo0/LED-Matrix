@@ -18,7 +18,7 @@ build-alpine-package:
 	poetry build -f wheel
 
 # create a clean config
-	poetry sync --only config
+	poetry install --only config
 	rm -f alpine/default_config.ini
 	poetry run create-config alpine/default_config.ini
 
@@ -34,7 +34,7 @@ build-alpine-package:
 
 # target alias for creating the config file
 config $(CONFIG_FILE):
-	poetry sync --only config
+	poetry install --only config
 # create or update the config file if necessary
 	poetry run create-config $(CONFIG_FILE)
 
