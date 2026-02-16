@@ -57,12 +57,15 @@ class Tpm2NetServer(UDPServer):
 
         self.__log.info("Server stopped")
 
-    def process_request(self, request: tuple[bytes, socket], client_address: Any) -> None:
+    def process_request(self, request: socket | tuple[bytes, socket], client_address: Any) -> None:
         """
         Override BaseServer.process_request() method.
 
         UDPServer.shutdown_request() does nothing, so it's not needed to be called in the process_request() method.
         """
+        if isinstance(request, socket):
+            return super().process_request(request, client_address)
+
         data: bytes = request[0].strip()
         data_length: int = len(data)
 

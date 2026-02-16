@@ -75,7 +75,7 @@ if sys.platform == "linux":
         def __get_gamma8_array(gamma) -> NDArray[np.uint8]:
             gamma8: NDArray[np.uint8] = np.zeros(256, dtype=np.uint8)
 
-            i: NDArray[np.uint8]
+            i: np.uint8
             for i in np.arange(256, dtype=np.uint8):
                 gamma8[i] = (255 * ((i/255) ** gamma) + 0.5).astype(np.uint8)
 

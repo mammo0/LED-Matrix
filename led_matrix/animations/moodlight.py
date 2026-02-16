@@ -81,9 +81,9 @@ class MoodlightAnimation(AbstractAnimation):
         increase: float = (360 - 0) / steps
 
         while True:
-            i: float
+            i: np.floating
             for i in np.arange(0, 360, increase):
-                color: Color = self.__hsv_to_rgb(i, 100, 100)
+                color: Color = self.__hsv_to_rgb(float(i), 100, 100)
                 yield color
 
     def __cycle_selected_colors_generator(self, steps: int, hold: int) -> Generator[Color, None, None]:

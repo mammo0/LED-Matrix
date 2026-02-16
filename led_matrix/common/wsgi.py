@@ -1,11 +1,13 @@
 from logging import Logger
-from threading import Thread, Event
-from typing import Any
-from wsgiref.simple_server import WSGIServer
+from threading import Event, Thread
+from typing import TYPE_CHECKING, Any
 
 from bottle import WSGIRefServer, run
 
 from led_matrix.common.log import LOG
+
+if TYPE_CHECKING:
+    from wsgiref.simple_server import WSGIServer
 
 
 class CustomWSGIRefServer(WSGIRefServer):
@@ -20,18 +22,18 @@ class CustomWSGIRefServer(WSGIRefServer):
 
     # copied from WSGIRefServer.run
     def run(self, app) -> None:
-        # pylint: disable=C0415,E0213,C0103,E0102
+        # pylint: disable=C0415,C0103
         #TODO: fixed in bottle 0.13+
 
-        from wsgiref.simple_server import WSGIRequestHandler
-        from wsgiref.simple_server import make_server
         import socket
+        from wsgiref.simple_server import (WSGIRequestHandler, WSGIServer,
+                                           make_server)
 
         class FixedHandler(WSGIRequestHandler):
             def address_string(self):  # Prevent reverse DNS lookups please.
                 return self.client_address[0]
 
-            def log_request(*args, **kw):
+            def log_request(*args, **kw):  # type: ignore
                 if not self.quiet:
                     return WSGIRequestHandler.log_request(*args, **kw)  # type: ignore
 

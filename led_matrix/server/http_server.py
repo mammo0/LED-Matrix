@@ -210,25 +210,31 @@ class HttpServer(metaclass=BottleCBVMeta):
                 for field, _ in animation_settings.parameter.iterate_fields():
                     # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
                     if field.type == bool:
-                        new_parameters[field.name] = form.get(animation_name +
-                                                              "_parameter_" +
-                                                              field.name +
-                                                              "_value",
-                                                              default=False, type=bool)
+                        new_parameters[field.name] = cast(
+                            bool,
+                            form.get(f"{animation_name}_parameter_{field.name}_value",
+                                     default=False,
+                                     type=bool))
                     else:
-                        new_parameters[field.name] = form.get(
-                            animation_name + "_parameter_" + field.name + "_value",
-                            default=getattr(animation_settings.parameter, field.name),
-                            type=field.type
+                        new_parameters[field.name] = cast(
+                            AnimationParameterTypes,
+                            form.get(
+                                f"{animation_name}_parameter_{field.name}_value",
+                                default=getattr(animation_settings.parameter, field.name),
+                                type=field.type
+                            )
                         )
 
                 animation_settings.parameter = replace(animation_settings.parameter, **new_parameters)
 
             # repeat
             if animation_controller.is_repeat_supported:
-                animation_settings.repeat = form.get(animation_name + "_repeat_value",
-                                                     default=animation_controller.default_settings.repeat,
-                                                     type=int)
+                animation_settings.repeat = cast(
+                    int,
+                    form.get(f"{animation_name}_repeat_value",
+                             default=animation_controller.default_settings.repeat,
+                             type=int)
+                )
 
             return (animation_name, animation_settings)
 
@@ -373,18 +379,34 @@ class HttpServer(metaclass=BottleCBVMeta):
 
         if SettingsTabs[tab.upper()] == SettingsTabs.MAIN:
             # get the day and night brightness and color temperature values
-            day_brightness: int = form.get("day_brightness_value", type=int,
-                                           default=self.__main_app.config.main.day_brightness)
-            day_color_temp: ColorTemp = ColorTemp[form.get("day_color_temp_value", type=str,
-                                                           default=self.__main_app.config.main.day_color_temp.name)]
+            day_brightness: int = cast(
+                int,
+                form.get("day_brightness_value",
+                         type=int,
+                         default=self.__main_app.config.main.day_brightness)
+            )
+            day_color_temp: ColorTemp = ColorTemp[cast(
+                str,
+                form.get("day_color_temp_value",
+                         type=str,
+                         default=self.__main_app.config.main.day_color_temp.name)
+            )]
 
             night_brightness: int
             night_color_temp: ColorTemp
             if form.get("setting_night_brightness_enabled_value", default=False, type=bool):
-                night_brightness = form.get("night_brightness_value", type=int,
-                                            default=self.__main_app.config.main.night_brightness)
-                night_color_temp = ColorTemp[form.get("night_color_temp_value", type=str,
-                                                      default=self.__main_app.config.main.night_color_temp.name)]
+                night_brightness = cast(
+                    int,
+                    form.get("night_brightness_value",
+                             type=int,
+                             default=self.__main_app.config.main.night_brightness)
+                )
+                night_color_temp = ColorTemp[cast(
+                    str,
+                    form.get("night_color_temp_value",
+                             type=str,
+                             default=self.__main_app.config.main.night_color_temp.name)
+                )]
             else:
                 night_brightness = -1
                 night_color_temp = self.__main_app.config.main.night_color_temp
@@ -397,7 +419,7 @@ class HttpServer(metaclass=BottleCBVMeta):
             self.__main_app.apply_day_night()
 
             # special treatment for bool values, because if not checked, None is returned, otherwise 'on'
-            enable_tpm2net: bool = form.get("enable_tpm2net", default=False, type=bool)
+            enable_tpm2net: bool = cast(bool, form.get("enable_tpm2net", default=False, type=bool))
 
             # save the settings
             self.__main_app.config.main.day_brightness = day_brightness
@@ -439,8 +461,12 @@ class HttpServer(metaclass=BottleCBVMeta):
     def set_brightness(self) -> None:
         form: FormsDict = self.__get_form()
 
-        value: int = form.get("preview_brightness_value", type=int,
-                              default=-1)
+        value: int = cast(
+            int,
+            form.get("preview_brightness_value",
+                     type=int,
+                     default=-1)
+        )
         if value > -1:
             self.__main_app.preview_brightness(value)
 
