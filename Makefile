@@ -18,7 +18,7 @@ build-alpine-package:
 	poetry build -f wheel
 
 # create a clean config
-	poetry install --only config
+	poetry sync --only config
 	rm -f alpine/default_config.ini
 	poetry run create-config alpine/default_config.ini
 
@@ -34,16 +34,16 @@ build-alpine-package:
 
 # target alias for creating the config file
 config $(CONFIG_FILE):
-	poetry install --only config
+	poetry sync --only config
 # create or update the config file if necessary
 	poetry run create-config $(CONFIG_FILE)
 
 develop: config
-	poetry install --sync
+	poetry sync
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry run pip install --force git+https://github.com/mammo0/freetype-py.git@led-matrix
 
 production: config
-	poetry install --without dev --sync
+	poetry sync --without dev
 	FREETYPEPY_BUNDLE_FT=1 FREETYPEPY_WITH_LIBPNG=1 poetry run pip install --force git+https://github.com/mammo0/freetype-py.git@led-matrix
 
 run: $(CONFIG_FILE)
