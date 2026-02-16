@@ -70,7 +70,7 @@ files = [
 
 [[package]]
 name = "freetype-py"
-version = "2.4.1.dev112+g353f8fd"
+version = "2.4.1.dev113+gacfa37d5f"
 description = "Freetype python bindings"
 optional = false
 python-versions = ">=3.7"
@@ -82,7 +82,7 @@ develop = false
 type = "git"
 url = "https://github.com/mammo0/freetype-py.git"
 reference = "led-matrix"
-resolved_reference = "353f8fda4f4e60746bc1e00fef1165eb5daf5853"
+resolved_reference = "acfa37d5f8dc87573a67a006dfbd13eeb4d5cd02"
 
 [[package]]
 name = "imageio"
