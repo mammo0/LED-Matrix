@@ -12,7 +12,7 @@ requires-python = ">=3.12,<4.0"
 
 dependencies = [
     "spidev (>=3.8,<4.0) ; sys_platform == 'linux'",
-    "imageio (>=2.37.0,<3.0.0)",
+    "imageio (>=2.37.4,<3.0.0)",
     "freetype-py @ git+https://github.com/mammo0/freetype-py.git@led-matrix",
     "simple-plugin-loader (>=3.0.0,<4.0.0)",
 ]
