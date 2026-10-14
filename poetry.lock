@@ -86,14 +86,14 @@ resolved_reference = "843873b657b838ff6dbee9575f680b91de56ff4a"
 
 [[package]]
 name = "imageio"
-version = "2.38.0"
+version = "2.38.1"
 description = "Read and write images and video across all major formats. Supports scientific and volumetric data."
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "imageio-2.38.0-py3-none-any.whl", hash = "sha256:474ea3a39e36e0e8e02d81d7f10412aaecec7a2825e5fbc4f44cbcd7bb7cebfc"},
-    {file = "imageio-2.38.0.tar.gz", hash = "sha256:fe1d406862f6bc2930e8ec662d7bc40d4370cb76e3390dcd33819560d2708531"},
+    {file = "imageio-2.38.1-py3-none-any.whl", hash = "sha256:36d23eb7423d2fb63f637098758edb3d2df3687f7125e0a5ce8596572022dcf9"},
+    {file = "imageio-2.38.1.tar.gz", hash = "sha256:6769f1f01c4dd46448307863a787c9a22fa4dbe11c0c88f525c6e410fdfd7983"},
 ]
 
 [package.dependencies]
@@ -543,4 +543,4 @@ devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "212e66fd6ceb61682977235daa2afadea38ebb260a6ee0f5dd4b55b169010dd1"
+content-hash = "3b211c51c29b26c1f52d230684ba853242ef208c5ad9c3cb2fc0ef497ac7094f"
